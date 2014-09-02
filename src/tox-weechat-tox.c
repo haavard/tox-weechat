@@ -210,12 +210,14 @@ tox_weechat_status_message_callback(Tox *tox,
                            tox_weechat_chat_refresh_timer_callback, chat);
 }
 
-void
+int
 tox_weechat_bootstrap(char *address, uint16_t port, char *public_key)
 {
     uint8_t *binary_key = tox_weechat_hex2bin(public_key);
-    tox_bootstrap_from_address(tox, address, htons(port), binary_key);
+    int result = tox_bootstrap_from_address(tox, address, htons(port), binary_key);
     free(binary_key);
+
+    return result;
 }
 
 void
