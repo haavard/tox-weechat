@@ -17,7 +17,7 @@ WEECHAT_PLUGIN_LICENSE("MIT");
 
 struct t_weechat_plugin *weechat_plugin = NULL;
 struct t_gui_buffer *tox_main_buffer = NULL;
-int online_status = 0;
+int tox_weechat_online_status = 0;
 
 int
 weechat_plugin_init(struct t_weechat_plugin *plugin, int argc, char *argv[])

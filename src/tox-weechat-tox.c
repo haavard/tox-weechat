@@ -79,6 +79,13 @@ tox_weechat_do_timer_cb(void *data,
     tox_do(tox);
     weechat_hook_timer(tox_do_interval(tox), 0, 1, tox_weechat_do_timer_cb, data);
 
+    int connected = tox_isconnected(tox);
+    if (connected ^ tox_weechat_online_status)
+    {
+        tox_weechat_online_status = connected;
+        weechat_bar_item_update("buffer_plugin");
+    }
+
     return WEECHAT_RC_OK;
 }
 

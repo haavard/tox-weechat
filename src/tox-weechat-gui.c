@@ -19,38 +19,27 @@ bar_item_input_prompt(void *data,
 }
 
 char *
-irc_bar_item_buffer_plugin(void *data, struct t_gui_bar_item *item,
+bar_item_buffer_plugin(void *data, struct t_gui_bar_item *item,
                            struct t_gui_window *window,
                            struct t_gui_buffer *buffer,
                            struct t_hashtable *extra_info)
 {
-    char string[512];
+    char string[256];
 
     const char *name = weechat_plugin_get_name(weechat_plugin);
 
-    char *status = "online" 
+    const char *status = tox_weechat_online_status ? "online" : "offline";
+    const char *color = weechat_color(tox_weechat_online_status ? "green" : "red");
 
+    snprintf(string, sizeof(string),
+             "%s %s%s", name, color, status);
 
-
-            snprintf(string, sizeof(string), "%s %s%s",
-                      name,
-                      weechat_color("
-                      );
-        }
-        else
-        {
-            snprintf (buf, sizeof (buf), "%s", name);
-        }
-    }
-    else
-    {
-        snprintf (buf, sizeof (buf), "%s", name);
-    }
-    return strdup (buf);
+    return strdup(string);
 }
 
 void tox_weechat_gui_init()
 {
     weechat_bar_item_new("input_prompt", bar_item_input_prompt, NULL);
+    weechat_bar_item_new("buffer_plugin", bar_item_buffer_plugin, NULL);
 }
 
