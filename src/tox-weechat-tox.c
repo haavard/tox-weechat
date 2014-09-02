@@ -82,6 +82,15 @@ tox_weechat_do_timer_cb(void *data,
     return WEECHAT_RC_OK;
 }
 
+int
+tox_weechat_chat_refresh_timer_callback(void *data, int remaining)
+{
+    struct t_tox_chat *chat = data;
+    tox_weechat_chat_refresh(chat);
+
+    return WEECHAT_RC_OK;
+}
+
 void
 tox_weechat_friend_message_callback(Tox *tox,
                                     int32_t friend_number,
@@ -146,7 +155,8 @@ tox_weechat_name_change_callback(Tox *tox,
     struct t_tox_chat *chat = tox_weechat_get_existing_friend_chat(friend_number);
     if (chat)
     {
-        tox_weechat_chat_refresh(chat);
+        weechat_hook_timer(10, 0, 1,
+                           tox_weechat_chat_refresh_timer_callback, chat);
 
         char *old_name = tox_weechat_get_name_nt(friend_number);
         char *new_name = tox_weechat_null_terminate(name, length);
@@ -176,7 +186,8 @@ tox_weechat_user_status_callback(Tox *tox,
 {
     struct t_tox_chat *chat = tox_weechat_get_existing_friend_chat(friend_number);
     if (chat)
-        tox_weechat_chat_refresh(chat);
+        weechat_hook_timer(10, 0, 1,
+                           tox_weechat_chat_refresh_timer_callback, chat);
 }
 
 void
@@ -188,7 +199,8 @@ tox_weechat_status_message_callback(Tox *tox,
 {
     struct t_tox_chat *chat = tox_weechat_get_existing_friend_chat(friend_number);
     if (chat)
-        tox_weechat_chat_refresh(chat);
+        weechat_hook_timer(10, 0, 1,
+                           tox_weechat_chat_refresh_timer_callback, chat);
 }
 
 void
