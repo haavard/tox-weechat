@@ -9,6 +9,11 @@
 void tox_weechat_tox_init();
 
 /**
+ * Bootstrap DHT using an inet address, port and a Tox address.
+ */
+void tox_weechat_bootstrap(char *address, uint16_t port, char *public_key);
+
+/**
  * Dump Tox to file and de-initialize.
  */
 void tox_weechat_tox_free();

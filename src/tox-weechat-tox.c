@@ -211,6 +211,14 @@ tox_weechat_status_message_callback(Tox *tox,
 }
 
 void
+tox_weechat_bootstrap(char *address, uint16_t port, char *public_key)
+{
+    uint8_t *binary_key = tox_weechat_hex2bin(public_key);
+    tox_bootstrap_from_address(tox, address, htons(port), binary_key);
+    free(binary_key);
+}
+
+void
 tox_weechat_tox_init()
 {
     tox = tox_new(0);
@@ -224,10 +232,8 @@ tox_weechat_tox_init()
     }
     free(data_file_path);
 
-    // bootstrap
-    uint8_t *pub_key = tox_weechat_hex2bin(BOOTSTRAP_KEY);
-    tox_bootstrap_from_address(tox, BOOTSTRAP_ADDRESS, htons(BOOTSTRAP_PORT), pub_key);
-    free(pub_key);
+    // bootstrap DHT
+    tox_weechat_bootstrap(BOOTSTRAP_ADDRESS, BOOTSTRAP_PORT, BOOTSTRAP_KEY);
 
     // start tox_do loop
     tox_weechat_do_timer_cb(NULL, 0);
