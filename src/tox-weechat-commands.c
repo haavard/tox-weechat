@@ -329,7 +329,7 @@ tox_weechat_commands_init()
     weechat_hook_command("friend",
                          "manage friends",
                          "list"
-                         " || add <address>"
+                         " || add <address> [<message>]"
                          " || requests"
                          " || accept <number>|all"
                          " || decline <number>|all",
