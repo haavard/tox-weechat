@@ -1,0 +1,16 @@
+cmake_minimum_required(VERSION 3.0)
+
+project(tox-weechat)
+
+add_definitions(-std=c11)
+
+add_library(tox SHARED
+    src/tox-weechat.c
+)
+
+# remove lib prefix
+set_target_properties(tox PROPERTIES PREFIX "")
+
+target_link_libraries(tox toxcore)
+
+install(FILES build/tox.so DESTINATION ~/.weechat/plugins)
