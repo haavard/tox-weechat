@@ -2,7 +2,7 @@ language: c
 
 before_script:
     # install libsodium (needed for libtoxcore)
-  - _libsodium_version=0.4.5
+  - _libsodium_version=0.7.0
   - git clone git://github.com/jedisct1/libsodium.git > /dev/null
   - pushd libsodium
   - git checkout tags/${_libsodium_version} > /dev/null
@@ -17,6 +17,15 @@ before_script:
   - pushd toxcore
   - autoreconf -i > /dev/null
   - ./configure --prefix=/usr --disable-testing --disable-ntox > /dev/null
+  - make -j3 > /dev/null
+  - sudo make install > /dev/null
+  - popd
+
+    # install weechat
+  - git clone git://github.com/weechat/weechat > /dev/null
+  - pushd weechat
+  - mkdir build && cd build
+  - cmake .. -DPREFIX=/usr > /dev/null
   - make -j3 > /dev/null
   - sudo make install > /dev/null
   - popd
