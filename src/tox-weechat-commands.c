@@ -4,11 +4,33 @@
 #include <tox/tox.h>
 
 #include "tox-weechat.h"
+#include "tox-weechat-tox.h"
 #include "tox-weechat-utils.h"
 #include "tox-weechat-chats.h"
 #include "tox-weechat-friend-requests.h"
 
 #include "tox-weechat-commands.h"
+
+int
+tox_weechat_cmd_bootstrap(void *data, struct t_gui_buffer *buffer,
+                          int argc, char **argv, char **argv_eol)
+{
+    if (argc != 4)
+        return WEECHAT_RC_ERROR;
+
+    char *address = argv[1];
+    uint16_t port = atoi(argv[2]);
+    char *tox_address = argv[3];
+
+    if (!tox_weechat_bootstrap(address, port, tox_address))
+    {
+        weechat_printf(tox_main_buffer,
+                       "%sInvalid arguments for bootstrap.",
+                       weechat_prefix("error"));
+    }
+
+    return WEECHAT_RC_OK;
+}
 
 int
 tox_weechat_cmd_friend(void *data, struct t_gui_buffer *buffer,
@@ -326,6 +348,14 @@ tox_weechat_cmd_name(void *data, struct t_gui_buffer *buffer,
 void
 tox_weechat_commands_init()
 {
+    weechat_hook_command("bootstrap",
+                         "bootstrap the Tox DHT",
+                         "<address> <port> <client id>",
+                         "  address: internet address of node to bootstrap with\n"
+                         "     port: port of the node\n"
+                         "client id: Tox client  of the node",
+                         NULL, tox_weechat_cmd_bootstrap, NULL);
+
     weechat_hook_command("friend",
                          "manage friends",
                          "list"
