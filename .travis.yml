@@ -5,7 +5,7 @@ before_script:
     # install libsodium (needed for libtoxcore)
   - git clone git://github.com/jedisct1/libsodium.git > /dev/null
   - pushd libsodium
-    git checkout tags/${_libsodium_version} > /dev/null
+  - git checkout tags/${_libsodium_version} > /dev/null
   - ./autogen.sh > /dev/null
   - ./configure --prefix=/usr > /dev/null
   - make -j3 > /dev/null
@@ -15,7 +15,7 @@ before_script:
   - git clone git://github.com/irungentoo/toxcore > /dev/null
   - pushd toxcore
   - autoreconf -i > /dev/null
-  - ./configure --prefix=/usr --disable-testing --disable-ntox > /dev/null
+  - ./configure --prefix=/usr --disable-testing --disable-ntox
   - make -j3 > /dev/null
   - popd
 
