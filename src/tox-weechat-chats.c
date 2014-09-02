@@ -89,7 +89,13 @@ tox_weechat_friend_chat_new(int32_t friend_number)
 }
 
 struct t_tox_chat *
-tox_weechat_get_friend_chat(int32_t friend_number)
+tox_weechat_get_first_chat()
+{
+    return tox_weechat_chats_head;
+}
+
+struct t_tox_chat *
+tox_weechat_get_existing_friend_chat(int32_t friend_number)
 {
     for (struct t_tox_chat *chat = tox_weechat_chats_head;
          chat;
@@ -99,7 +105,18 @@ tox_weechat_get_friend_chat(int32_t friend_number)
             return chat;
     }
 
-    return tox_weechat_friend_chat_new(friend_number);
+    return NULL;
+}
+
+struct t_tox_chat *
+tox_weechat_get_friend_chat(int32_t friend_number)
+{
+    struct t_tox_chat *chat = tox_weechat_get_existing_friend_chat(friend_number);
+
+    if (chat)
+        return chat;
+    else
+        return tox_weechat_friend_chat_new(friend_number);
 }
 
 struct t_tox_chat *
@@ -133,6 +150,17 @@ tox_weechat_chat_print_action(struct t_tox_chat *chat,
                    "%s%s %s",
                    weechat_prefix("action"),
                    sender, message);
+}
+
+void
+tox_weechat_chat_print_name_change(struct t_tox_chat *chat,
+                                   const char *old_name,
+                                   const char *new_name)
+{
+    weechat_printf(chat->buffer,
+                   "%s%s is now known as %s",
+                   weechat_prefix("network"),
+                   old_name, new_name);
 }
 
 int

@@ -119,6 +119,74 @@ tox_weechat_friend_action_callback(Tox *tox,
 }
 
 void
+tox_weechat_connection_status_callback(Tox *tox,
+                                       int32_t friend_number,
+                                       uint8_t status,
+                                       void *data)
+{
+    if (status == 1)
+    {
+        char *name = tox_weechat_get_name_nt(friend_number);
+        if (weechat_utf8_strlen(name) == 0)
+        {
+            free(name);
+            uint8_t client_id[TOX_CLIENT_ID_SIZE];
+            tox_get_client_id(tox, friend_number, client_id);
+            name = tox_weechat_bin2hex(client_id, TOX_CLIENT_ID_SIZE);
+        }
+
+        weechat_printf(tox_main_buffer,
+                       "%s%s just went online!",
+                       weechat_prefix("network"),
+                       name);
+        free(name);
+    }
+}
+
+void
+tox_weechat_name_change_callback(Tox *tox,
+                                 int32_t friend_number,
+                                 const uint8_t *name,
+                                 uint16_t length,
+                                 void *data)
+{
+    struct t_tox_chat *chat = tox_weechat_get_existing_friend_chat(friend_number);
+    if (chat)
+    {
+        tox_weechat_chat_refresh(chat);
+
+        char *old_name = tox_weechat_get_name_nt(friend_number);
+        char *new_name = tox_weechat_null_terminate(name, length);
+        tox_weechat_chat_print_name_change(chat, old_name, new_name);
+        free(old_name);
+        free(new_name);
+    }
+}
+
+void
+tox_weechat_user_status_callback(Tox *tox,
+                                 int32_t friend_number,
+                                 uint8_t status,
+                                 void *data)
+{
+    struct t_tox_chat *chat = tox_weechat_get_existing_friend_chat(friend_number);
+    if (chat)
+        tox_weechat_chat_refresh(chat);
+}
+
+void
+tox_weechat_status_message_callback(Tox *tox,
+                                    int32_t friend_number,
+                                    const uint8_t *message,
+                                    uint16_t length,
+                                    void *data)
+{
+    struct t_tox_chat *chat = tox_weechat_get_existing_friend_chat(friend_number);
+    if (chat)
+        tox_weechat_chat_refresh(chat);
+}
+
+void
 tox_weechat_tox_init()
 {
     tox = tox_new(0);
@@ -140,8 +208,13 @@ tox_weechat_tox_init()
     // start tox_do loop
     tox_weechat_do_timer_cb(NULL, 0);
 
+    // register tox callbacks
     tox_callback_friend_message(tox, tox_weechat_friend_message_callback, NULL);
     tox_callback_friend_action(tox, tox_weechat_friend_action_callback, NULL);
+    tox_callback_connection_status(tox, tox_weechat_connection_status_callback, NULL);
+    tox_callback_name_change(tox, tox_weechat_name_change_callback, NULL);
+    tox_callback_user_status(tox, tox_weechat_user_status_callback, NULL);
+    tox_callback_status_message(tox, tox_weechat_status_message_callback, NULL);
 }
 
 void
