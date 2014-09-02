@@ -8,15 +8,15 @@ Installation
 
 Tox-WeeChat requires [libtoxcore][3] to work. After getting it, install Tox-WeeChat like this:
 
-    git clone https://github.com/haavardp/tox-weechat.git
-    cd tox-weechat
-    mkdir build
-    cd build
+    $ git clone https://github.com/haavardp/tox-weechat.git
+    $ cd tox-weechat
+    $ mkdir build
+    $ cd build
 
-    cmake ..
-    make install
+    $ cmake ..
+    $ make install
 
-This places `tox.so` in `~/.weechat/plugins`.
+This places `tox.so` in `/usr/local/lib/weechat/plugins`. If you don't have root access or otherwise would like to install it locally, replace the cmake command above with this one: `cmake -DPREFIX=$HOME/.weechat ..`.
 
 Usage
 -----
@@ -35,7 +35,7 @@ License
 
 Tox-WeeChat is licensed under the MIT license. For more information, see the LICENSE file.
 
-Copyright (C) 2014 Håvard Pettersson <haavard.pettersson@gmail.com>.
+Copyright (c) 2014 Håvard Pettersson <haavard.pettersson@gmail.com>.
 
 [1]: http://weechat.org
 [2]: http://tox.im
