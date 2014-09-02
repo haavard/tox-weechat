@@ -5,6 +5,7 @@
 
 extern struct t_weechat_plugin *weechat_plugin;
 extern Tox *tox;
+extern int online_status;
 
 extern struct t_gui_buffer *tox_main_buffer;
 
