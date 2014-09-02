@@ -3,6 +3,8 @@ Tox-WeeChat
 
 Tox-WeeChat is a C plugin for the [WeeChat][1] chat client that enables it to connect to the [Tox][2] network. It is functional, but very limited in features right now. Bug reports and suggestions are appreciated.
 
+[![Build Status](https://travis-ci.org/haavardp/tox-weechat.svg?branch=master)](https://travis-ci.org/haavardp/tox-weechat)
+
 Installation
 ------------
 
