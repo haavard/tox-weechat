@@ -3,8 +3,6 @@
 
 #include <tox/tox.h>
 
-extern Tox *tox;
-
 /**
  * Initialize the Tox object, bootstrap the DHT and start working.
  */
@@ -13,6 +11,6 @@ void tox_weechat_tox_init();
 /**
  * Dump Tox to file and de-initialize.
  */
-void tox_weechat_tox_end();
+void tox_weechat_tox_free();
 
 #endif // TOX_WEECHAT_TOX_H

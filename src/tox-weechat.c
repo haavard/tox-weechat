@@ -3,6 +3,9 @@
 #include <weechat/weechat-plugin.h>
 
 #include "tox-weechat-tox.h"
+#include "tox-weechat-commands.h"
+#include "tox-weechat-gui.h"
+#include "tox-weechat-friend-requests.h"
 
 #include "tox-weechat.h"
 
@@ -13,13 +16,18 @@ WEECHAT_PLUGIN_VERSION("0.1");
 WEECHAT_PLUGIN_LICENSE("GPL3");
 
 struct t_weechat_plugin *weechat_plugin = NULL;
+struct t_gui_buffer *tox_main_buffer = NULL;
 
 int
 weechat_plugin_init(struct t_weechat_plugin *plugin, int argc, char *argv[])
 {
     weechat_plugin = plugin;
+    tox_main_buffer = weechat_buffer_new("tox", NULL, NULL, NULL, NULL);
 
     tox_weechat_tox_init();
+    tox_weechat_commands_init();
+    tox_weechat_gui_init();
+    tox_weechat_friend_requests_init();
 
     return WEECHAT_RC_OK;
 }
@@ -27,5 +35,8 @@ weechat_plugin_init(struct t_weechat_plugin *plugin, int argc, char *argv[])
 int
 weechat_plugin_end(struct t_weechat_plugin *plugin)
 {
+    tox_weechat_tox_free();
+    tox_weechat_friend_requests_free();
+
     return WEECHAT_RC_OK;
 }

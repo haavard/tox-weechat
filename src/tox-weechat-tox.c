@@ -9,6 +9,7 @@
 
 #include "tox-weechat.h"
 #include "tox-weechat-utils.h"
+#include "tox-weechat-chats.h"
 
 #include "tox-weechat-tox.h"
 
@@ -71,9 +72,6 @@ tox_weechat_load_file(Tox *tox, char *path)
     return -1;
 }
 
-/**
- * Continous timer keeping Tox running.
- */
 int
 tox_weechat_do_timer_cb(void *data,
                         int remaining_calls)
@@ -82,6 +80,42 @@ tox_weechat_do_timer_cb(void *data,
     weechat_hook_timer(tox_do_interval(tox), 0, 1, tox_weechat_do_timer_cb, data);
 
     return WEECHAT_RC_OK;
+}
+
+void
+tox_weechat_friend_message_callback(Tox *tox,
+                                    int32_t friend_number,
+                                    const uint8_t *message,
+                                    uint16_t length,
+                                    void *data)
+{
+    struct t_tox_chat *chat = tox_weechat_get_friend_chat(friend_number);
+
+    char *name = tox_weechat_get_name_nt(friend_number);
+    char *message_nt = tox_weechat_null_terminate(message, length);
+
+    tox_weechat_chat_print_message(chat, name, message_nt);
+
+    free(name);
+    free(message_nt);
+}
+
+void
+tox_weechat_friend_action_callback(Tox *tox,
+                                   int32_t friend_number,
+                                   const uint8_t *message,
+                                   uint16_t length,
+                                   void *data)
+{
+    struct t_tox_chat *chat = tox_weechat_get_friend_chat(friend_number);
+
+    char *name = tox_weechat_get_name_nt(friend_number);
+    char *message_nt = tox_weechat_null_terminate(message, length);
+
+    tox_weechat_chat_print_action(chat, name, message_nt);
+
+    free(name);
+    free(message_nt);
 }
 
 void
@@ -105,10 +139,13 @@ tox_weechat_tox_init()
 
     // start tox_do loop
     tox_weechat_do_timer_cb(NULL, 0);
+
+    tox_callback_friend_message(tox, tox_weechat_friend_message_callback, NULL);
+    tox_callback_friend_action(tox, tox_weechat_friend_action_callback, NULL);
 }
 
 void
-tox_weechat_tox_end()
+tox_weechat_tox_free()
 {
     // save Tox data to a buffer
     uint32_t size = tox_size(tox);
