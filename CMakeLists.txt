@@ -18,4 +18,4 @@ set_target_properties(tox PROPERTIES PREFIX "")
 
 target_link_libraries(tox toxcore)
 
-install(FILES build/tox.so DESTINATION ~/.weechat/plugins)
+install(FILES tox.so DESTINATION ~/.weechat/plugins)
