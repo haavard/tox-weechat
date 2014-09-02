@@ -305,11 +305,19 @@ tox_weechat_cmd_name(void *data, struct t_gui_buffer *buffer,
 
     weechat_bar_item_update("input_prompt");
 
+    weechat_printf(tox_main_buffer,
+                   "%sYou are now known as %s",
+                   weechat_prefix("network"),
+                   name);
+
     for (struct t_tox_chat *chat = tox_weechat_get_first_chat();
          chat;
          chat = chat->next)
     {
-        tox_weechat_chat_print_name_change(chat, "You", name);
+        weechat_printf(chat->buffer,
+                       "%sYou are now known as %s",
+                       weechat_prefix("network"),
+                       name);
     }
 
     return WEECHAT_RC_OK;

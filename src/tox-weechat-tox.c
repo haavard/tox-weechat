@@ -127,13 +127,6 @@ tox_weechat_connection_status_callback(Tox *tox,
     if (status == 1)
     {
         char *name = tox_weechat_get_name_nt(friend_number);
-        if (weechat_utf8_strlen(name) == 0)
-        {
-            free(name);
-            uint8_t client_id[TOX_CLIENT_ID_SIZE];
-            tox_get_client_id(tox, friend_number, client_id);
-            name = tox_weechat_bin2hex(client_id, TOX_CLIENT_ID_SIZE);
-        }
 
         weechat_printf(tox_main_buffer,
                        "%s%s just went online!",
@@ -157,7 +150,19 @@ tox_weechat_name_change_callback(Tox *tox,
 
         char *old_name = tox_weechat_get_name_nt(friend_number);
         char *new_name = tox_weechat_null_terminate(name, length);
-        tox_weechat_chat_print_name_change(chat, old_name, new_name);
+
+        if (strcmp(old_name, new_name) != 0)
+        {
+            weechat_printf(chat->buffer,
+                           "%s%s is now known as %s",
+                           weechat_prefix("network"),
+                           old_name, new_name);
+            weechat_printf(tox_main_buffer,
+                           "%s%s is now known as %s",
+                           weechat_prefix("network"),
+                           old_name, new_name);
+        }
+
         free(old_name);
         free(new_name);
     }

@@ -152,17 +152,6 @@ tox_weechat_chat_print_action(struct t_tox_chat *chat,
                    sender, message);
 }
 
-void
-tox_weechat_chat_print_name_change(struct t_tox_chat *chat,
-                                   const char *old_name,
-                                   const char *new_name)
-{
-    weechat_printf(chat->buffer,
-                   "%s%s is now known as %s",
-                   weechat_prefix("network"),
-                   old_name, new_name);
-}
-
 int
 tox_weechat_buffer_input_callback(void *data,
                                   struct t_gui_buffer *weechat_buffer,

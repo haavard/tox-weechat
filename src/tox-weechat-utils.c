@@ -3,6 +3,7 @@
 #include <string.h>
 #include <stdio.h>
 
+#include <weechat/weechat-plugin.h>
 #include <tox/tox.h>
 
 #include "tox-weechat.h"
@@ -57,6 +58,14 @@ tox_weechat_get_name_nt(int32_t friend_number)
     size_t length = tox_get_name_size(tox, friend_number);
     uint8_t name[length];
     tox_get_name(tox, friend_number, name);
+
+    // if no name, return client ID instead
+    if (weechat_utf8_strlen((char *)name) == 0)
+    {
+        uint8_t client_id[TOX_CLIENT_ID_SIZE];
+        tox_get_client_id(tox, friend_number, client_id);
+        return tox_weechat_bin2hex(client_id, TOX_CLIENT_ID_SIZE);
+    }
 
     return tox_weechat_null_terminate(name, length);
 }
