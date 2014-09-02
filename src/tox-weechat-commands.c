@@ -17,7 +17,39 @@ tox_weechat_cmd_friend(void *data, struct t_gui_buffer *buffer,
     // /friend [list]
     if (argc == 1 || (argc == 2 && weechat_strcasecmp(argv[1], "list") == 0))
     {
-        weechat_printf(tox_main_buffer, "TODO: friend list");
+        size_t friend_count = tox_count_friendlist(tox);
+        int32_t friend_numbers[friend_count];
+        tox_get_friendlist(tox, friend_numbers, friend_count);
+
+        if (friend_count == 0)
+        {
+            weechat_printf(tox_main_buffer,
+                           "%sYou have no friends :(",
+                           weechat_prefix("network"));
+            return WEECHAT_RC_OK;
+        }
+
+        weechat_printf(tox_main_buffer,
+                       "%s[ID] Name [client ID]",
+                       weechat_prefix("network"));
+
+        for (size_t i = 0; i < friend_count; ++i)
+        {
+            int32_t friend_number = friend_numbers[i];
+            char *name = tox_weechat_get_name_nt(friend_number);
+
+            uint8_t client_id[TOX_CLIENT_ID_SIZE];
+            tox_get_client_id(tox, friend_number, client_id);
+            char *hex_id = tox_weechat_bin2hex(client_id, TOX_CLIENT_ID_SIZE);
+
+            weechat_printf(tox_main_buffer,
+                           "%s[%d] %s [%s]",
+                           weechat_prefix("network"),
+                           friend_number, name, hex_id);
+
+            free(name);
+            free(hex_id);
+        }
 
         return WEECHAT_RC_OK;
     }
@@ -192,6 +224,7 @@ tox_weechat_commands_init()
                          "manage friends",
                          "list"
                          " || add <address>"
+                         " || remove <name>|<address>|<id>"
                          " || requests"
                          " || accept <number>|all"
                          " || decline <number>|all",
