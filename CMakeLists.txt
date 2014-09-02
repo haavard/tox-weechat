@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 2.8.7)
 
 project(tox-weechat)
-add_definitions(-std=c11)
+add_definitions(-std=c99)
 
 add_library(tox SHARED
     src/tox-weechat.c
