@@ -30,4 +30,8 @@ before_script:
   - sudo make install > /dev/null
   - popd
 
-script: cmake . && make -j3
+script:
+  - mkdir build && cd build
+  - cmake ..
+  - make -j3
+
