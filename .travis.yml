@@ -15,7 +15,7 @@ before_script:
   - git clone git://github.com/irungentoo/toxcore > /dev/null
   - pushd toxcore
   - autoreconf -i > /dev/null
-  - ./configure --prefix=/usr --disable-testing --disable-ntox --disable-dht-bootstrap-daemon > /dev/null
+  - ./configure --prefix=/usr --disable-testing --disable-ntox > /dev/null
   - make -j3 > /dev/null
   - popd
 
