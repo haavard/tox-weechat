@@ -1,7 +1,7 @@
 Tox-WeeChat
 ===========
 
-Tox-WeeChat is a C plugin for the [WeeChat][1] chat client that enables it to connect to the [Tox][2] network. It is functional, but not intended for regular use yet, as it lacks a ton of features.
+Tox-WeeChat is a C plugin for the [WeeChat][1] chat client that enables it to connect to the [Tox][2] network. It is functional, but not intended for regular use yet, as it lacks a ton of features. Bug reports and suggestions are appreciated!
 
 Installation
 ------------
