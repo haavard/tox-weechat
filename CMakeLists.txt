@@ -13,15 +13,9 @@ add_library(tox SHARED
     src/tox-weechat-friend-requests.c
 )
 
-if (PREFIX)
-    set(CMAKE_INSTALL_PREFIX ${PREFIX})
-else()
-    set(CMAKE_INSTALL_PREFIX /usr/local/lib/weechat)
-endif()
-
 # remove lib prefix
 set_target_properties(tox PROPERTIES PREFIX "")
 
 target_link_libraries(tox toxcore)
 
-install(FILES build/tox.so DESTINATION plugins)
+install(FILES build/tox.so DESTINATION ~/.weechat/plugins)
