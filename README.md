@@ -1,13 +1,11 @@
 Tox-WeeChat
 ===========
-
 Tox-WeeChat is a C plugin for the [WeeChat][1] chat client that enables it to connect to the [Tox][2] network. It is functional, but very limited in features right now. Bug reports and suggestions are appreciated.
 
 [![Build Status](https://travis-ci.org/haavardp/tox-weechat.svg?branch=master)](https://travis-ci.org/haavardp/tox-weechat)
 
 Installation
 ------------
-
 Tox-WeeChat requires [libtoxcore][3] to work. After getting it, install Tox-WeeChat like this:
 
     $ git clone https://github.com/haavardp/tox-weechat.git
@@ -20,19 +18,17 @@ This places `tox.so` in `~/.weechat/plugins`.
 
 Usage
 -----
-
-In WeeChat, load the plugin: `/plugin load tox`. You should get a new buffer called tox. This is the core Tox buffer, where output from Tox commands will print.
+In WeeChat, load the plugin: `/plugin load tox`. You should get a new buffer called tox. This is the core Tox buffer, where output from commands will print.
 
  - To change your name, `/name <new name>`.
  - Get your Tox address with `/myaddress`.
  - To add friends or respond to friend requests, `/help friend` will get you started.
  - Message a friend with `/msg <friend number>`. Get their friend number with `/friend`.
 
-That's pretty much all that's implemented for now.
+A list of commands is availabie with `/help -list tox`.
 
 License
 ---------
-
 Tox-WeeChat is licensed under the MIT license. For more information, see the LICENSE file.
 
 Copyright (c) 2014 Håvard Pettersson <haavard.pettersson@gmail.com>.
