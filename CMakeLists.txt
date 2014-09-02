@@ -6,6 +6,8 @@ add_definitions(-std=c11)
 
 add_library(tox SHARED
     src/tox-weechat.c
+    src/tox-weechat-tox.c
+    src/tox-weechat-utils.c
 )
 
 # remove lib prefix
