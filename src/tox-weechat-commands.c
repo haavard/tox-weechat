@@ -345,6 +345,24 @@ tox_weechat_cmd_name(void *data, struct t_gui_buffer *buffer,
     return WEECHAT_RC_OK;
 }
 
+int
+tox_weechat_cmd_statusmsg(void *data, struct t_gui_buffer *buffer,
+                          int argc, char **argv, char **argv_eol)
+{
+    char *message = argc > 1 ? argv_eol[1] : " ";
+
+    int result = tox_set_status_message(tox, (uint8_t *)message, strlen(message));
+    if (result == -1)
+    {
+        weechat_printf(tox_main_buffer,
+                       "%s%s",
+                       weechat_prefix("error"),
+                       "Could not set status message.");
+    }
+
+    return WEECHAT_RC_OK;
+}
+
 void
 tox_weechat_commands_init()
 {
@@ -393,4 +411,10 @@ tox_weechat_commands_init()
                          "<name>",
                          "name: your new name",
                          NULL, tox_weechat_cmd_name, NULL);
+
+    weechat_hook_command("statusmsg",
+                         "change your Tox status message",
+                         "[<message>]",
+                         "message: your new status message",
+                         NULL, tox_weechat_cmd_statusmsg, NULL);
 }
