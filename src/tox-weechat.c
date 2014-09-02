@@ -13,7 +13,7 @@ WEECHAT_PLUGIN_NAME("tox");
 WEECHAT_PLUGIN_DESCRIPTION("Tox protocol");
 WEECHAT_PLUGIN_AUTHOR("Håvard Pettersson <haavard.pettersson@gmail.com>");
 WEECHAT_PLUGIN_VERSION("0.1");
-WEECHAT_PLUGIN_LICENSE("GPL3");
+WEECHAT_PLUGIN_LICENSE("MIT");
 
 struct t_weechat_plugin *weechat_plugin = NULL;
 struct t_gui_buffer *tox_main_buffer = NULL;
