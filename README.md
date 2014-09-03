@@ -25,7 +25,7 @@ In WeeChat, load the plugin: `/plugin load tox`. You should get a new buffer cal
  - To add friends or respond to friend requests, `/help friend` will get you started.
  - Message a friend with `/msg <friend number>`. Get their friend number with `/friend`.
 
-A list of commands is availabie with `/help -list tox`.
+A list of commands is available with `/help -list tox`.
 
 License
 ---------
