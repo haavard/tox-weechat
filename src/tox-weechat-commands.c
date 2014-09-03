@@ -135,6 +135,36 @@ tox_weechat_cmd_friend(void *data, struct t_gui_buffer *buffer,
         return WEECHAT_RC_OK;
     }
 
+    if (argc == 3 && (weechat_strcasecmp(argv[1], "remove") == 0))
+    {
+        char *endptr;
+        unsigned long friend_number = strtoul(argv[2], &endptr, 10);
+
+        if (endptr == argv[2] || !tox_friend_exists(tox, friend_number))
+        {
+            weechat_printf(tox_main_buffer,
+                           "%sInvalid friend number.",
+                           weechat_prefix("error"));
+            return WEECHAT_RC_OK;
+        }
+
+        char *name = tox_weechat_get_name_nt(friend_number);
+        if (tox_del_friend(tox, friend_number) == 0)
+        {
+            weechat_printf(tox_main_buffer,
+                           "%sRemoved %s from friend list.",
+                           weechat_prefix("network"), name);
+        }
+        else
+        {
+            weechat_printf(tox_main_buffer,
+                           "%sCould not remove friend!",
+                           weechat_prefix("error"));
+        }
+
+        return WEECHAT_RC_OK;
+    }
+
     // /friend accept
     if (argc == 3 &&
             (weechat_strcasecmp(argv[1], "accept") == 0
@@ -402,6 +432,7 @@ tox_weechat_commands_init()
                          "manage friends",
                          "list"
                          " || add <address> [<message>]"
+                         " || remove <number>"
                          " || requests"
                          " || accept <number>|all"
                          " || decline <number>|all",
