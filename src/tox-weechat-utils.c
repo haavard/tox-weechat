@@ -60,7 +60,7 @@ tox_weechat_get_name_nt(int32_t friend_number)
     tox_get_name(tox, friend_number, name);
 
     // if no name, return client ID instead
-    if (weechat_utf8_strlen((char *)name) == 0)
+    if (length)
     {
         uint8_t client_id[TOX_CLIENT_ID_SIZE];
         tox_get_client_id(tox, friend_number, client_id);
