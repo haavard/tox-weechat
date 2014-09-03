@@ -205,12 +205,13 @@ tox_weechat_cmd_friend(void *data, struct t_gui_buffer *buffer,
                 return WEECHAT_RC_OK;
             }
 
+            char *hex_id = tox_weechat_bin2hex(request->address, TOX_CLIENT_ID_SIZE);
+
             if (accept)
                 tox_weechat_accept_friend_request(request);
             else
                 tox_weechat_decline_friend_request(request);
 
-            char *hex_id = tox_weechat_bin2hex(request->address, TOX_CLIENT_ID_SIZE);
             weechat_printf(tox_main_buffer,
                            "%s%s friend request from %s.",
                            weechat_prefix("network"),
