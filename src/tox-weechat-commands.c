@@ -346,6 +346,29 @@ tox_weechat_cmd_name(void *data, struct t_gui_buffer *buffer,
 }
 
 int
+tox_weechat_cmd_status(void *data, struct t_gui_buffer *buffer,
+                       int argc, char **argv, char **argv_eol)
+{
+    if (argc != 2)
+        return WEECHAT_RC_ERROR;
+
+    TOX_USERSTATUS status = TOX_USERSTATUS_INVALID;
+    if (weechat_strcasecmp(argv[1], "online") == 0)
+        status = TOX_USERSTATUS_NONE;
+    else if (weechat_strcasecmp(argv[1], "busy") == 0)
+        status = TOX_USERSTATUS_BUSY;
+    else if (weechat_strcasecmp(argv[1], "away") == 0)
+        status = TOX_USERSTATUS_AWAY;
+
+    if (status == TOX_USERSTATUS_INVALID)
+        return WEECHAT_RC_ERROR;
+
+    tox_set_user_status(tox, status);
+
+    return WEECHAT_RC_OK;
+}
+
+int
 tox_weechat_cmd_statusmsg(void *data, struct t_gui_buffer *buffer,
                           int argc, char **argv, char **argv_eol)
 {
@@ -411,6 +434,12 @@ tox_weechat_commands_init()
                          "<name>",
                          "name: your new name",
                          NULL, tox_weechat_cmd_name, NULL);
+
+    weechat_hook_command("status",
+                         "change your Tox status",
+                         "online|busy|away",
+                         "",
+                         NULL, tox_weechat_cmd_status, NULL);
 
     weechat_hook_command("statusmsg",
                          "change your Tox status message",
