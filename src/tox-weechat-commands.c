@@ -364,6 +364,7 @@ tox_weechat_cmd_status(void *data, struct t_gui_buffer *buffer,
         return WEECHAT_RC_ERROR;
 
     tox_set_user_status(tox, status);
+    weechat_bar_item_update("away");
 
     return WEECHAT_RC_OK;
 }

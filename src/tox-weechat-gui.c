@@ -8,6 +8,29 @@
 #include "tox-weechat.h"
 #include "tox-weechat-utils.h"
 
+#include "tox-weechat-gui.h"
+
+char *
+bar_item_away(void *data,
+              struct t_gui_bar_item *item,
+              struct t_gui_window *window,
+              struct t_gui_buffer *buffer,
+              struct t_hashtable *extra_info)
+{
+    char *status = NULL;;
+    switch (tox_get_self_user_status(tox))
+    {
+        case TOX_USERSTATUS_BUSY:
+            status = strdup("busy");
+            break;
+        case TOX_USERSTATUS_AWAY:
+            status = strdup("away");
+            break;
+    }
+
+    return status;
+}
+
 char *
 bar_item_input_prompt(void *data,
                       struct t_gui_bar_item *item,
@@ -39,6 +62,7 @@ bar_item_buffer_plugin(void *data, struct t_gui_bar_item *item,
 
 void tox_weechat_gui_init()
 {
+    weechat_bar_item_new("away", bar_item_away, NULL);
     weechat_bar_item_new("input_prompt", bar_item_input_prompt, NULL);
     weechat_bar_item_new("buffer_plugin", bar_item_buffer_plugin, NULL);
 }
