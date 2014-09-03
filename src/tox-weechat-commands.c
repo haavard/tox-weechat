@@ -196,7 +196,7 @@ tox_weechat_cmd_friend(void *data, struct t_gui_buffer *buffer,
         }
         else
         {
-            unsigned int num = atoi(argv[1]);
+            unsigned int num = atoi(argv[2]);
             if (num == 0 || (request = tox_weechat_friend_request_with_num(num)) == NULL)
             {
                 weechat_printf(tox_main_buffer,
