@@ -126,7 +126,7 @@ tox_weechat_cmd_friend(void *data, struct t_gui_buffer *buffer,
                 break;
             default:
                 weechat_printf(tox_main_buffer,
-                               "Friend request sent!",
+                               "%sFriend request sent!",
                                weechat_prefix("network"));
                 break;
         }
