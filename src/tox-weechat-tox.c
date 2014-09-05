@@ -21,6 +21,8 @@
 
 Tox *tox = NULL;
 
+struct t_tox_weechat_identity *tox_weechat_identities = NULL;
+
 /**
  * Return the path to the Tox data file. Must be freed.
  */
@@ -76,12 +78,16 @@ int
 tox_weechat_do_timer_cb(void *data,
                         int remaining_calls)
 {
-    tox_do(tox);
-    weechat_hook_timer(tox_do_interval(tox), 0, 1, tox_weechat_do_timer_cb, data);
+    struct t_tox_weechat_identity *identity = data;
 
-    int connected = tox_isconnected(tox);
-    if (connected ^ tox_weechat_online_status)
+    tox_do(identity->tox);
+    weechat_hook_timer(tox_do_interval(identity->tox), 0, 1,
+                       tox_weechat_do_timer_cb, identity);
+
+    int connected = tox_isconnected(identity->tox);
+    if (connected ^ identity->is_connected)
     {
+        identity->is_connected = connected;
         tox_weechat_online_status = connected;
         weechat_bar_item_update("buffer_plugin");
     }
@@ -211,7 +217,7 @@ tox_weechat_status_message_callback(Tox *tox,
 }
 
 int
-tox_weechat_bootstrap(char *address, uint16_t port, char *public_key)
+tox_weechat_bootstrap_tox(Tox *tox, char *address, uint16_t port, char *public_key)
 {
     uint8_t *binary_key = tox_weechat_hex2bin(public_key);
     int result = tox_bootstrap_from_address(tox, address, htons(port), binary_key);
@@ -220,37 +226,64 @@ tox_weechat_bootstrap(char *address, uint16_t port, char *public_key)
     return result;
 }
 
-void
-tox_weechat_tox_init()
+int
+tox_weechat_bootstrap(char *address, uint16_t port, char *public_key)
 {
-    tox = tox_new(0);
-
-    // try loading Tox saved data
-    char *data_file_path = tox_weechat_data_path();
-    if (tox_weechat_load_file(tox, data_file_path) == -1)
-    {
-        // couldn't load Tox, set a default name
-        tox_set_name(tox, (uint8_t *)INITIAL_NAME, strlen(INITIAL_NAME));
-    }
-    free(data_file_path);
-
-    // bootstrap DHT
-    tox_weechat_bootstrap(BOOTSTRAP_ADDRESS, BOOTSTRAP_PORT, BOOTSTRAP_KEY);
-
-    // start tox_do loop
-    tox_weechat_do_timer_cb(NULL, 0);
-
-    // register tox callbacks
-    tox_callback_friend_message(tox, tox_weechat_friend_message_callback, NULL);
-    tox_callback_friend_action(tox, tox_weechat_friend_action_callback, NULL);
-    tox_callback_connection_status(tox, tox_weechat_connection_status_callback, NULL);
-    tox_callback_name_change(tox, tox_weechat_name_change_callback, NULL);
-    tox_callback_user_status(tox, tox_weechat_user_status_callback, NULL);
-    tox_callback_status_message(tox, tox_weechat_status_message_callback, NULL);
+    return tox_weechat_bootstrap_tox(tox, address, port, public_key);
 }
 
 void
-tox_weechat_tox_free()
+tox_weechat_tox_init()
+{
+    struct t_tox_weechat_identity *identity = malloc(sizeof(*identity));
+    identity->name = strdup("tox");
+    identity->data_path = tox_weechat_data_path();
+
+    tox_weechat_init_identity(identity);
+
+    tox = identity->tox;
+    tox_main_buffer = identity->buffer;
+
+    tox_weechat_identities = identity;
+}
+
+void
+tox_weechat_init_identity(struct t_tox_weechat_identity *identity)
+{
+    // create weechat buffer
+    // TODO: add close callback
+    identity->buffer = weechat_buffer_new(identity->name, NULL, NULL, NULL, NULL);
+
+    // initialize Tox
+    identity->tox = tox_new(NULL);
+
+    // try loading Tox saved data
+    if (tox_weechat_load_file(identity->tox, identity->data_path) == -1)
+    {
+        // couldn't load Tox, set a default name
+        tox_set_name(identity->tox,
+                     (uint8_t *)INITIAL_NAME, strlen(INITIAL_NAME));
+    }
+
+    // bootstrap DHT
+    tox_weechat_bootstrap_tox(identity->tox, BOOTSTRAP_ADDRESS,
+                                             BOOTSTRAP_PORT,
+                                             BOOTSTRAP_KEY);
+
+    // start tox_do loop
+    tox_weechat_do_timer_cb(identity, 0);
+
+    // register tox callbacks
+    tox_callback_friend_message(identity->tox, tox_weechat_friend_message_callback, identity);
+    tox_callback_friend_action(identity->tox, tox_weechat_friend_action_callback, identity);
+    tox_callback_connection_status(identity->tox, tox_weechat_connection_status_callback, identity);
+    tox_callback_name_change(identity->tox, tox_weechat_name_change_callback, identity);
+    tox_callback_user_status(identity->tox, tox_weechat_user_status_callback, identity);
+    tox_callback_status_message(identity->tox, tox_weechat_status_message_callback, identity);
+}
+
+void
+tox_weechat_save_to_file(Tox *tox, char *path)
 {
     // save Tox data to a buffer
     uint32_t size = tox_size(tox);
@@ -258,13 +291,26 @@ tox_weechat_tox_free()
     tox_save(tox, data);
 
     // save buffer to a file
-    char *data_file_path = tox_weechat_data_path();
-    FILE *data_file = fopen(data_file_path, "w");
+    FILE *data_file = fopen(path, "w");
     fwrite(data, sizeof(data[0]), size, data_file);
     fclose(data_file);
-    free(data_file_path);
+}
 
-    // free the Tox object
-    tox_kill(tox);
+void
+tox_weechat_free_identity(struct t_tox_weechat_identity *identity)
+{
+    tox_weechat_save_to_file(identity->tox,
+                             identity->data_path);
+
+    tox_kill(identity->tox);
+    free(identity->name);
+    free(identity->data_path);
+    free(identity);
+}
+
+void
+tox_weechat_tox_free()
+{
+    tox_weechat_free_identity(tox_weechat_identities);
 }
 

@@ -23,7 +23,6 @@ int
 weechat_plugin_init(struct t_weechat_plugin *plugin, int argc, char *argv[])
 {
     weechat_plugin = plugin;
-    tox_main_buffer = weechat_buffer_new("tox", NULL, NULL, NULL, NULL);
 
     tox_weechat_tox_init();
     tox_weechat_commands_init();
