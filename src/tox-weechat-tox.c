@@ -287,7 +287,7 @@ tox_weechat_tox_init()
 {
     struct t_tox_weechat_identity *identity = malloc(sizeof(*identity));
     identity->name = strdup("tox");
-    identity->data_path = tox_weechat_data_path();
+    identity->data_path = tox_weechat_default_data_path("tox");
 
     tox_weechat_init_identity(identity);
 
