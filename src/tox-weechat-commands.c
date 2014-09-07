@@ -15,6 +15,8 @@ int
 tox_weechat_cmd_bootstrap(void *data, struct t_gui_buffer *buffer,
                           int argc, char **argv, char **argv_eol)
 {
+    struct t_tox_weechat_identity *identity = tox_weechat_identity_for_buffer(buffer);
+
     if (argc != 4)
         return WEECHAT_RC_ERROR;
 
@@ -22,9 +24,9 @@ tox_weechat_cmd_bootstrap(void *data, struct t_gui_buffer *buffer,
     uint16_t port = atoi(argv[2]);
     char *tox_address = argv[3];
 
-    if (!tox_weechat_bootstrap(address, port, tox_address))
+    if (!tox_weechat_bootstrap_tox(identity->tox, address, port, tox_address))
     {
-        weechat_printf(tox_main_buffer,
+        weechat_printf(identity->buffer,
                        "%sInvalid arguments for bootstrap.",
                        weechat_prefix("error"));
     }
@@ -36,41 +38,46 @@ int
 tox_weechat_cmd_friend(void *data, struct t_gui_buffer *buffer,
                        int argc, char **argv, char **argv_eol)
 {
+    struct t_tox_weechat_identity *identity = tox_weechat_identity_for_buffer(buffer);
+
     // /friend [list]
     if (argc == 1 || (argc == 2 && weechat_strcasecmp(argv[1], "list") == 0))
     {
-        size_t friend_count = tox_count_friendlist(tox);
+        size_t friend_count = tox_count_friendlist(identity->tox);
         int32_t friend_numbers[friend_count];
-        tox_get_friendlist(tox, friend_numbers, friend_count);
+        tox_get_friendlist(identity->tox, friend_numbers, friend_count);
 
         if (friend_count == 0)
         {
-            weechat_printf(tox_main_buffer,
+            weechat_printf(identity->buffer,
                            "%sYou have no friends :(",
                            weechat_prefix("network"));
             return WEECHAT_RC_OK;
         }
 
-        weechat_printf(tox_main_buffer,
+        weechat_printf(identity->buffer,
                        "%s[#] Name [client ID]",
                        weechat_prefix("network"));
 
         for (size_t i = 0; i < friend_count; ++i)
         {
             int32_t friend_number = friend_numbers[i];
-            char *name = tox_weechat_get_name_nt(friend_number);
+            char *name = tox_weechat_get_name_nt(identity->tox, friend_number);
 
             uint8_t client_id[TOX_CLIENT_ID_SIZE];
-            tox_get_client_id(tox, friend_number, client_id);
-            char *hex_id = tox_weechat_bin2hex(client_id, TOX_CLIENT_ID_SIZE);
+            tox_get_client_id(identity->tox, friend_number, client_id);
+            char *hex_address = malloc(TOX_CLIENT_ID_SIZE * 2 + 1);
+            tox_weechat_bin2hex(client_id,
+                                TOX_CLIENT_ID_SIZE,
+                                hex_address);
 
-            weechat_printf(tox_main_buffer,
+            weechat_printf(identity->buffer,
                            "%s[%d] %s [%s]",
                            weechat_prefix("network"),
-                           friend_number, name, hex_id);
+                           friend_number, name, hex_address);
 
             free(name);
-            free(hex_id);
+            free(hex_address);
         }
 
         return WEECHAT_RC_OK;
@@ -78,7 +85,8 @@ tox_weechat_cmd_friend(void *data, struct t_gui_buffer *buffer,
 
     if (argc >= 3 && (weechat_strcasecmp(argv[1], "add") == 0))
     {
-        uint8_t *address = tox_weechat_hex2bin(argv[2]);
+        char *address = malloc(TOX_FRIEND_ADDRESS_SIZE);
+        tox_weechat_hex2bin(argv[2], address);
 
         char *message;
         if (argc == 3 || strlen(argv_eol[3]) == 0)
@@ -86,46 +94,46 @@ tox_weechat_cmd_friend(void *data, struct t_gui_buffer *buffer,
         else
             message = argv_eol[3];
 
-        int32_t result = tox_add_friend(tox,
-                                        address,
+        int32_t result = tox_add_friend(identity->tox,
+                                        (uint8_t *)address,
                                         (uint8_t *)message,
                                         strlen(message));
 
         switch (result)
         {
             case TOX_FAERR_TOOLONG:
-                weechat_printf(tox_main_buffer,
+                weechat_printf(identity->buffer,
                                "%sFriend request message too long! Try again.",
                                weechat_prefix("error"));
                 break;
             case TOX_FAERR_ALREADYSENT:
-                weechat_printf(tox_main_buffer,
+                weechat_printf(identity->buffer,
                                "%sYou have already sent a friend request to that address.",
                                weechat_prefix("error"));
                 break;
             case TOX_FAERR_OWNKEY:
-                weechat_printf(tox_main_buffer,
+                weechat_printf(identity->buffer,
                                "%sYou can't add yourself as a friend.",
                                weechat_prefix("error"));
                 break;
             case TOX_FAERR_BADCHECKSUM:
-                weechat_printf(tox_main_buffer,
+                weechat_printf(identity->buffer,
                                "%sInvalid friend address - try again.",
                                weechat_prefix("error"));
                 break;
             case TOX_FAERR_NOMEM:
-                weechat_printf(tox_main_buffer,
+                weechat_printf(identity->buffer,
                                "%sCould not add friend (out of memory).",
                                weechat_prefix("error"));
                 break;
             case TOX_FAERR_UNKNOWN:
             case TOX_FAERR_SETNEWNOSPAM:
-                weechat_printf(tox_main_buffer,
+                weechat_printf(identity->buffer,
                                "%sCould not add friend (unknown error).",
                                weechat_prefix("error"));
                 break;
             default:
-                weechat_printf(tox_main_buffer,
+                weechat_printf(identity->buffer,
                                "%sFriend request sent!",
                                weechat_prefix("network"));
                 break;
@@ -140,27 +148,29 @@ tox_weechat_cmd_friend(void *data, struct t_gui_buffer *buffer,
         char *endptr;
         unsigned long friend_number = strtoul(argv[2], &endptr, 10);
 
-        if (endptr == argv[2] || !tox_friend_exists(tox, friend_number))
+        if (endptr == argv[2] || !tox_friend_exists(identity->tox, friend_number))
         {
-            weechat_printf(tox_main_buffer,
+            weechat_printf(identity->buffer,
                            "%sInvalid friend number.",
                            weechat_prefix("error"));
             return WEECHAT_RC_OK;
         }
 
-        char *name = tox_weechat_get_name_nt(friend_number);
-        if (tox_del_friend(tox, friend_number) == 0)
+        char *name = tox_weechat_get_name_nt(identity->tox, friend_number);
+        if (tox_del_friend(identity->tox, friend_number) == 0)
         {
-            weechat_printf(tox_main_buffer,
+            weechat_printf(identity->buffer,
                            "%sRemoved %s from friend list.",
                            weechat_prefix("network"), name);
         }
         else
         {
-            weechat_printf(tox_main_buffer,
+            weechat_printf(identity->buffer,
                            "%sCould not remove friend!",
                            weechat_prefix("error"));
         }
+
+        free(name);
 
         return WEECHAT_RC_OK;
     }
@@ -172,11 +182,11 @@ tox_weechat_cmd_friend(void *data, struct t_gui_buffer *buffer,
     {
         int accept = weechat_strcasecmp(argv[1], "accept") == 0;
 
-        struct t_tox_friend_request *request;
+        struct t_tox_weechat_friend_request *request;
         if (weechat_strcasecmp(argv[2], "all") == 0)
         {
             int count = 0;
-            while ((request = tox_weechat_friend_request_with_num(1)) != NULL)
+            while ((request = tox_weechat_friend_request_with_num(identity, 1)) != NULL)
             {
                 if (accept)
                     tox_weechat_accept_friend_request(request);
@@ -186,7 +196,7 @@ tox_weechat_cmd_friend(void *data, struct t_gui_buffer *buffer,
                 ++count;
             }
 
-            weechat_printf(tox_main_buffer,
+            weechat_printf(identity->buffer,
                            "%s%s %d friend requests.",
                            weechat_prefix("network"),
                            accept ? "Accepted" : "Declined",
@@ -197,27 +207,30 @@ tox_weechat_cmd_friend(void *data, struct t_gui_buffer *buffer,
         else
         {
             unsigned int num = atoi(argv[2]);
-            if (num == 0 || (request = tox_weechat_friend_request_with_num(num)) == NULL)
+            if (num == 0 || (request = tox_weechat_friend_request_with_num(identity, num)) == NULL)
             {
-                weechat_printf(tox_main_buffer,
+                weechat_printf(identity->buffer,
                                "%sInvalid friend request ID.",
                                weechat_prefix("error"));
                 return WEECHAT_RC_OK;
             }
 
-            char *hex_id = tox_weechat_bin2hex(request->address, TOX_CLIENT_ID_SIZE);
+            char *hex_address = malloc(TOX_CLIENT_ID_SIZE * 2 + 1);
+            tox_weechat_bin2hex(request->address,
+                                TOX_CLIENT_ID_SIZE,
+                                hex_address);
 
             if (accept)
                 tox_weechat_accept_friend_request(request);
             else
                 tox_weechat_decline_friend_request(request);
 
-            weechat_printf(tox_main_buffer,
+            weechat_printf(identity->buffer,
                            "%s%s friend request from %s.",
                            weechat_prefix("network"),
                            accept ? "Accepted" : "Declined",
-                           hex_id);
-            free(hex_id);
+                           hex_address);
+            free(hex_address);
 
             return WEECHAT_RC_OK;
         }
@@ -225,25 +238,29 @@ tox_weechat_cmd_friend(void *data, struct t_gui_buffer *buffer,
 
     if (argc == 2 && weechat_strcasecmp(argv[1], "requests") == 0)
     {
-        struct t_tox_friend_request *request = tox_weechat_first_friend_request();
-        if (request == NULL)
+        if (identity->friend_requests == NULL)
         {
-            weechat_printf(tox_main_buffer,
+            weechat_printf(identity->buffer,
                            "%sNo pending friend requests :(",
                            weechat_prefix("network"));
         }
         else
         {
-            weechat_printf(tox_main_buffer,
+            weechat_printf(identity->buffer,
                            "%sPending friend requests:",
                            weechat_prefix("network"));
 
             unsigned int num = 1;
-            while (request)
+            for (struct t_tox_weechat_friend_request *request = identity->friend_requests;
+                 request;
+                 request = request->next_request)
             {
-                char *hex_address = tox_weechat_bin2hex(request->address,
-                                                        TOX_CLIENT_ID_SIZE);
-                weechat_printf(tox_main_buffer,
+                char *hex_address = malloc(TOX_CLIENT_ID_SIZE * 2 + 1);
+                tox_weechat_bin2hex(request->address,
+                                    TOX_CLIENT_ID_SIZE,
+                                    hex_address);
+
+                weechat_printf(identity->buffer,
                                "%s[%d] Address: %s\n"
                                "[%d] Message: %s",
                                weechat_prefix("network"),
@@ -252,7 +269,6 @@ tox_weechat_cmd_friend(void *data, struct t_gui_buffer *buffer,
 
                 free(hex_address);
 
-                request = request->next;
                 ++num;
             }
         }
@@ -270,14 +286,16 @@ tox_weechat_cmd_me(void *data, struct t_gui_buffer *buffer,
     if (argc == 1)
         return WEECHAT_RC_ERROR;
 
-    struct t_tox_chat *chat = tox_weechat_get_chat_for_buffer(buffer);
+    struct t_tox_weechat_identity *identity = tox_weechat_identity_for_buffer(buffer);
 
-    tox_send_action(tox,
+    struct t_tox_weechat_chat *chat = tox_weechat_get_chat_for_buffer(buffer);
+
+    tox_send_action(identity->tox,
                     chat->friend_number,
                     (uint8_t *)argv_eol[1],
                     strlen(argv_eol[1]));
 
-    char *name = tox_weechat_get_self_name_nt();
+    char *name = tox_weechat_get_self_name_nt(identity->tox);
     tox_weechat_chat_print_action(chat, name, argv_eol[1]);
 
     free(name);
@@ -292,25 +310,27 @@ tox_weechat_cmd_msg(void *data, struct t_gui_buffer *buffer,
     if (argc == 1)
         return WEECHAT_RC_ERROR;
 
+    struct t_tox_weechat_identity *identity = tox_weechat_identity_for_buffer(buffer);
+
     char *endptr;
     unsigned long friend_number = strtoul(argv[1], &endptr, 10);
 
-    if (endptr == argv[1] || !tox_friend_exists(tox, friend_number))
+    if (endptr == argv[1] || !tox_friend_exists(identity->tox, friend_number))
     {
-        weechat_printf(tox_main_buffer,
+        weechat_printf(identity->buffer,
                        "%sInvalid friend number.",
                        weechat_prefix("error"));
         return WEECHAT_RC_OK;
     }
 
-    struct t_tox_chat *chat = tox_weechat_get_friend_chat(friend_number);
+    struct t_tox_weechat_chat *chat = tox_weechat_get_friend_chat(identity, friend_number);
     if (argc >= 3)
     {
-        tox_send_message(tox,
+        tox_send_message(identity->tox,
                          friend_number,
                          (uint8_t *)argv_eol[1],
                          strlen(argv_eol[2]));
-        char *name = tox_weechat_get_self_name_nt();
+        char *name = tox_weechat_get_self_name_nt(identity->tox);
         tox_weechat_chat_print_message(chat, name, argv_eol[1]);
         free(name);
     }
@@ -322,12 +342,15 @@ int
 tox_weechat_cmd_myaddress(void *data, struct t_gui_buffer *buffer,
                           int argc, char **argv, char **argv_eol)
 {
+    struct t_tox_weechat_identity *identity = tox_weechat_identity_for_buffer(buffer);
+
     uint8_t address[TOX_FRIEND_ADDRESS_SIZE];
-    tox_get_address(tox, address);
+    tox_get_address(identity->tox, address);
 
-    char *address_str = tox_weechat_bin2hex(address, TOX_FRIEND_ADDRESS_SIZE);
+    char *address_str = malloc(TOX_FRIEND_ADDRESS_SIZE * 2 + 1);
+    tox_weechat_bin2hex(address, TOX_FRIEND_ADDRESS_SIZE, address_str);
 
-    weechat_printf(tox_main_buffer,
+    weechat_printf(identity->buffer,
                    "%sYour Tox address: %s",
                    weechat_prefix("network"),
                    address_str);
@@ -344,12 +367,14 @@ tox_weechat_cmd_name(void *data, struct t_gui_buffer *buffer,
     if (argc == 1)
         return WEECHAT_RC_ERROR;
 
+    struct t_tox_weechat_identity *identity = tox_weechat_identity_for_buffer(buffer);
+
     char *name = argv_eol[1];
 
-    int result = tox_set_name(tox, (uint8_t *)name, strlen(name));
+    int result = tox_set_name(identity->tox, (uint8_t *)name, strlen(name));
     if (result == -1)
     {
-        weechat_printf(tox_main_buffer,
+        weechat_printf(identity->buffer,
                        "%s%s",
                        weechat_prefix("error"),
                        "Could not change name.");
@@ -358,14 +383,14 @@ tox_weechat_cmd_name(void *data, struct t_gui_buffer *buffer,
 
     weechat_bar_item_update("input_prompt");
 
-    weechat_printf(tox_main_buffer,
+    weechat_printf(identity->buffer,
                    "%sYou are now known as %s",
                    weechat_prefix("network"),
                    name);
 
-    for (struct t_tox_chat *chat = tox_weechat_get_first_chat();
+    for (struct t_tox_weechat_chat *chat = identity->chats;
          chat;
-         chat = chat->next)
+         chat = chat->next_chat)
     {
         weechat_printf(chat->buffer,
                        "%sYou are now known as %s",
@@ -383,6 +408,8 @@ tox_weechat_cmd_status(void *data, struct t_gui_buffer *buffer,
     if (argc != 2)
         return WEECHAT_RC_ERROR;
 
+    struct t_tox_weechat_identity *identity = tox_weechat_identity_for_buffer(buffer);
+
     TOX_USERSTATUS status = TOX_USERSTATUS_INVALID;
     if (weechat_strcasecmp(argv[1], "online") == 0)
         status = TOX_USERSTATUS_NONE;
@@ -394,7 +421,7 @@ tox_weechat_cmd_status(void *data, struct t_gui_buffer *buffer,
     if (status == TOX_USERSTATUS_INVALID)
         return WEECHAT_RC_ERROR;
 
-    tox_set_user_status(tox, status);
+    tox_set_user_status(identity->tox, status);
     weechat_bar_item_update("away");
 
     return WEECHAT_RC_OK;
@@ -404,12 +431,16 @@ int
 tox_weechat_cmd_statusmsg(void *data, struct t_gui_buffer *buffer,
                           int argc, char **argv, char **argv_eol)
 {
+    struct t_tox_weechat_identity *identity = tox_weechat_identity_for_buffer(buffer);
+
     char *message = argc > 1 ? argv_eol[1] : " ";
 
-    int result = tox_set_status_message(tox, (uint8_t *)message, strlen(message));
+    int result = tox_set_status_message(identity->tox,
+                                        (uint8_t *)message,
+                                        strlen(message));
     if (result == -1)
     {
-        weechat_printf(tox_main_buffer,
+        weechat_printf(identity->buffer,
                        "%s%s",
                        weechat_prefix("error"),
                        "Could not set status message.");

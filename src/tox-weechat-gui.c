@@ -7,6 +7,7 @@
 
 #include "tox-weechat.h"
 #include "tox-weechat-utils.h"
+#include "tox-weechat-tox.h"
 
 #include "tox-weechat-gui.h"
 
@@ -17,8 +18,10 @@ bar_item_away(void *data,
               struct t_gui_buffer *buffer,
               struct t_hashtable *extra_info)
 {
+    struct t_tox_weechat_identity *identity = tox_weechat_identity_for_buffer(buffer);
+
     char *status = NULL;;
-    switch (tox_get_self_user_status(tox))
+    switch (tox_get_self_user_status(identity->tox))
     {
         case TOX_USERSTATUS_BUSY:
             status = strdup("busy");
@@ -38,21 +41,24 @@ bar_item_input_prompt(void *data,
                       struct t_gui_buffer *buffer,
                       struct t_hashtable *extra_info)
 {
-    return tox_weechat_get_self_name_nt();
+    struct t_tox_weechat_identity *identity = tox_weechat_identity_for_buffer(buffer);
+    return tox_weechat_get_self_name_nt(identity->tox);
 }
 
 char *
 bar_item_buffer_plugin(void *data, struct t_gui_bar_item *item,
-                           struct t_gui_window *window,
-                           struct t_gui_buffer *buffer,
-                           struct t_hashtable *extra_info)
+                       struct t_gui_window *window,
+                       struct t_gui_buffer *buffer,
+                       struct t_hashtable *extra_info)
 {
+    struct t_tox_weechat_identity *identity = tox_weechat_identity_for_buffer(buffer);
+
     char string[256];
 
     const char *name = weechat_plugin_get_name(weechat_plugin);
 
-    const char *status = tox_weechat_online_status ? "online" : "offline";
-    const char *color = weechat_color(tox_weechat_online_status ? "green" : "red");
+    const char *status = identity->is_connected ? "online" : "offline";
+    const char *color = weechat_color(identity->is_connected ? "green" : "red");
 
     snprintf(string, sizeof(string),
              "%s %s%s", name, color, status);

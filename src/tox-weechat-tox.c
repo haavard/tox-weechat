@@ -10,6 +10,7 @@
 #include "tox-weechat.h"
 #include "tox-weechat-utils.h"
 #include "tox-weechat-chats.h"
+#include "tox-weechat-friend-requests.h"
 
 #include "tox-weechat-tox.h"
 
@@ -19,26 +20,23 @@
 #define BOOTSTRAP_PORT 33445
 #define BOOTSTRAP_KEY "951C88B7E75C867418ACDB5D273821372BB5BD652740BCDF623A4FA293E75D2F"
 
-Tox *tox = NULL;
-
 struct t_tox_weechat_identity *tox_weechat_identities = NULL;
+struct t_tox_weechat_identity *tox_weechat_last_identity = NULL;
 
-/**
- * Return the path to the Tox data file. Must be freed.
- */
 char *
-tox_weechat_data_path()
+tox_weechat_default_data_path(const char *name)
 {
     const char *weechat_dir = weechat_info_get("weechat_dir", NULL);
-    const char *file_path = "/tox/data";
+    const char *tox_dir = "/tox/";
 
     weechat_mkdir_home("tox", 0755);
 
-    int path_length = strlen(weechat_dir) + strlen(file_path) + 1;
-    char *tox_data_path = malloc(path_length);
+    int path_length = strlen(weechat_dir) + strlen(tox_dir) + strlen(name) + 1;
+    char *tox_data_path = malloc(sizeof(*tox_data_path) + path_length);
 
     strcpy(tox_data_path, weechat_dir);
-    strcat(tox_data_path, file_path);
+    strcat(tox_data_path, tox_dir);
+    strcat(tox_data_path, name);
     tox_data_path[path_length-1] = 0;
 
     return tox_data_path;
@@ -88,7 +86,6 @@ tox_weechat_do_timer_cb(void *data,
     if (connected ^ identity->is_connected)
     {
         identity->is_connected = connected;
-        tox_weechat_online_status = connected;
         weechat_bar_item_update("buffer_plugin");
     }
 
@@ -98,7 +95,7 @@ tox_weechat_do_timer_cb(void *data,
 int
 tox_weechat_chat_refresh_timer_callback(void *data, int remaining)
 {
-    struct t_tox_chat *chat = data;
+    struct t_tox_weechat_chat *chat = data;
     tox_weechat_chat_refresh(chat);
 
     return WEECHAT_RC_OK;
@@ -111,9 +108,11 @@ tox_weechat_friend_message_callback(Tox *tox,
                                     uint16_t length,
                                     void *data)
 {
-    struct t_tox_chat *chat = tox_weechat_get_friend_chat(friend_number);
+    struct t_tox_weechat_identity *identity = data;
+    struct t_tox_weechat_chat *chat = tox_weechat_get_friend_chat(identity,
+                                                                  friend_number);
 
-    char *name = tox_weechat_get_name_nt(friend_number);
+    char *name = tox_weechat_get_name_nt(identity->tox, friend_number);
     char *message_nt = tox_weechat_null_terminate(message, length);
 
     tox_weechat_chat_print_message(chat, name, message_nt);
@@ -129,9 +128,11 @@ tox_weechat_friend_action_callback(Tox *tox,
                                    uint16_t length,
                                    void *data)
 {
-    struct t_tox_chat *chat = tox_weechat_get_friend_chat(friend_number);
+    struct t_tox_weechat_identity *identity = data;
+    struct t_tox_weechat_chat *chat = tox_weechat_get_friend_chat(identity,
+                                                                  friend_number);
 
-    char *name = tox_weechat_get_name_nt(friend_number);
+    char *name = tox_weechat_get_name_nt(identity->tox, friend_number);
     char *message_nt = tox_weechat_null_terminate(message, length);
 
     tox_weechat_chat_print_action(chat, name, message_nt);
@@ -148,9 +149,10 @@ tox_weechat_connection_status_callback(Tox *tox,
 {
     if (status == 1)
     {
-        char *name = tox_weechat_get_name_nt(friend_number);
+        struct t_tox_weechat_identity *identity = data;
+        char *name = tox_weechat_get_name_nt(identity->tox, friend_number);
 
-        weechat_printf(tox_main_buffer,
+        weechat_printf(identity->buffer,
                        "%s%s just went online!",
                        weechat_prefix("network"),
                        name);
@@ -165,30 +167,34 @@ tox_weechat_name_change_callback(Tox *tox,
                                  uint16_t length,
                                  void *data)
 {
-    struct t_tox_chat *chat = tox_weechat_get_existing_friend_chat(friend_number);
-    if (chat)
+    struct t_tox_weechat_identity *identity = data;
+    struct t_tox_weechat_chat *chat = tox_weechat_get_existing_friend_chat(identity,
+                                                                           friend_number);
+
+    char *old_name = tox_weechat_get_name_nt(identity->tox, friend_number);
+    char *new_name = tox_weechat_null_terminate(name, length);
+
+    if (strcmp(old_name, new_name) != 0)
     {
-        weechat_hook_timer(10, 0, 1,
-                           tox_weechat_chat_refresh_timer_callback, chat);
-
-        char *old_name = tox_weechat_get_name_nt(friend_number);
-        char *new_name = tox_weechat_null_terminate(name, length);
-
-        if (strcmp(old_name, new_name) != 0)
+        if (chat)
         {
-            weechat_printf(chat->buffer,
-                           "%s%s is now known as %s",
-                           weechat_prefix("network"),
-                           old_name, new_name);
-            weechat_printf(tox_main_buffer,
-                           "%s%s is now known as %s",
-                           weechat_prefix("network"),
-                           old_name, new_name);
-        }
+            weechat_hook_timer(10, 0, 1,
+                               tox_weechat_chat_refresh_timer_callback, chat);
 
-        free(old_name);
-        free(new_name);
+                weechat_printf(chat->buffer,
+                               "%s%s is now known as %s",
+                               weechat_prefix("network"),
+                               old_name, new_name);
+        }
     }
+
+    weechat_printf(identity->buffer,
+                   "%s%s is now known as %s",
+                   weechat_prefix("network"),
+                   old_name, new_name);
+
+    free(old_name);
+    free(new_name);
 }
 
 void
@@ -197,7 +203,9 @@ tox_weechat_user_status_callback(Tox *tox,
                                  uint8_t status,
                                  void *data)
 {
-    struct t_tox_chat *chat = tox_weechat_get_existing_friend_chat(friend_number);
+    struct t_tox_weechat_identity *identity = data;
+    struct t_tox_weechat_chat *chat = tox_weechat_get_existing_friend_chat(identity,
+                                                                           friend_number);
     if (chat)
         weechat_hook_timer(10, 0, 1,
                            tox_weechat_chat_refresh_timer_callback, chat);
@@ -210,17 +218,59 @@ tox_weechat_status_message_callback(Tox *tox,
                                     uint16_t length,
                                     void *data)
 {
-    struct t_tox_chat *chat = tox_weechat_get_existing_friend_chat(friend_number);
+    struct t_tox_weechat_identity *identity = data;
+    struct t_tox_weechat_chat *chat = tox_weechat_get_existing_friend_chat(identity,
+                                                                           friend_number);
     if (chat)
         weechat_hook_timer(10, 0, 1,
                            tox_weechat_chat_refresh_timer_callback, chat);
 }
 
+void
+tox_weechat_callback_friend_request(Tox *tox,
+                                    const uint8_t *public_key,
+                                    const uint8_t *message,
+                                    uint16_t length,
+                                    void *data)
+{
+    struct t_tox_weechat_identity *identity = data;
+    if (identity->friend_request_count >= identity->max_friend_requests)
+    {
+        weechat_printf(identity->buffer,
+                       "%sReceived a friend request, but your friend request "
+                       "list is full!",
+                       weechat_prefix("warning"));
+        return;
+    }
+    struct t_tox_weechat_friend_request *request = malloc(sizeof(*request));
+
+    memcpy(request->address, public_key, TOX_CLIENT_ID_SIZE);
+    request->message = tox_weechat_null_terminate(message, length);
+
+    tox_weechat_friend_request_add(identity, request);
+
+    char *hex_address = malloc(TOX_CLIENT_ID_SIZE * 2 + 1);
+    tox_weechat_bin2hex(request->address, TOX_CLIENT_ID_SIZE, hex_address);
+
+    weechat_printf(identity->buffer,
+                   "%sReceived a friend request from %s: \"%s\"",
+                   weechat_prefix("network"),
+                   hex_address,
+                   request->message);
+
+    free(hex_address);
+}
+
 int
 tox_weechat_bootstrap_tox(Tox *tox, char *address, uint16_t port, char *public_key)
 {
-    uint8_t *binary_key = tox_weechat_hex2bin(public_key);
-    int result = tox_bootstrap_from_address(tox, address, htons(port), binary_key);
+    char *binary_key = malloc(TOX_FRIEND_ADDRESS_SIZE);
+    tox_weechat_hex2bin(public_key, binary_key);
+
+    int result = tox_bootstrap_from_address(tox,
+                                            address,
+                                            htons(port),
+                                            (uint8_t *)binary_key);
     free(binary_key);
 
     return result;
@@ -229,7 +279,7 @@ tox_weechat_bootstrap_tox(Tox *tox, char *address, uint16_t port, char *public_k
 int
 tox_weechat_bootstrap(char *address, uint16_t port, char *public_key)
 {
-    return tox_weechat_bootstrap_tox(tox, address, port, public_key);
+    return tox_weechat_bootstrap_tox(tox_weechat_identities->tox, address, port, public_key);
 }
 
 void
@@ -241,22 +291,36 @@ tox_weechat_tox_init()
 
     tox_weechat_init_identity(identity);
 
-    tox = identity->tox;
-    tox_main_buffer = identity->buffer;
-
     tox_weechat_identities = identity;
+}
+
+struct t_tox_weechat_identity *
+tox_weechat_identity_new(const char *name)
+{
+    struct t_tox_weechat_identity *identity = malloc(sizeof(*identity));
+    identity->name = strdup(name);
+
+    // TODO: add close callback
+    identity->buffer = weechat_buffer_new(identity->name, NULL, NULL, NULL, NULL);
+
+    identity->tox = tox_new(NULL);
+
+    identity->prev_identity= tox_weechat_last_identity;
+    identity->next_identity = NULL;
+
+    if (tox_weechat_identities == NULL)
+        tox_weechat_identities = identity;
+    else
+        tox_weechat_last_identity->next_identity = identity;
+
+    tox_weechat_last_identity = identity;
+
+    return identity;
 }
 
 void
 tox_weechat_init_identity(struct t_tox_weechat_identity *identity)
 {
-    // create weechat buffer
-    // TODO: add close callback
-    identity->buffer = weechat_buffer_new(identity->name, NULL, NULL, NULL, NULL);
-
-    // initialize Tox
-    identity->tox = tox_new(NULL);
-
     // try loading Tox saved data
     if (tox_weechat_load_file(identity->tox, identity->data_path) == -1)
     {
@@ -280,6 +344,29 @@ tox_weechat_init_identity(struct t_tox_weechat_identity *identity)
     tox_callback_name_change(identity->tox, tox_weechat_name_change_callback, identity);
     tox_callback_user_status(identity->tox, tox_weechat_user_status_callback, identity);
     tox_callback_status_message(identity->tox, tox_weechat_status_message_callback, identity);
+    tox_callback_friend_request(identity->tox, tox_weechat_callback_friend_request, identity);
+}
+
+struct t_tox_weechat_identity *
+tox_weechat_identity_for_buffer(struct t_gui_buffer *buffer)
+{
+    for (struct t_tox_weechat_identity *identity = tox_weechat_identities;
+         identity;
+         identity = identity->next_identity)
+    {
+        if (identity->buffer == buffer)
+            return identity;
+
+        for (struct t_tox_weechat_chat *chat = identity->chats;
+             chat;
+             chat = chat->next_chat)
+        {
+            if (chat->buffer == buffer)
+                return identity;
+        }
+    }
+
+    return NULL;
 }
 
 void

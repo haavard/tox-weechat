@@ -27,7 +27,6 @@ weechat_plugin_init(struct t_weechat_plugin *plugin, int argc, char *argv[])
     tox_weechat_tox_init();
     tox_weechat_commands_init();
     tox_weechat_gui_init();
-    tox_weechat_friend_requests_init();
 
     return WEECHAT_RC_OK;
 }
@@ -36,7 +35,6 @@ int
 weechat_plugin_end(struct t_weechat_plugin *plugin)
 {
     tox_weechat_tox_free();
-    tox_weechat_friend_requests_free();
 
     return WEECHAT_RC_OK;
 }
