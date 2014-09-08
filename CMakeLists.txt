@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 2.8.7)
 
 project(tox-weechat)
 
-add_library(tox SHARED
+add_library(tox MODULE
     src/tox-weechat.c
     src/tox-weechat-tox.c
     src/tox-weechat-utils.c
