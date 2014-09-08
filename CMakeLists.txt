@@ -11,7 +11,9 @@ add_library(tox SHARED
     src/tox-weechat-chats.c
     src/tox-weechat-friend-requests.c
 )
-add_definitions(-std=c99 -D_GNU_SOURCE)
+add_definitions(-D_GNU_SOURCE)
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -std=c99 -Wall -Wextra -Werror-implicit-function-declaration -Wno-unused-parameter")
+
 target_link_libraries(tox toxcore)
 
 # remove lib prefix (libtox.so -> tox.so)
