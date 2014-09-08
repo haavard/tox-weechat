@@ -18,7 +18,7 @@ This builds the plugin binary `tox.so`. Copy/move this file to `~/.weechat/plugi
 
 Usage
 -----
-In WeeChat, load the plugin: `/plugin load tox` (`/plugin load tox.dylib` on OSX). You should get a new buffer called tox. This is the core Tox buffer, where output from commands will print.
+In WeeChat, load the plugin: `/plugin load tox`. You should get a new buffer called tox. This is the core Tox buffer, where output from commands will print.
 
  - To change your name, `/name <new name>`.
  - Get your Tox address with `/myaddress`.
