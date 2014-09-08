@@ -20,6 +20,9 @@ bar_item_away(void *data,
 {
     struct t_tox_weechat_identity *identity = tox_weechat_identity_for_buffer(buffer);
 
+    if (!identity)
+        return NULL;
+
     char *status = NULL;;
     switch (tox_get_self_user_status(identity->tox))
     {
