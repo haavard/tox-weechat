@@ -285,13 +285,7 @@ tox_weechat_bootstrap(char *address, uint16_t port, char *public_key)
 void
 tox_weechat_tox_init()
 {
-    struct t_tox_weechat_identity *identity = malloc(sizeof(*identity));
-    identity->name = strdup("tox");
-    identity->data_path = tox_weechat_default_data_path("tox");
-
-    tox_weechat_init_identity(identity);
-
-    tox_weechat_identities = identity;
+    tox_weechat_identity_new("tox");
 }
 
 struct t_tox_weechat_identity *
@@ -299,11 +293,20 @@ tox_weechat_identity_new(const char *name)
 {
     struct t_tox_weechat_identity *identity = malloc(sizeof(*identity));
     identity->name = strdup(name);
+    identity->data_path = tox_weechat_default_data_path("tox");
 
     // TODO: add close callback
     identity->buffer = weechat_buffer_new(identity->name, NULL, NULL, NULL, NULL);
 
     identity->tox = tox_new(NULL);
+
+    // try loading Tox saved data
+    if (tox_weechat_load_file(identity->tox, identity->data_path) == -1)
+    {
+        // couldn't load Tox, set a default name
+        tox_set_name(identity->tox,
+                     (uint8_t *)INITIAL_NAME, strlen(INITIAL_NAME));
+    }
 
     identity->prev_identity= tox_weechat_last_identity;
     identity->next_identity = NULL;
@@ -314,20 +317,6 @@ tox_weechat_identity_new(const char *name)
         tox_weechat_last_identity->next_identity = identity;
 
     tox_weechat_last_identity = identity;
-
-    return identity;
-}
-
-void
-tox_weechat_init_identity(struct t_tox_weechat_identity *identity)
-{
-    // try loading Tox saved data
-    if (tox_weechat_load_file(identity->tox, identity->data_path) == -1)
-    {
-        // couldn't load Tox, set a default name
-        tox_set_name(identity->tox,
-                     (uint8_t *)INITIAL_NAME, strlen(INITIAL_NAME));
-    }
 
     // bootstrap DHT
     tox_weechat_bootstrap_tox(identity->tox, BOOTSTRAP_ADDRESS,
@@ -345,6 +334,8 @@ tox_weechat_init_identity(struct t_tox_weechat_identity *identity)
     tox_callback_user_status(identity->tox, tox_weechat_user_status_callback, identity);
     tox_callback_status_message(identity->tox, tox_weechat_status_message_callback, identity);
     tox_callback_friend_request(identity->tox, tox_weechat_callback_friend_request, identity);
+
+    return identity;
 }
 
 struct t_tox_weechat_identity *

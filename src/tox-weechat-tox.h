@@ -36,7 +36,8 @@ void tox_weechat_tox_init();
 
 struct t_tox_weechat_identity *tox_weechat_identity_for_buffer(struct t_gui_buffer *buffer);
 
-void tox_weechat_init_identity(struct t_tox_weechat_identity *identity);
+struct t_tox_weechat_identity *
+tox_weechat_identity_new(const char *name);
 
 /**
  * Bootstrap DHT using an inet address, port and a Tox address.
