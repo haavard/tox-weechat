@@ -13,9 +13,8 @@ Tox-WeeChat requires [libtoxcore][3] to work. After getting it, install Tox-WeeC
     $ mkdir build && cd build
     $ cmake ..
     $ make
-    $ sudo make install
 
-This places `tox.so` in `/usr/local/lib/weechat/plugins`.
+This builds the plugin binary `tox.so`. Copy/move this file to `~/.weechat/plugins/` (or your equivalent WeeChat home folder) and you're done!
 
 Usage
 -----
