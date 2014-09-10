@@ -6,19 +6,19 @@ Tox-WeeChat is a C plugin for the [WeeChat][1] chat client that enables it to co
 
 Installation
 ------------
-Tox-WeeChat requires [libtoxcore][3] to work. After getting it, install Tox-WeeChat like this:
+Tox-WeeChat requires [libtoxcore][3] (and WeeChat) to work. After getting them, install Tox-WeeChat like this:
 
     $ git clone https://github.com/haavardp/tox-weechat.git
     $ cd tox-weechat
     $ mkdir build && cd build
-    $ cmake ..
-    $ make
+    $ cmake -DHOME_FOLDER_INSTALL=ON ..
+    $ make install
 
-This builds the plugin binary `tox.so`. Copy/move this file to `~/.weechat/plugins/` (or your equivalent WeeChat home folder) and you're done!
+This builds the plugin binary `tox.so` and installs it to `~/.weechat/plugins/`. If your WeeChat home is somewhere else, or you'd like to install the plugin in a different location (e.g. `/usr/local/lib/weechat/plugins`), replace the last command with a simple `make` and manually move `tox.so` to the correct location.
 
 Usage
 -----
-In WeeChat, load the plugin: `/plugin load tox`. You should get a new buffer called tox. This is the core Tox buffer, where output from commands will print.
+In WeeChat, load the plugin: `/plugin load tox`. In cases where WeeChat can't find the plugin, try specifying the full path to the binary. You should get a new buffer called tox. This is the core Tox buffer, where output from commands will appear.
 
  - To change your name, `/name <new name>`.
  - Get your Tox address with `/myaddress`.
