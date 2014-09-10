@@ -1,6 +1,6 @@
 Tox-WeeChat
 ===========
-Tox-WeeChat is a C plugin for the [WeeChat][1] chat client that enables it to connect to the [Tox][2] network. It is functional, but very limited in features right now. Bug reports and suggestions are appreciated.
+Tox-WeeChat is a C plugin for the [WeeChat][1] chat client that enables it to connect to the [Tox][2] network. It is functional, but fairly limited in features for now. Bug reports and suggestions are appreciated.
 
 [![Build Status](https://travis-ci.org/haavardp/tox-weechat.svg?branch=master)](https://travis-ci.org/haavardp/tox-weechat)
 
@@ -26,6 +26,13 @@ In WeeChat, load the plugin: `/plugin load tox`. In cases where WeeChat can't fi
  - Message a friend with `/msg <friend number>`. Get their friend number with `/friend`.
 
 A list of commands is available with `/help -list tox`.
+
+TODO
+----
+ - [ ] Support multiple identities (in progress)
+ - [ ] Preserve friend requests when closing
+ - [ ] Group chats
+ - [ ] Polish and reach a "stable" release
 
 License
 ---------
