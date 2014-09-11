@@ -20,8 +20,8 @@ This installs the plugin binary `tox.so` in the recommended location `~/.weechat
  - To install to `/usr/local/lib/weechat/plugins`: `cmake ..`
  - To install to `/usr/lib/weechat/plugins`: `cmake -DCMAKE_INSTALL_PREFIX=/usr ..`
  - To install a custom path: `cmake -DINSTALL_PATH=/some/path ..`
- 
- You may also need to `sudo make install`, depending on permissions.
+
+You may also need to `sudo make install`, depending on permissions.
 
 Usage
 -----
