@@ -11,16 +11,17 @@ Tox-WeeChat requires [libtoxcore][3] (and WeeChat) to work. After getting them, 
     $ git clone https://github.com/haavardp/tox-weechat.git
     $ cd tox-weechat
     $ mkdir build && cd build
-
-Now, depending on where you want to install the plugin binary:
- - To install to `~/.weechat/plugins` (recommended): `cmake -DHOME_FOLDER_INSTALL=ON ..`
- - To install to `/usr/local/lib/weechat/plugins`: `cmake ..`
- - To install to `/usr/lib/weechat/plugins`: `cmake -DCMAKE_INSTALL_PREFIX=/usr ..`
- - To install somewhere else: `cmake -DINSTALL_PATH=/some/path ..`
-
-Next, install the plugin. You may need sudo for the last command, depending on install location.
+    $ cmake -DHOME_FOLDER_INSTALL=ON ..
     $ make
     $ make install
+
+This installs the plugin binary `tox.so` in the recommended location `~/.weechat/plugins`. To install the plugin somewhere else, replace the cmake command above with either of these:
+
+ - To install to `/usr/local/lib/weechat/plugins`: `cmake ..`
+ - To install to `/usr/lib/weechat/plugins`: `cmake -DCMAKE_INSTALL_PREFIX=/usr ..`
+ - To install a custom path: `cmake -DINSTALL_PATH=/some/path ..`
+ 
+ You may also need to `sudo make install`, depending on permissions.
 
 Usage
 -----
