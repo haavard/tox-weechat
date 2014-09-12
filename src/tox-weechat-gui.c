@@ -58,13 +58,15 @@ bar_item_buffer_plugin(void *data, struct t_gui_bar_item *item,
 
     char string[256];
 
-    const char *name = weechat_plugin_get_name(weechat_plugin);
-
-    const char *status = identity->is_connected ? "online" : "offline";
-    const char *color = weechat_color(identity->is_connected ? "green" : "red");
+    const char *plugin_name = weechat_plugin_get_name(weechat_plugin);
+    const char *identity_name = identity->name;
 
     snprintf(string, sizeof(string),
-             "%s %s%s", name, color, status);
+             "%s%s/%s%s",
+             plugin_name,
+             weechat_color("bar_delim"),
+             weechat_color("bar_fg"),
+             identity_name);
 
     return strdup(string);
 }
