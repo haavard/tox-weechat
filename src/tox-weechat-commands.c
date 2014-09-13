@@ -206,7 +206,7 @@ tox_weechat_cmd_friend(void *data, struct t_gui_buffer *buffer,
         if (weechat_strcasecmp(argv[2], "all") == 0)
         {
             int count = 0;
-            while ((request = tox_weechat_friend_request_with_num(identity, 1)) != NULL)
+            while ((request = tox_weechat_friend_request_with_num(identity, 0)) != NULL)
             {
                 if (accept)
                     tox_weechat_accept_friend_request(request);
@@ -226,8 +226,9 @@ tox_weechat_cmd_friend(void *data, struct t_gui_buffer *buffer,
         }
         else
         {
-            unsigned int num = atoi(argv[2]);
-            if (num == 0 || (request = tox_weechat_friend_request_with_num(identity, num)) == NULL)
+            char *endptr;
+            unsigned long num = strtoul(argv[2], &endptr, 10);
+            if (endptr == argv[2] || (request = tox_weechat_friend_request_with_num(identity, num)) == NULL)
             {
                 weechat_printf(identity->buffer,
                                "%sInvalid friend request ID.",
@@ -270,7 +271,7 @@ tox_weechat_cmd_friend(void *data, struct t_gui_buffer *buffer,
                            "%sPending friend requests:",
                            weechat_prefix("network"));
 
-            unsigned int num = 1;
+            int num = 0;
             for (struct t_tox_weechat_friend_request *request = identity->friend_requests;
                  request;
                  request = request->next_request)

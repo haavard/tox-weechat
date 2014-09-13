@@ -69,9 +69,9 @@ struct t_tox_weechat_friend_request *
 tox_weechat_friend_request_with_num(struct t_tox_weechat_identity *identity,
                                     unsigned int num)
 {
-    if (num < 1 || num > identity->friend_request_count) return NULL;
+    if (num >= identity->friend_request_count) return NULL;
 
-    unsigned int i = 1;
+    unsigned int i = 0;
     struct t_tox_weechat_friend_request *request = identity->friend_requests;
     while (i != num && request->next_request)
     {
