@@ -4,12 +4,16 @@
 #include <tox/tox.h>
 
 #include "tox-weechat.h"
-#include "tox-weechat-tox.h"
 #include "tox-weechat-utils.h"
+#include "tox-weechat-identities.h"
 #include "tox-weechat-chats.h"
 #include "tox-weechat-friend-requests.h"
 
 #include "tox-weechat-commands.h"
+
+// TODO: something
+extern int
+tox_weechat_bootstrap_tox(Tox *tox, char *address, uint16_t port, char *public_key);
 
 int
 tox_weechat_cmd_bootstrap(void *data, struct t_gui_buffer *buffer,

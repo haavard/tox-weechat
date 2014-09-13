@@ -2,7 +2,7 @@
 
 #include <weechat/weechat-plugin.h>
 
-#include "tox-weechat-tox.h"
+#include "tox-weechat-identities.h"
 #include "tox-weechat-commands.h"
 #include "tox-weechat-gui.h"
 #include "tox-weechat-friend-requests.h"
@@ -24,7 +24,8 @@ weechat_plugin_init(struct t_weechat_plugin *plugin, int argc, char *argv[])
 {
     weechat_plugin = plugin;
 
-    tox_weechat_tox_init();
+    struct t_tox_weechat_identity *identity = tox_weechat_identity_new("tox");
+    tox_weechat_identity_connect(identity);
     tox_weechat_commands_init();
     tox_weechat_gui_init();
 
@@ -34,7 +35,7 @@ weechat_plugin_init(struct t_weechat_plugin *plugin, int argc, char *argv[])
 int
 weechat_plugin_end(struct t_weechat_plugin *plugin)
 {
-    tox_weechat_tox_free();
+    tox_weechat_identity_free_all();
 
     return WEECHAT_RC_OK;
 }

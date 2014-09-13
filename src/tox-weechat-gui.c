@@ -6,8 +6,8 @@
 #include <tox/tox.h>
 
 #include "tox-weechat.h"
+#include "tox-weechat-identities.h"
 #include "tox-weechat-utils.h"
-#include "tox-weechat-tox.h"
 
 #include "tox-weechat-gui.h"
 

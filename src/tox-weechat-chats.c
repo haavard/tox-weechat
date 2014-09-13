@@ -5,7 +5,7 @@
 #include <tox/tox.h>
 
 #include "tox-weechat.h"
-#include "tox-weechat-tox.h"
+#include "tox-weechat-identities.h"
 #include "tox-weechat-utils.h"
 
 #include "tox-weechat-chats.h"
@@ -63,6 +63,22 @@ tox_weechat_chat_refresh(struct t_tox_weechat_chat *chat)
 
     free(name);
     free(status_message);
+}
+
+int
+tox_weechat_chat_refresh_timer_callback(void *data, int remaining)
+{
+    struct t_tox_weechat_chat *chat = data;
+    tox_weechat_chat_refresh(chat);
+
+    return WEECHAT_RC_OK;
+}
+
+void
+tox_weechat_chat_queue_refresh(struct t_tox_weechat_chat *chat)
+{
+    weechat_hook_timer(0, 0, 1,
+                       tox_weechat_chat_refresh_timer_callback, chat);
 }
 
 struct t_tox_weechat_chat *

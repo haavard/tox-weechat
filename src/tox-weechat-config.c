@@ -3,7 +3,7 @@
 #include "tox-weechat.h"
 
 struct t_config_file *tox_weechat_config_file = NULL;
-struct t_config_section *tox_weechat_config_section_server = NULL;
+struct t_config_section *tox_weechat_config_section_identity = NULL;
 
 int
 tox_weechat_config_reload_callback(void *data,
@@ -65,7 +65,7 @@ tox_weechat_config_init()
     tox_weechat_config_file = weechat_config_new("tox",
                                                  tox_weechat_config_reload_callback, NULL);
 
-    tox_weechat_config_section_server =
+    tox_weechat_config_section_identity =
         weechat_config_new_section(tox_weechat_config_file, "identity",
                                    0, 0,
                                    tox_weechat_config_identity_read_callback, NULL,
@@ -78,17 +78,17 @@ tox_weechat_config_init()
 }
 
 void
-tox_weechat_config_init_server(const char *name)
+tox_weechat_config_init_identity(const char *name)
 {
      struct t_config_option *option =
          weechat_config_new_option(tox_weechat_config_file,
-                                   tox_weechat_config_section_server,
+                                   tox_weechat_config_section_identity,
                                    "name", "string",
                                    "identity name",
                                    NULL, 0, 0,
                                    name, name,
                                    0,
-                                   tox_weechat_config_server_name_check_callback, NULL,
-                                   tox_weechat_config_server_name_change_callback, NULL,
+                                   tox_weechat_config_identity_name_check_callback, NULL,
+                                   tox_weechat_config_identity_name_change_callback, NULL,
                                    NULL, NULL);
 }
