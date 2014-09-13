@@ -68,6 +68,11 @@ tox_weechat_save_identity_data_file(struct t_tox_weechat_identity *identity)
 {
     char *full_path = tox_weechat_identity_data_file_path(identity);
 
+    char *rightmost_slash = strrchr(full_path, '/');
+    char *save_dir = strndup(full_path, rightmost_slash - full_path);
+    weechat_mkdir_parents(save_dir, 0755);
+    free(save_dir);
+
     // save Tox data to a buffer
     uint32_t size = tox_size(identity->tox);
     uint8_t *data = malloc(sizeof(*data) * size);
