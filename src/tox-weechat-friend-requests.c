@@ -11,8 +11,6 @@
 
 #include "tox-weechat-friend-requests.h"
 
-#define MAX_FRIEND_REQUESTS 250
-
 void
 tox_weechat_friend_request_free(struct t_tox_weechat_friend_request *request)
 {
