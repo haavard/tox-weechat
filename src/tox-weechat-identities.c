@@ -219,7 +219,7 @@ tox_weechat_identity_connect(struct t_tox_weechat_identity *identity)
     for (int i = 0; i < bootstrap_count; ++i)
         tox_weechat_bootstrap_tox(identity->tox, tox_weechat_bootstrap_addresses[i],
                                                  tox_weechat_bootstrap_ports[i],
-                                                 tox_weechat_bootstrap_addresses[i]);
+                                                 tox_weechat_bootstrap_keys[i]);
 
     // start Tox_do loop
     tox_weechat_do_timer_cb(identity, 0);
