@@ -20,6 +20,37 @@
 struct t_tox_weechat_identity *tox_weechat_identities = NULL;
 struct t_tox_weechat_identity *tox_weechat_last_identity = NULL;
 
+char *tox_weechat_bootstrap_addresses[] = {
+    "192.254.75.98",
+    "107.161.17.51",
+    "144.76.60.215",
+    "23.226.230.47",
+    "37.59.102.176",
+    "37.187.46.132",
+    "178.21.112.187",
+    "192.210.149.121",
+    "54.199.139.199",
+    "195.154.119.113",
+};
+
+int tox_weechat_bootstrap_ports[] = {
+    33445, 33445, 33445, 33445, 33445,
+    33445, 33445, 33445, 33445, 33445,
+};
+
+char *tox_weechat_bootstrap_keys[] = {
+    "951C88B7E75C867418ACDB5D273821372BB5BD652740BCDF623A4FA293E75D2F",
+    "7BE3951B97CA4B9ECDDA768E8C52BA19E9E2690AB584787BF4C90E04DBB75111",
+    "04119E835DF3E78BACF0F84235B300546AF8B936F035185E2A8E9E0A67C8924F",
+    "A09162D68618E742FFBCA1C2C70385E6679604B2D80EA6E84AD0996A1AC8A074",
+    "B98A2CEAA6C6A2FADC2C3632D284318B60FE5375CCB41EFA081AB67F500C1B0B",
+    "5EB67C51D3FF5A9D528D242B669036ED2A30F8A60E674C45E7D43010CB2E1331",
+    "4B2C19E924972CB9B57732FB172F8A8604DE13EEDA2A6234E348983344B23057",
+    "F404ABAA1C99A9D37D61AB54898F56793E1DEF8BD46B1038B9D822E8460FAB67",
+    "7F9C31FE850E97CEFD4C4591DF93FC757C7C12549DDD55F8EEAECC34FE76C029",
+    "E398A69646B8CEACA9F0B84F553726C1C49270558C57DF5F3C368F05A7D71354",
+};
+
 char *
 tox_weechat_identity_data_file_path(struct t_tox_weechat_identity *identity)
 {
@@ -103,9 +134,6 @@ tox_weechat_identity_buffer_close_callback(void *data,
     return WEECHAT_RC_OK;
 }
 
-#define BOOTSTRAP_ADDRESS "192.254.75.98"
-#define BOOTSTRAP_PORT 33445
-#define BOOTSTRAP_KEY "951C88B7E75C867418ACDB5D273821372BB5BD652740BCDF623A4FA293E75D2F"
 
 int
 tox_weechat_bootstrap_tox(Tox *tox, char *address, uint16_t port, char *public_key)
@@ -187,9 +215,11 @@ tox_weechat_identity_connect(struct t_tox_weechat_identity *identity)
     }
 
     // bootstrap DHT
-    tox_weechat_bootstrap_tox(identity->tox, BOOTSTRAP_ADDRESS,
-                                             BOOTSTRAP_PORT,
-                                             BOOTSTRAP_KEY);
+    int bootstrap_count = sizeof(tox_weechat_bootstrap_addresses)/sizeof(tox_weechat_bootstrap_addresses[0]);
+    for (int i = 0; i < bootstrap_count; ++i)
+        tox_weechat_bootstrap_tox(identity->tox, tox_weechat_bootstrap_addresses[i],
+                                                 tox_weechat_bootstrap_ports[i],
+                                                 tox_weechat_bootstrap_addresses[i]);
 
     // start Tox_do loop
     tox_weechat_do_timer_cb(identity, 0);
