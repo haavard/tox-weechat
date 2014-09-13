@@ -26,7 +26,6 @@ tox_weechat_do_timer_cb(void *data,
 
         // check connection status
         int connected = tox_isconnected(identity->tox);
-        weechat_printf(NULL, "%p connected: %d", identity->tox, connected);
         if (connected ^ identity->tox_online)
         {
             identity->tox_online = connected;
