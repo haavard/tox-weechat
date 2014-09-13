@@ -25,10 +25,10 @@ You may also need to `sudo make install`, depending on permissions.
 
 Usage
 -----
-In WeeChat, load the plugin: `/plugin load tox`. In cases where WeeChat can't find the plugin, try specifying the full path to the binary. You should get a new buffer called tox. This is the core Tox buffer, where output from commands will appear.
-
  - In WeeChat, load the plugin with `/plugin load tox`. If it fails, try specifying the full path to the binary.
- - Create a new identity with `/tox add <name>`. The data file is created in `<WeeChat home>/tox/<name>` by default. Can be changed with `/set tox.identity.<name>.save_file`.
+ - Create a new identity with `/tox add <name>`.
+   - The data file is created in `<WeeChat home>/tox/<name>` by default.
+   - Can be changed with `/set tox.identity.<name>.save_file`.
  - Connect your new identity to the Tox network with `/tox connect <name>`.
 
 The following commands must be executed on a Tox buffer:
