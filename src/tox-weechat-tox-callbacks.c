@@ -17,15 +17,21 @@ tox_weechat_do_timer_cb(void *data,
 {
     struct t_tox_weechat_identity *identity = data;
 
-    tox_do(identity->tox);
-    weechat_hook_timer(tox_do_interval(identity->tox), 0, 1,
-                       tox_weechat_do_timer_cb, identity);
-
-    // check connection status
-    int connected = tox_isconnected(identity->tox);
-    if (connected ^ identity->is_connected)
+    if (identity->tox)
     {
-        identity->is_connected = connected;
+        tox_do(identity->tox);
+        struct t_hook *hook = weechat_hook_timer(tox_do_interval(identity->tox), 0, 1,
+                                                 tox_weechat_do_timer_cb, identity);
+        identity->tox_do_timer = hook;
+
+        // check connection status
+        int connected = tox_isconnected(identity->tox);
+        weechat_printf(NULL, "%p connected: %d", identity->tox, connected);
+        if (connected ^ identity->tox_online)
+        {
+            identity->tox_online = connected;
+            weechat_bar_item_update("buffer_plugin");
+        }
     }
 
     return WEECHAT_RC_OK;
@@ -159,7 +165,10 @@ tox_weechat_callback_friend_request(Tox *tox,
 {
     struct t_tox_weechat_identity *identity = data;
 
-    if (identity->friend_request_count >= identity->max_friend_requests)
+    struct t_config_option *option =
+        identity->options[TOX_WEECHAT_IDENTITY_OPTION_MAX_FRIEND_REQUESTS];
+    unsigned int max_requests = weechat_config_integer(option);
+    if (identity->friend_request_count >= max_requests)
     {
         weechat_printf(identity->buffer,
                        "%sReceived a friend request, but your friend request list is full!",

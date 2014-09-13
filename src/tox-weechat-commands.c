@@ -20,6 +20,15 @@ tox_weechat_cmd_bootstrap(void *data, struct t_gui_buffer *buffer,
                           int argc, char **argv, char **argv_eol)
 {
     struct t_tox_weechat_identity *identity = tox_weechat_identity_for_buffer(buffer);
+    if (!identity)
+    {
+        weechat_printf(NULL,
+                       "%s%s: command \"%s\" must be executed on a Tox buffer",
+                       weechat_prefix("error"),
+                       weechat_plugin->name,
+                       argv[0]);
+        return WEECHAT_RC_OK;
+    }
 
     if (argc != 4)
         return WEECHAT_RC_ERROR;
@@ -43,8 +52,16 @@ tox_weechat_cmd_friend(void *data, struct t_gui_buffer *buffer,
                        int argc, char **argv, char **argv_eol)
 {
     struct t_tox_weechat_identity *identity = tox_weechat_identity_for_buffer(buffer);
+    if (!identity)
+    {
+        weechat_printf(NULL,
+                       "%s%s: command \"%s\" must be executed on a Tox buffer",
+                       weechat_prefix("error"),
+                       weechat_plugin->name,
+                       argv[0]);
+        return WEECHAT_RC_OK;
+    }
 
-    // /friend [list]
     if (argc == 1 || (argc == 2 && weechat_strcasecmp(argv[1], "list") == 0))
     {
         size_t friend_count = tox_count_friendlist(identity->tox);
@@ -87,7 +104,7 @@ tox_weechat_cmd_friend(void *data, struct t_gui_buffer *buffer,
         return WEECHAT_RC_OK;
     }
 
-    if (argc >= 3 && (weechat_strcasecmp(argv[1], "add") == 0))
+    else if (argc >= 3 && (weechat_strcasecmp(argv[1], "add") == 0))
     {
         char *address = malloc(TOX_FRIEND_ADDRESS_SIZE);
         tox_weechat_hex2bin(argv[2], address);
@@ -147,7 +164,7 @@ tox_weechat_cmd_friend(void *data, struct t_gui_buffer *buffer,
         return WEECHAT_RC_OK;
     }
 
-    if (argc == 3 && (weechat_strcasecmp(argv[1], "remove") == 0))
+    else if (argc == 3 && (weechat_strcasecmp(argv[1], "remove") == 0))
     {
         char *endptr;
         unsigned long friend_number = strtoul(argv[2], &endptr, 10);
@@ -179,8 +196,7 @@ tox_weechat_cmd_friend(void *data, struct t_gui_buffer *buffer,
         return WEECHAT_RC_OK;
     }
 
-    // /friend accept
-    if (argc == 3 &&
+    else if (argc == 3 &&
             (weechat_strcasecmp(argv[1], "accept") == 0
              || weechat_strcasecmp(argv[1], "decline") == 0))
     {
@@ -240,7 +256,7 @@ tox_weechat_cmd_friend(void *data, struct t_gui_buffer *buffer,
         }
     }
 
-    if (argc == 2 && weechat_strcasecmp(argv[1], "requests") == 0)
+    else if (argc == 2 && weechat_strcasecmp(argv[1], "requests") == 0)
     {
         if (identity->friend_requests == NULL)
         {
@@ -291,8 +307,17 @@ tox_weechat_cmd_me(void *data, struct t_gui_buffer *buffer,
         return WEECHAT_RC_ERROR;
 
     struct t_tox_weechat_identity *identity = tox_weechat_identity_for_buffer(buffer);
-
     struct t_tox_weechat_chat *chat = tox_weechat_get_chat_for_buffer(buffer);
+
+    if (!chat)
+    {
+        weechat_printf(NULL,
+                       "%s%s: command \"%s\" must be executed in a chat buffer",
+                       weechat_prefix("error"),
+                       weechat_plugin->name,
+                       argv[0]);
+        return WEECHAT_RC_OK;
+    }
 
     tox_send_action(identity->tox,
                     chat->friend_number,
@@ -315,6 +340,15 @@ tox_weechat_cmd_msg(void *data, struct t_gui_buffer *buffer,
         return WEECHAT_RC_ERROR;
 
     struct t_tox_weechat_identity *identity = tox_weechat_identity_for_buffer(buffer);
+    if (!identity)
+    {
+        weechat_printf(NULL,
+                       "%s%s: command \"%s\" must be executed in a Tox buffer",
+                       weechat_prefix("error"),
+                       weechat_plugin->name,
+                       argv[0]);
+        return WEECHAT_RC_OK;
+    }
 
     char *endptr;
     unsigned long friend_number = strtoul(argv[1], &endptr, 10);
@@ -332,10 +366,10 @@ tox_weechat_cmd_msg(void *data, struct t_gui_buffer *buffer,
     {
         tox_send_message(identity->tox,
                          friend_number,
-                         (uint8_t *)argv_eol[1],
+                         (uint8_t *)argv_eol[2],
                          strlen(argv_eol[2]));
         char *name = tox_weechat_get_self_name_nt(identity->tox);
-        tox_weechat_chat_print_message(chat, name, argv_eol[1]);
+        tox_weechat_chat_print_message(chat, name, argv_eol[2]);
         free(name);
     }
 
@@ -347,6 +381,15 @@ tox_weechat_cmd_myaddress(void *data, struct t_gui_buffer *buffer,
                           int argc, char **argv, char **argv_eol)
 {
     struct t_tox_weechat_identity *identity = tox_weechat_identity_for_buffer(buffer);
+    if (!identity)
+    {
+        weechat_printf(NULL,
+                       "%s%s: command \"%s\" must be executed in a Tox buffer",
+                       weechat_prefix("error"),
+                       weechat_plugin->name,
+                       argv[0]);
+        return WEECHAT_RC_OK;
+    }
 
     uint8_t address[TOX_FRIEND_ADDRESS_SIZE];
     tox_get_address(identity->tox, address);
@@ -372,6 +415,15 @@ tox_weechat_cmd_name(void *data, struct t_gui_buffer *buffer,
         return WEECHAT_RC_ERROR;
 
     struct t_tox_weechat_identity *identity = tox_weechat_identity_for_buffer(buffer);
+    if (!identity)
+    {
+        weechat_printf(NULL,
+                       "%s%s: command \"%s\" must be executed on a Tox buffer",
+                       weechat_prefix("error"),
+                       weechat_plugin->name,
+                       argv[0]);
+        return WEECHAT_RC_OK;
+    }
 
     char *name = argv_eol[1];
 
@@ -413,6 +465,15 @@ tox_weechat_cmd_status(void *data, struct t_gui_buffer *buffer,
         return WEECHAT_RC_ERROR;
 
     struct t_tox_weechat_identity *identity = tox_weechat_identity_for_buffer(buffer);
+    if (!identity)
+    {
+        weechat_printf(NULL,
+                       "%s%s: command \"%s\" must be executed in a Tox buffer",
+                       weechat_prefix("error"),
+                       weechat_plugin->name,
+                       argv[0]);
+        return WEECHAT_RC_OK;
+    }
 
     TOX_USERSTATUS status = TOX_USERSTATUS_INVALID;
     if (weechat_strcasecmp(argv[1], "online") == 0)
@@ -436,6 +497,15 @@ tox_weechat_cmd_statusmsg(void *data, struct t_gui_buffer *buffer,
                           int argc, char **argv, char **argv_eol)
 {
     struct t_tox_weechat_identity *identity = tox_weechat_identity_for_buffer(buffer);
+    if (!identity)
+    {
+        weechat_printf(NULL,
+                       "%s%s: command \"%s\" must be executed in a Tox buffer",
+                       weechat_prefix("error"),
+                       weechat_plugin->name,
+                       argv[0]);
+        return WEECHAT_RC_OK;
+    }
 
     char *message = argc > 1 ? argv_eol[1] : " ";
 
@@ -451,6 +521,75 @@ tox_weechat_cmd_statusmsg(void *data, struct t_gui_buffer *buffer,
     }
 
     return WEECHAT_RC_OK;
+}
+
+int
+tox_weechat_cmd_tox(void *data, struct t_gui_buffer *buffer,
+                    int argc, char **argv, char **argv_eol)
+{
+    if (argc == 1 || (argc == 2 && weechat_strcasecmp(argv[1], "list") == 0))
+    {
+        weechat_printf(NULL,
+                       "%sAll Tox identities:",
+                       weechat_prefix("network"));
+        for (struct t_tox_weechat_identity *identity = tox_weechat_identities;
+             identity;
+             identity = identity->next_identity)
+        {
+            weechat_printf(NULL,
+                           "%s%s",
+                           weechat_prefix("network"),
+                           identity->name);
+        }
+
+        return WEECHAT_RC_OK;
+    }
+
+    else if (argc == 3 && (weechat_strcasecmp(argv[1], "add") == 0))
+    {
+        char *name = argv[2];
+
+        if (tox_weechat_identity_name_search(name))
+        {
+            weechat_printf(NULL,
+                           "%s%s: Identity \"%s\" already exists!",
+                           weechat_prefix("error"),
+                           weechat_plugin->name,
+                           name);
+        }
+
+        struct t_tox_weechat_identity *identity = tox_weechat_identity_new(name);
+        weechat_printf(NULL,
+                       "%s%s: Identity \"%s\" created!",
+                       weechat_prefix("network"),
+                       weechat_plugin->name,
+                       identity->name);
+
+        return WEECHAT_RC_OK;
+    }
+
+    else if (argc == 3 && (weechat_strcasecmp(argv[1], "connect") == 0))
+    {
+        char *name = argv[2];
+
+        struct t_tox_weechat_identity *identity = tox_weechat_identity_name_search(name);
+        if (!identity)
+        {
+            weechat_printf(NULL,
+                           "%s%s: Identity \"%s\" does not exist.",
+                           weechat_prefix("error"),
+                           weechat_plugin->name,
+                           name);
+        }
+        else
+        {
+            tox_weechat_identity_connect(identity);
+        }
+
+        return WEECHAT_RC_OK;
+    }
+
+    return WEECHAT_RC_ERROR;
 }
 
 void
@@ -514,4 +653,16 @@ tox_weechat_commands_init()
                          "[<message>]",
                          "message: your new status message",
                          NULL, tox_weechat_cmd_statusmsg, NULL);
+
+    weechat_hook_command("tox",
+                         "manage Tox identities",
+                         "list"
+                         " || add <name>"
+                         " || del <name>"
+                         " || connect <name>",
+                         "   list: list all Tox identity\n"
+                         "    add: create a new Tox identity\n"
+                         "    del: delete a Tox identity\n"
+                         "connect: connect a Tox identity to the network\n",
+                         NULL, tox_weechat_cmd_tox, NULL);
 }

@@ -14,19 +14,15 @@ enum t_tox_weechat_identity_option
 
 struct t_tox_weechat_identity
 {
-    struct Tox *tox;
-
     char *name;
-
     struct t_config_option *options[TOX_WEECHAT_IDENTITY_NUM_OPTIONS];
 
-    // TODO: move to option
-    char *data_file_path;
-    unsigned int max_friend_requests;
+    struct Tox *tox;
 
     struct t_gui_buffer *buffer;
+    struct t_hook *tox_do_timer;
 
-    int is_connected;
+    int tox_online;
 
     struct t_tox_weechat_chat *chats;
     struct t_tox_weechat_chat *last_chat;
@@ -47,6 +43,15 @@ tox_weechat_identity_new(const char *name);
 
 void
 tox_weechat_identity_connect(struct t_tox_weechat_identity *identity);
+
+void
+tox_weechat_identity_disconnect(struct t_tox_weechat_identity *identity);
+
+void
+tox_weechat_identity_autoconnect();
+
+struct t_tox_weechat_identity *
+tox_weechat_identity_name_search(const char *name);
 
 struct t_tox_weechat_identity *
 tox_weechat_identity_for_buffer(struct t_gui_buffer *buffer);

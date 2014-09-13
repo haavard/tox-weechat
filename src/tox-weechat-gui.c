@@ -62,11 +62,14 @@ bar_item_buffer_plugin(void *data, struct t_gui_bar_item *item,
     const char *identity_name = identity->name;
 
     snprintf(string, sizeof(string),
-             "%s%s/%s%s",
+             "%s%s/%s%s%s/%s%s",
              plugin_name,
              weechat_color("bar_delim"),
              weechat_color("bar_fg"),
-             identity_name);
+             identity_name,
+             weechat_color("bar_delim"),
+             weechat_color("bar_fg"),
+             identity->tox_online ? "online" : "offline");
 
     return strdup(string);
 }

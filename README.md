@@ -27,6 +27,12 @@ Usage
 -----
 In WeeChat, load the plugin: `/plugin load tox`. In cases where WeeChat can't find the plugin, try specifying the full path to the binary. You should get a new buffer called tox. This is the core Tox buffer, where output from commands will appear.
 
+ - In WeeChat, load the plugin with `/plugin load tox`. If it fails, try specifying the full path to the binary.
+ - Create a new identity with `/tox add <name>`. The data file is created in `<WeeChat home>/tox/<name>` by default. Can be changed with `/set tox.identity.<name>.save_file`.
+ - Connect your new identity to the Tox network with `/tox connect <name>`.
+
+The following commands must be executed on a Tox buffer:
+
  - To change your name, `/name <new name>`.
  - Get your Tox address with `/myaddress`.
  - To add friends or respond to friend requests, `/help friend` will get you started.
@@ -36,10 +42,11 @@ A list of commands is available with `/help -list tox`.
 
 TODO
 ----
- - [ ] Support multiple identities (in progress)
+ - [x] Support multiple identities
  - [ ] Preserve friend requests when closing
  - [ ] Group chats
  - [ ] Polish and reach a "stable" release
+   - [ ] Add autocomplete to all commands
 
 License
 ---------

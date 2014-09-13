@@ -77,7 +77,7 @@ tox_weechat_chat_refresh_timer_callback(void *data, int remaining)
 void
 tox_weechat_chat_queue_refresh(struct t_tox_weechat_chat *chat)
 {
-    weechat_hook_timer(0, 0, 1,
+    weechat_hook_timer(1, 0, 1,
                        tox_weechat_chat_refresh_timer_callback, chat);
 }
 
@@ -87,6 +87,7 @@ tox_weechat_friend_chat_new(struct t_tox_weechat_identity *identity,
 {
     struct t_tox_weechat_chat *chat = malloc(sizeof(*chat));
     chat->friend_number = friend_number;
+    chat->identity = identity;
 
     uint8_t client_id[TOX_CLIENT_ID_SIZE];
     tox_get_client_id(identity->tox, friend_number, client_id);

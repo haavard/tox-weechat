@@ -6,6 +6,7 @@
 #include "tox-weechat-commands.h"
 #include "tox-weechat-gui.h"
 #include "tox-weechat-friend-requests.h"
+#include "tox-weechat-config.h"
 
 #include "tox-weechat.h"
 
@@ -24,10 +25,12 @@ weechat_plugin_init(struct t_weechat_plugin *plugin, int argc, char *argv[])
 {
     weechat_plugin = plugin;
 
-    struct t_tox_weechat_identity *identity = tox_weechat_identity_new("tox");
-    tox_weechat_identity_connect(identity);
+    tox_weechat_config_init();
+    tox_weechat_config_read();
     tox_weechat_commands_init();
     tox_weechat_gui_init();
+
+    tox_weechat_identity_autoconnect();
 
     return WEECHAT_RC_OK;
 }
@@ -35,6 +38,7 @@ weechat_plugin_init(struct t_weechat_plugin *plugin, int argc, char *argv[])
 int
 weechat_plugin_end(struct t_weechat_plugin *plugin)
 {
+    tox_weechat_config_write();
     tox_weechat_identity_free_all();
 
     return WEECHAT_RC_OK;

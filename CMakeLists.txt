@@ -21,6 +21,7 @@ add_library(tox MODULE
     src/tox-weechat-commands.c
     src/tox-weechat-gui.c
     src/tox-weechat-utils.c
+    src/tox-weechat-config.c
 )
 
 add_definitions(-D_GNU_SOURCE)
