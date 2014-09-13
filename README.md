@@ -45,6 +45,7 @@ TODO
  - [x] Support multiple identities
  - [ ] Preserve friend requests when closing
  - [ ] Group chats
+ - [ ] Tox DNS
  - [ ] Polish and reach a "stable" release
    - [ ] Add autocomplete to all commands
 
