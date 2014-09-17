@@ -33,6 +33,7 @@ TODO/Implemented features
 ----
  - [x] Adding friends, one-to-one chats
  - [x] Support multiple identities
+ - [ ] Encrypted save files
  - [ ] Save friend requests
  - [ ] Tox DNS
  - [ ] Group chats (awaiting libtoxcore implementation)
