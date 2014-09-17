@@ -2,7 +2,6 @@
 #include <stdint.h>
 #include <stdio.h>
 #include <string.h>
-#include <arpa/inet.h>
 #include <pwd.h>
 #include <unistd.h>
 
@@ -33,7 +32,7 @@ char *tox_weechat_bootstrap_addresses[] = {
     "195.154.119.113",
 };
 
-int tox_weechat_bootstrap_ports[] = {
+uint16_t tox_weechat_bootstrap_ports[] = {
     33445, 33445, 33445, 33445, 33445,
     33445, 33445, 33445, 33445, 33445,
 };
@@ -50,6 +49,8 @@ char *tox_weechat_bootstrap_keys[] = {
     "7F9C31FE850E97CEFD4C4591DF93FC757C7C12549DDD55F8EEAECC34FE76C029",
     "E398A69646B8CEACA9F0B84F553726C1C49270558C57DF5F3C368F05A7D71354",
 };
+
+int tox_weechat_bootstrap_count = sizeof(tox_weechat_bootstrap_addresses)/sizeof(tox_weechat_bootstrap_addresses[0]);
 
 char *
 tox_weechat_identity_data_file_path(struct t_tox_weechat_identity *identity)
@@ -136,14 +137,14 @@ tox_weechat_identity_buffer_close_callback(void *data,
 
 
 int
-tox_weechat_bootstrap_tox(Tox *tox, char *address, uint16_t port, char *public_key)
+tox_weechat_bootstrap_tox(Tox *tox, const char *address, uint16_t port, const char *public_key)
 {
     char *binary_key = malloc(TOX_FRIEND_ADDRESS_SIZE);
     tox_weechat_hex2bin(public_key, binary_key);
 
     int result = tox_bootstrap_from_address(tox,
                                             address,
-                                            htons(port),
+                                            port,
                                             (uint8_t *)binary_key);
     free(binary_key);
 
@@ -185,6 +186,15 @@ tox_weechat_identity_new(const char *name)
 }
 
 void
+tox_weechat_bootstrap_random_node(Tox *tox)
+{
+    int i = rand() % tox_weechat_bootstrap_count;
+    tox_weechat_bootstrap_tox(tox, tox_weechat_bootstrap_addresses[i],
+                                   tox_weechat_bootstrap_ports[i],
+                                   tox_weechat_bootstrap_keys[i]);
+}
+
+void
 tox_weechat_identity_connect(struct t_tox_weechat_identity *identity)
 {
     if (identity->tox)
@@ -215,11 +225,11 @@ tox_weechat_identity_connect(struct t_tox_weechat_identity *identity)
     }
 
     // bootstrap DHT
-    int bootstrap_count = sizeof(tox_weechat_bootstrap_addresses)/sizeof(tox_weechat_bootstrap_addresses[0]);
-    for (int i = 0; i < bootstrap_count; ++i)
-        tox_weechat_bootstrap_tox(identity->tox, tox_weechat_bootstrap_addresses[i],
-                                                 tox_weechat_bootstrap_ports[i],
-                                                 tox_weechat_bootstrap_keys[i]);
+    int max_bootstrap_nodes = 5;
+    int bootstrap_nodes = max_bootstrap_nodes > tox_weechat_bootstrap_count ?
+                          tox_weechat_bootstrap_count : max_bootstrap_nodes;
+    for (int i = 0; i < bootstrap_nodes; ++i)
+        tox_weechat_bootstrap_random_node(identity->tox);
 
     // start Tox_do loop
     tox_weechat_do_timer_cb(identity, 0);
