@@ -1,12 +1,12 @@
 Tox-WeeChat
 ===========
-Tox-WeeChat is a C plugin for the [WeeChat][1] chat client that enables it to connect to the [Tox][2] network. It is functional, but fairly limited in features for now. Bug reports and suggestions are appreciated.
+Tox-WeeChat is a C plugin for the [WeeChat][1] chat client that enables it to connect to the [Tox][2] network. It is functional, but fairly limited in features and not intended for general use yet.
 
-[![Build Status](https://travis-ci.org/haavardp/tox-weechat.svg?branch=master)](https://travis-ci.org/haavardp/tox-weechat)
+Current build status: [![Build Status](https://travis-ci.org/haavardp/tox-weechat.svg?branch=master)](https://travis-ci.org/haavardp/tox-weechat)
 
 Installation
 ------------
-Tox-WeeChat requires [libtoxcore][3] (and WeeChat) to work. After getting them, install Tox-WeeChat like this:
+Tox-WeeChat requires the latest [libtoxcore][3] and WeeChat 1.0. It also requires cmake to be built. Installation is fairly simple:
 
     $ git clone https://github.com/haavardp/tox-weechat.git
     $ cd tox-weechat
@@ -15,39 +15,29 @@ Tox-WeeChat requires [libtoxcore][3] (and WeeChat) to work. After getting them, 
     $ make
     $ make install
 
-This installs the plugin binary `tox.so` in the recommended location `~/.weechat/plugins`. To install the plugin somewhere else, replace the cmake command above with either of these:
-
- - To install to `/usr/local/lib/weechat/plugins`: `cmake ..`
- - To install to `/usr/lib/weechat/plugins`: `cmake -DCMAKE_INSTALL_PREFIX=/usr ..`
- - To install a custom path: `cmake -DINSTALL_PATH=/some/path ..`
-
-You may also need to `sudo make install`, depending on permissions.
+This installs the plugin binary `tox.so` in the recommended location `~/.weechat/plugins`. Omitting the home folder flag installs it to `/usr/local/lib/weechat/plugins`. Install anywhere else by setting `INSTALL_PATH`.
 
 Usage
 -----
  - In WeeChat, load the plugin with `/plugin load tox`. If it fails, try specifying the full path to the binary.
- - Create a new identity with `/tox add <name>`.
-   - The data file is created in `<WeeChat home>/tox/<name>` by default.
-   - Can be changed with `/set tox.identity.<name>.save_file`.
- - Connect your new identity to the Tox network with `/tox connect <name>`.
-
-The following commands must be executed on a Tox buffer:
-
- - To change your name, `/name <new name>`.
+ - Create a new identity with `/tox add <name>`. The data file is stored in `<WeeChat home>/tox/` by default.
+ - Connect your identity to the Tox network with `/tox connect <name>`.
+ - Change your name with `/name <new name>`.
  - Get your Tox address with `/myaddress`.
  - To add friends or respond to friend requests, `/help friend` will get you started.
- - Message a friend with `/msg <friend number>`. Get their friend number with `/friend`.
+ - Message a friend with `/msg <friend number>`. Get their friend number with `/friend list`.
 
 A list of commands is available with `/help -list tox`.
 
-TODO
+TODO/Implemented features
 ----
+ - [x] Adding friends, one-to-one chats
  - [x] Support multiple identities
- - [ ] Preserve friend requests when closing
- - [ ] Group chats
+ - [ ] Save friend requests
  - [ ] Tox DNS
- - [ ] Polish and reach a "stable" release
-   - [ ] Add autocomplete to all commands
+ - [ ] Group chats (awaiting libtoxcore implementation)
+ - [ ] Support proxies (TOR)
+ - [ ] A/V (long term)
 
 License
 ---------
