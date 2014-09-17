@@ -218,7 +218,7 @@ tox_weechat_identity_connect(struct t_tox_weechat_identity *identity)
         if ((user_pwd = getpwuid(geteuid())))
             name = user_pwd->pw_name;
         else
-            name = "Tox User";
+            name = "Tox-WeeChat User";
 
         tox_set_name(identity->tox,
                      (uint8_t *)name, strlen(name));
