@@ -140,14 +140,13 @@ tox_weechat_identity_buffer_close_callback(void *data,
 int
 tox_weechat_bootstrap_tox(Tox *tox, const char *address, uint16_t port, const char *public_key)
 {
-    char *binary_key = malloc(TOX_FRIEND_ADDRESS_SIZE);
+    char binary_key[TOX_FRIEND_ADDRESS_SIZE];
     tox_weechat_hex2bin(public_key, binary_key);
 
     int result = tox_bootstrap_from_address(tox,
                                             address,
                                             port,
                                             (uint8_t *)binary_key);
-    free(binary_key);
 
     return result;
 }

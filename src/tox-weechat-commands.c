@@ -87,7 +87,7 @@ tox_weechat_cmd_friend(void *data, struct t_gui_buffer *buffer,
 
             uint8_t client_id[TOX_CLIENT_ID_SIZE];
             tox_get_client_id(identity->tox, friend_number, client_id);
-            char *hex_address = malloc(TOX_CLIENT_ID_SIZE * 2 + 1);
+            char hex_address[TOX_CLIENT_ID_SIZE * 2 + 1];
             tox_weechat_bin2hex(client_id,
                                 TOX_CLIENT_ID_SIZE,
                                 hex_address);
@@ -98,7 +98,6 @@ tox_weechat_cmd_friend(void *data, struct t_gui_buffer *buffer,
                            friend_number, name, hex_address);
 
             free(name);
-            free(hex_address);
         }
 
         return WEECHAT_RC_OK;
@@ -106,7 +105,7 @@ tox_weechat_cmd_friend(void *data, struct t_gui_buffer *buffer,
 
     else if (argc >= 3 && (weechat_strcasecmp(argv[1], "add") == 0))
     {
-        char *address = malloc(TOX_FRIEND_ADDRESS_SIZE);
+        char address[TOX_FRIEND_ADDRESS_SIZE];
         tox_weechat_hex2bin(argv[2], address);
 
         char *message;
@@ -160,7 +159,6 @@ tox_weechat_cmd_friend(void *data, struct t_gui_buffer *buffer,
                                weechat_prefix("network"));
                 break;
         }
-
 
         return WEECHAT_RC_OK;
     }
@@ -237,7 +235,7 @@ tox_weechat_cmd_friend(void *data, struct t_gui_buffer *buffer,
                 return WEECHAT_RC_OK;
             }
 
-            char *hex_address = malloc(TOX_CLIENT_ID_SIZE * 2 + 1);
+            char hex_address[TOX_CLIENT_ID_SIZE * 2 + 1];
             tox_weechat_bin2hex(request->address,
                                 TOX_CLIENT_ID_SIZE,
                                 hex_address);
@@ -252,7 +250,6 @@ tox_weechat_cmd_friend(void *data, struct t_gui_buffer *buffer,
                            weechat_prefix("network"),
                            accept ? "Accepted" : "Declined",
                            hex_address);
-            free(hex_address);
 
             return WEECHAT_RC_OK;
         }
@@ -277,7 +274,7 @@ tox_weechat_cmd_friend(void *data, struct t_gui_buffer *buffer,
                  request;
                  request = request->next_request)
             {
-                char *hex_address = malloc(TOX_CLIENT_ID_SIZE * 2 + 1);
+                char hex_address[TOX_CLIENT_ID_SIZE * 2 + 1];
                 tox_weechat_bin2hex(request->address,
                                     TOX_CLIENT_ID_SIZE,
                                     hex_address);
@@ -288,8 +285,6 @@ tox_weechat_cmd_friend(void *data, struct t_gui_buffer *buffer,
                                weechat_prefix("network"),
                                num, hex_address,
                                num, request->message);
-
-                free(hex_address);
 
                 ++num;
             }
@@ -396,15 +391,13 @@ tox_weechat_cmd_myaddress(void *data, struct t_gui_buffer *buffer,
     uint8_t address[TOX_FRIEND_ADDRESS_SIZE];
     tox_get_address(identity->tox, address);
 
-    char *address_str = malloc(TOX_FRIEND_ADDRESS_SIZE * 2 + 1);
+    char address_str[TOX_FRIEND_ADDRESS_SIZE * 2 + 1];
     tox_weechat_bin2hex(address, TOX_FRIEND_ADDRESS_SIZE, address_str);
 
     weechat_printf(identity->buffer,
                    "%sYour Tox address: %s",
                    weechat_prefix("network"),
                    address_str);
-
-    free(address_str);
 
     return WEECHAT_RC_OK;
 }

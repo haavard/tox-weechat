@@ -93,7 +93,7 @@ tox_weechat_friend_chat_new(struct t_tox_weechat_identity *identity,
     tox_get_client_id(identity->tox, friend_number, client_id);
 
     // TODO: prepend identity name
-    char *buffer_name = malloc(TOX_CLIENT_ID_SIZE * 2 + 1);
+    char buffer_name[TOX_CLIENT_ID_SIZE * 2 + 1];
     tox_weechat_bin2hex(client_id, TOX_CLIENT_ID_SIZE, buffer_name);
 
     chat->buffer = weechat_buffer_new(buffer_name,
@@ -101,8 +101,6 @@ tox_weechat_friend_chat_new(struct t_tox_weechat_identity *identity,
                                       tox_weechat_buffer_close_callback, chat);
     tox_weechat_chat_refresh(chat);
     tox_weechat_chat_add(identity, chat);
-
-    free(buffer_name);
 
     return chat;
 }
