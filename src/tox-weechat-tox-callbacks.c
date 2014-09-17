@@ -82,17 +82,24 @@ tox_weechat_connection_status_callback(Tox *tox,
                                        uint8_t status,
                                        void *data)
 {
-    if (status == 1)
-    {
-        struct t_tox_weechat_identity *identity = data;
-        char *name = tox_weechat_get_name_nt(identity->tox, friend_number);
+    struct t_tox_weechat_identity *identity = data;
+    char *name = tox_weechat_get_name_nt(identity->tox, friend_number);
 
+    if (status == 0)
+    {
         weechat_printf(identity->buffer,
-                       "%s%s just went online!",
+                       "%s%s just went offline.",
                        weechat_prefix("network"),
                        name);
-        free(name);
     }
+    else if (status == 1)
+    {
+        weechat_printf(identity->buffer,
+                       "%s%s just came online.",
+                       weechat_prefix("network"),
+                       name);
+    }
+    free(name);
 }
 
 void
