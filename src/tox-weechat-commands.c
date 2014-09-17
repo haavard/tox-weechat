@@ -149,6 +149,7 @@ tox_weechat_cmd_friend(void *data, struct t_gui_buffer *buffer,
                 break;
             case TOX_FAERR_UNKNOWN:
             case TOX_FAERR_SETNEWNOSPAM:
+            case TOX_FAERR_NOMESSAGE:
                 weechat_printf(identity->buffer,
                                "%sCould not add friend (unknown error).",
                                weechat_prefix("error"));
