@@ -557,6 +557,7 @@ tox_weechat_cmd_tox(void *data, struct t_gui_buffer *buffer,
                            weechat_prefix("error"),
                            weechat_plugin->name,
                            name);
+            return WEECHAT_RC_OK;
         }
 
         struct t_tox_weechat_identity *identity = tox_weechat_identity_new(name);
