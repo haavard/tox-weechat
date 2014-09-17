@@ -20,8 +20,12 @@ struct t_tox_weechat_friend_request
 };
 
 void
-tox_weechat_friend_request_add(struct t_tox_weechat_identity *identity,
-                               struct t_tox_weechat_friend_request *request);
+tox_weechat_friend_request_init_identity(struct t_tox_weechat_identity *identity);
+
+void
+tox_weechat_friend_request_new(struct t_tox_weechat_identity *identity,
+                               const uint8_t *client_id,
+                               const char *message);
 
 void
 tox_weechat_accept_friend_request(struct t_tox_weechat_friend_request *request);
@@ -34,6 +38,9 @@ tox_weechat_friend_request_with_num(struct t_tox_weechat_identity *identity,
                                     unsigned int num);
 
 void
-tox_weechat_friend_requests_free(struct t_tox_weechat_identity *identity);
+tox_weechat_friend_request_save_identity(struct t_tox_weechat_identity *identity);
+
+void
+tox_weechat_friend_request_free_identity(struct t_tox_weechat_identity *identity);
 
 #endif // TOX_WEECHAT_FRIEND_REQUESTS_H

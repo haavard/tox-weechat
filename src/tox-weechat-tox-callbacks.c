@@ -163,35 +163,8 @@ tox_weechat_callback_friend_request(Tox *tox,
                                     void *data)
 {
     struct t_tox_weechat_identity *identity = data;
-
-    struct t_config_option *option =
-        identity->options[TOX_WEECHAT_IDENTITY_OPTION_MAX_FRIEND_REQUESTS];
-    unsigned int max_requests = weechat_config_integer(option);
-    if (identity->friend_request_count >= max_requests)
-    {
-        weechat_printf(identity->buffer,
-                       "%sReceived a friend request, but your friend request list is full!",
-                       weechat_prefix("warning"));
-        return;
-    }
-
-    // TODO: move to t-w-f-r.h
-    struct t_tox_weechat_friend_request *request = malloc(sizeof(*request));
-
-    memcpy(request->address, public_key, TOX_CLIENT_ID_SIZE);
-    request->message = tox_weechat_null_terminate(message, length);
-
-    tox_weechat_friend_request_add(identity, request);
-
-    char *hex_address = malloc(TOX_CLIENT_ID_SIZE * 2 + 1);
-    tox_weechat_bin2hex(request->address, TOX_CLIENT_ID_SIZE, hex_address);
-
-    weechat_printf(identity->buffer,
-                   "%sReceived a friend request from %s: \"%s\"",
-                   weechat_prefix("network"),
-                   hex_address,
-                   request->message);
-
-    free(hex_address);
+    char *message_nt = tox_weechat_null_terminate(message, length);
+    tox_weechat_friend_request_new(identity, public_key, message_nt);
+    free(message_nt);
 }
 

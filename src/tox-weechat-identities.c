@@ -10,6 +10,7 @@
 
 #include "tox-weechat.h"
 #include "tox-weechat-config.h"
+#include "tox-weechat-friend-requests.h"
 #include "tox-weechat-chats.h"
 #include "tox-weechat-tox-callbacks.h"
 #include "tox-weechat-utils.h"
@@ -175,9 +176,8 @@ tox_weechat_identity_new(const char *name)
     identity->tox_do_timer = NULL;
     identity->chats = identity->last_chat = NULL;
 
-    // TODO: load from disk
-    identity->friend_requests = identity->last_friend_request = NULL;
-    identity->friend_request_count = 0;
+    // initialize friend requests
+    tox_weechat_friend_request_init_identity(identity);;
 
     // set up config
     tox_weechat_config_init_identity(identity);
@@ -338,7 +338,9 @@ tox_weechat_identity_free(struct t_tox_weechat_identity *identity)
     if (identity->next_identity)
         identity->next_identity->prev_identity = identity->prev_identity;
 
-    // TODO: free more things
+    // save friend requests
+    tox_weechat_friend_request_save_identity(identity);
+    tox_weechat_friend_request_free_identity(identity);
 
     free(identity->name);
     free(identity);
