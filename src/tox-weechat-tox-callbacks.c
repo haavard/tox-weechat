@@ -135,20 +135,23 @@ tox_weechat_name_change_callback(Tox *tox,
     char *old_name = tox_weechat_get_name_nt(identity->tox, friend_number);
     char *new_name = tox_weechat_null_terminate(name, length);
 
-    if (chat && strcmp(old_name, new_name) != 0)
+    if (strcmp(old_name, new_name) != 0)
     {
-        tox_weechat_chat_queue_refresh(chat);
+        if (chat)
+        {
+            tox_weechat_chat_queue_refresh(chat);
 
-        weechat_printf(chat->buffer,
+            weechat_printf(chat->buffer,
+                           "%s%s is now known as %s",
+                           weechat_prefix("network"),
+                           old_name, new_name);
+        }
+
+        weechat_printf(identity->buffer,
                        "%s%s is now known as %s",
                        weechat_prefix("network"),
                        old_name, new_name);
     }
-
-    weechat_printf(identity->buffer,
-                   "%s%s is now known as %s",
-                   weechat_prefix("network"),
-                   old_name, new_name);
 
     free(old_name);
     free(new_name);
