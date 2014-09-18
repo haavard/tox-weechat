@@ -195,7 +195,6 @@ tox_weechat_callback_friend_request(Tox *tox,
 
     char *message_nt = tox_weechat_null_terminate(message, length);
     int rc = tox_weechat_friend_request_add(identity, public_key, message_nt);
-    free(message_nt);
 
     if (rc == 0)
     {
@@ -207,12 +206,13 @@ tox_weechat_callback_friend_request(Tox *tox,
                        hex_address,
                        message_nt);
     }
-    if (rc == -1)
+    else if (rc == -1)
     {
         weechat_printf(identity->buffer,
                        "%sReceived a friend request, but your friend request list is full!",
                        weechat_prefix("warning"));
     }
 
+    free(message_nt);
 }
 
