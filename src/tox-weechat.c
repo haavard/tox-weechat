@@ -1,3 +1,22 @@
+/*
+ * Copyright (c) 2014 Håvard Pettersson <haavard.pettersson@gmail.com>
+ *
+ * This file is part of Tox-WeeChat.
+ *
+ * Tox-WeeChat is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * Tox-WeeChat is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with Tox-WeeChat.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
 #include <stdlib.h>
 
 #include <weechat/weechat-plugin.h>
@@ -15,7 +34,7 @@ WEECHAT_PLUGIN_NAME("tox");
 WEECHAT_PLUGIN_DESCRIPTION("Tox protocol");
 WEECHAT_PLUGIN_AUTHOR("Håvard Pettersson <haavard.pettersson@gmail.com>");
 WEECHAT_PLUGIN_VERSION("0.1");
-WEECHAT_PLUGIN_LICENSE("MIT");
+WEECHAT_PLUGIN_LICENSE("GPL3");
 
 struct t_weechat_plugin *weechat_plugin = NULL;
 struct t_gui_buffer *tox_main_buffer = NULL;
