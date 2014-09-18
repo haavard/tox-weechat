@@ -6,7 +6,7 @@ Current build status: [![Build Status](https://travis-ci.org/haavardp/tox-weecha
 
 Installation
 ------------
-Tox-WeeChat requires [WeeChat][1], [libjansson][3], and the latest [libtoxcore][4]. It also requires CMake to be built. Installation is fairly simple:
+Tox-WeeChat requires [WeeChat][1] >=1.0, [libjansson][3] >=2.5, and the latest-ish [libtoxcore][4]. It also requires CMake to be built. Installation is fairly simple:
 
     $ git clone https://github.com/haavardp/tox-weechat.git
     $ cd tox-weechat

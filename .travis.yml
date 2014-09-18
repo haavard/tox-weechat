@@ -3,37 +3,44 @@ language: c
 install:
   - _libsodium_version=0.7.0
   - _weechat_version=v1.0
+  - _libjansson_version=v2.5
 
     # install libjansson
-  - sudo apt-get install libjansson-dev
-
-    # install libsodium (needed for libtoxcore)
-  - git clone git://github.com/jedisct1/libsodium.git > /dev/null
-  - pushd libsodium
-  - git checkout tags/${_libsodium_version} > /dev/null
-  - ./autogen.sh > /dev/null
-  - ./configure --prefix=/usr > /dev/null
-  - make -j3 > /dev/null
-  - sudo make install > /dev/null
+  - git clone git://github.com/akheron/jansson
+  - pushd jansson
+  - git checkout tags/${_libjansson_version}
+  - ./configure --prefix=/usr
+  - make -j3
+  - sudo make install
   - popd
 
-    # install toxcore
-  - git clone git://github.com/irungentoo/toxcore > /dev/null
+    # install libsodium (needed for libtoxcore)
+  - git clone git://github.com/jedisct1/libsodium.git
+  - pushd libsodium
+  - git checkout tags/${_libsodium_version}
+  - ./autogen.sh
+  - ./configure --prefix=/usr
+  - make -j3
+  - sudo make install
+  - popd
+
+    # install libtoxcore
+  - git clone git://github.com/irungentoo/toxcore
   - pushd toxcore
-  - autoreconf -i > /dev/null
-  - ./configure --prefix=/usr --disable-testing --disable-ntox > /dev/null
-  - make -j3 > /dev/null
-  - sudo make install > /dev/null
+  - autoreconf -i
+  - ./configure --prefix=/usr --disable-testing --disable-ntox
+  - make -j3
+  - sudo make install
   - popd
 
     # install weechat
-  - git clone git://github.com/weechat/weechat > /dev/null
+  - git clone git://github.com/weechat/weechat
   - pushd weechat
-  - git checkout tags/${_weechat_version} > /dev/null
+  - git checkout tags/${_weechat_version}
   - mkdir build && cd build
-  - cmake .. -DPREFIX=/usr > /dev/null
-  - make -j3 > /dev/null
-  - sudo make install > /dev/null
+  - cmake .. -DPREFIX=/usr
+  - make -j3
+  - sudo make install
   - popd
 
 script:
