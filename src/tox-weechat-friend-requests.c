@@ -4,6 +4,7 @@
 
 #include <weechat/weechat-plugin.h>
 #include <tox/tox.h>
+#include <jansson.h>
 
 #include "tox-weechat.h"
 #include "tox-weechat-identities.h"
@@ -118,7 +119,7 @@ tox_weechat_friend_request_save_identity(struct t_tox_weechat_identity *identity
          request;
          request = request->next_request)
     {
-        // TODO: actually save requests
+
     }
 }
 
