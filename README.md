@@ -15,12 +15,12 @@ Tox-WeeChat requires [WeeChat][1] >=1.0, [libjansson][4] >=2.5, and the latest-i
     $ make
     $ make install
 
-This installs the plugin binary `tox.so` in the recommended location `~/.weechat/plugins`. Omitting the home folder flag installs it to `/usr/local/lib/weechat/plugins`. Installing to a custom WeeChat home or similar is achieved by setting `INSTALL_PATH`.
+This installs the plugin binary `tox.so` to the recommended location `~/.weechat/plugins`. Omitting the home folder flag installs to `/usr/local/lib/weechat/plugins`. Installing to a custom WeeChat home or similar is achieved by setting `INSTALL_PATH`.
 
 Usage
 -----
- - If the plugin does no automatically load, load itw ith `/plugin load tox`. You may have to specify the full path to the plugin binary.
- - Create a new identity with `/tox add <name>`. The data file is stored in `<WeeChat home>/tox/` by default.
+ - If the plugin does no automatically load, load it with `/plugin load tox`. You may have to specify the full path to the plugin binary.
+ - Create a new identity with `/tox add <name>`. The data file is stored in `~/.weechat/tox/` by default.
  - Connect your identity to the Tox network with `/tox connect <name>`.
  - Change your name with `/name <new name>`.
  - Get your Tox address with `/myaddress`.
