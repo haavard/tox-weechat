@@ -29,12 +29,12 @@ Usage
 
 A list of commands is available with `/help -list tox`.
 
-TODO/Implemented features
+TODO & Implemented features
 ----
  - [x] Adding friends, one-to-one chats
  - [x] Support multiple identities
+ - [x] Save friend requests
  - [ ] Encrypted save files
- - [ ] Save friend requests
  - [ ] Tox DNS
  - [ ] Group chats (awaiting libtoxcore implementation)
  - [ ] Support proxies (TOR)
