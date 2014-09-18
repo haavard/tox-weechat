@@ -24,8 +24,7 @@ add_library(tox MODULE
     src/tox-weechat-config.c
 )
 
-add_definitions(-D_GNU_SOURCE)
-set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -std=c99 -Wall -Wextra -Werror-implicit-function-declaration -Wno-unused-parameter")
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -std=gnu99 -Wall -Wextra -Werror-implicit-function-declaration -Wno-unused-parameter")
 
 target_link_libraries(tox toxcore)
 
