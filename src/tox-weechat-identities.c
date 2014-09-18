@@ -242,10 +242,12 @@ tox_weechat_identity_connect(struct t_tox_weechat_identity *identity)
 
     // initialize friend requests
     tox_weechat_friend_request_init_identity(identity);
-    weechat_printf(identity->buffer,
-                   "%sYou have %d pending friend requests.",
-                   weechat_prefix("network"),
-                   identity->friend_request_count);
+
+    if (identity->friend_request_count > 0)
+        weechat_printf(identity->buffer,
+                       "%sYou have %d pending friend requests.",
+                       weechat_prefix("network"),
+                       identity->friend_request_count);
 
     // bootstrap DHT
     int max_bootstrap_nodes = 5;
