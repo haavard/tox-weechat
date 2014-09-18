@@ -1,11 +1,11 @@
 language: c
 
-before_script:
+install:
   - _libsodium_version=0.7.0
   - _weechat_version=v1.0
 
     # install libjansson
-    sudo apt-get install libjansson-dev
+  - sudo apt-get install libjansson-dev
 
     # install libsodium (needed for libtoxcore)
   - git clone git://github.com/jedisct1/libsodium.git > /dev/null
