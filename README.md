@@ -8,20 +8,18 @@ Installation
 ------------
 > Tox-WeeChat is available on the [AUR][3].
 
-Tox-WeeChat requires [WeeChat][1] >=1.0, [libjansson][4] >=2.5, and the latest-ish [libtoxcore][5]. It also requires CMake to be built. Installation is fairly simple:
+Tox-WeeChat requires [WeeChat][1] >=1.0, [libjansson][4] >=2.5, and the latest-ish [libtoxcore][5]. It also requires CMake to be built. Installation is fairly simple; after getting the source, compile and install using CMake:
 
-    $ git clone https://github.com/haavardp/tox-weechat.git
-    $ cd tox-weechat
     $ mkdir build && cd build
     $ cmake -DHOME_FOLDER_INSTALL=ON ..
     $ make
     $ make install
 
-This installs the plugin binary `tox.so` in the recommended location `~/.weechat/plugins`. Omitting the home folder flag installs it to `/usr/local/lib/weechat/plugins`. Install anywhere else by setting `INSTALL_PATH`.
+This installs the plugin binary `tox.so` in the recommended location `~/.weechat/plugins`. Omitting the home folder flag installs it to `/usr/local/lib/weechat/plugins`. Installing to a custom WeeChat home or similar is achieved by setting `INSTALL_PATH`.
 
 Usage
 -----
- - In WeeChat, load the plugin with `/plugin load tox`. If it fails, try specifying the full path to the binary.
+ - If the plugin does no automatically load, load itw ith `/plugin load tox`. You may have to specify the full path to the plugin binary.
  - Create a new identity with `/tox add <name>`. The data file is stored in `<WeeChat home>/tox/` by default.
  - Connect your identity to the Tox network with `/tox connect <name>`.
  - Change your name with `/name <new name>`.
