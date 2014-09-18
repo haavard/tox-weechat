@@ -174,9 +174,7 @@ tox_weechat_identity_new(const char *name)
     identity->buffer = NULL;
     identity->tox_do_timer = NULL;
     identity->chats = identity->last_chat = NULL;
-
-    // initialize friend requests
-    tox_weechat_friend_request_init_identity(identity);;
+    identity->friend_requests = identity->last_friend_request = NULL;
 
     // set up config
     tox_weechat_config_init_identity(identity);
@@ -222,6 +220,13 @@ tox_weechat_identity_connect(struct t_tox_weechat_identity *identity)
         tox_set_name(identity->tox,
                      (uint8_t *)name, strlen(name));
     }
+
+    // initialize friend requests
+    tox_weechat_friend_request_init_identity(identity);
+    weechat_printf(identity->buffer,
+                   "%sYou have %d pending friend requests.",
+                   weechat_prefix("network"),
+                   identity->friend_request_count);
 
     // bootstrap DHT
     int max_bootstrap_nodes = 5;
@@ -322,6 +327,10 @@ tox_weechat_identity_for_buffer(struct t_gui_buffer *buffer)
 void
 tox_weechat_identity_free(struct t_tox_weechat_identity *identity)
 {
+    // save friend requests
+    tox_weechat_friend_request_save_identity(identity);
+    tox_weechat_friend_request_free_identity(identity);
+
     // disconnect
     tox_weechat_identity_disconnect(identity);
 
@@ -337,10 +346,7 @@ tox_weechat_identity_free(struct t_tox_weechat_identity *identity)
     if (identity->next_identity)
         identity->next_identity->prev_identity = identity->prev_identity;
 
-    // save friend requests
-    tox_weechat_friend_request_save_identity(identity);
-    tox_weechat_friend_request_free_identity(identity);
-
+    // free remaining vars
     free(identity->name);
     free(identity);
 }

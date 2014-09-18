@@ -22,8 +22,8 @@ struct t_tox_weechat_friend_request
 void
 tox_weechat_friend_request_init_identity(struct t_tox_weechat_identity *identity);
 
-void
-tox_weechat_friend_request_new(struct t_tox_weechat_identity *identity,
+int
+tox_weechat_friend_request_add(struct t_tox_weechat_identity *identity,
                                const uint8_t *client_id,
                                const char *message);
 

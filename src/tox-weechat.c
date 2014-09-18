@@ -7,6 +7,7 @@
 #include "tox-weechat-gui.h"
 #include "tox-weechat-friend-requests.h"
 #include "tox-weechat-config.h"
+#include "tox-weechat-json.h"
 
 #include "tox-weechat.h"
 
@@ -25,6 +26,8 @@ weechat_plugin_init(struct t_weechat_plugin *plugin, int argc, char *argv[])
 {
     weechat_plugin = plugin;
 
+    tox_weechat_json_init();
+
     tox_weechat_config_init();
     tox_weechat_config_read();
     tox_weechat_commands_init();
@@ -40,6 +43,7 @@ weechat_plugin_end(struct t_weechat_plugin *plugin)
 {
     tox_weechat_config_write();
     tox_weechat_identity_free_all();
+    tox_weechat_json_save();
 
     return WEECHAT_RC_OK;
 }

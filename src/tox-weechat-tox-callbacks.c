@@ -170,8 +170,27 @@ tox_weechat_callback_friend_request(Tox *tox,
                                     void *data)
 {
     struct t_tox_weechat_identity *identity = data;
+
     char *message_nt = tox_weechat_null_terminate(message, length);
-    tox_weechat_friend_request_new(identity, public_key, message_nt);
+    int rc = tox_weechat_friend_request_add(identity, public_key, message_nt);
     free(message_nt);
+
+    if (rc == 0)
+    {
+        char hex_address[TOX_CLIENT_ID_SIZE * 2 + 1];
+        tox_weechat_bin2hex(public_key, TOX_CLIENT_ID_SIZE, hex_address);
+        weechat_printf(identity->buffer,
+                       "%sReceived a friend request from %s: \"%s\"",
+                       weechat_prefix("network"),
+                       hex_address,
+                       message_nt);
+    }
+    if (rc == -1)
+    {
+        weechat_printf(identity->buffer,
+                       "%sReceived a friend request, but your friend request list is full!",
+                       weechat_prefix("warning"));
+    }
+
 }
 

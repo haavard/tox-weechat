@@ -22,6 +22,7 @@ add_library(tox MODULE
     src/tox-weechat-gui.c
     src/tox-weechat-utils.c
     src/tox-weechat-config.c
+    src/tox-weechat-json.c
 )
 
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -std=gnu99 -Wall -Wextra -Werror-implicit-function-declaration -Wno-unused-parameter")
