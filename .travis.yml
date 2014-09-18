@@ -6,9 +6,10 @@ install:
   - _libjansson_version=v2.5
 
     # install libjansson
-  - git clone git://github.com/akheron/jansson
+  - git clone git://github.com/akheron/jansson.git
   - pushd jansson
   - git checkout tags/${_libjansson_version}
+  - autoreconf -i
   - ./configure --prefix=/usr
   - make -j3
   - sudo make install
