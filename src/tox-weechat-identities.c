@@ -41,6 +41,7 @@ struct t_tox_weechat_identity *tox_weechat_last_identity = NULL;
 
 char *tox_weechat_bootstrap_addresses[] = {
     "192.254.75.98",
+    "31.7.57.236",
     "107.161.17.51",
     "144.76.60.215",
     "23.226.230.47",
@@ -49,16 +50,18 @@ char *tox_weechat_bootstrap_addresses[] = {
     "178.21.112.187",
     "192.210.149.121",
     "54.199.139.199",
-    "195.154.119.113",
+    "63.165.243.15",
 };
 
 uint16_t tox_weechat_bootstrap_ports[] = {
+    33445, 443, 33445, 33445, 33445,
     33445, 33445, 33445, 33445, 33445,
-    33445, 33445, 33445, 33445, 33445,
+    443,
 };
 
 char *tox_weechat_bootstrap_keys[] = {
     "951C88B7E75C867418ACDB5D273821372BB5BD652740BCDF623A4FA293E75D2F",
+    "2A4B50D1D525DA2E669592A20C327B5FAD6C7E5962DC69296F9FEC77C4436E4E",
     "7BE3951B97CA4B9ECDDA768E8C52BA19E9E2690AB584787BF4C90E04DBB75111",
     "04119E835DF3E78BACF0F84235B300546AF8B936F035185E2A8E9E0A67C8924F",
     "A09162D68618E742FFBCA1C2C70385E6679604B2D80EA6E84AD0996A1AC8A074",
@@ -67,10 +70,11 @@ char *tox_weechat_bootstrap_keys[] = {
     "4B2C19E924972CB9B57732FB172F8A8604DE13EEDA2A6234E348983344B23057",
     "F404ABAA1C99A9D37D61AB54898F56793E1DEF8BD46B1038B9D822E8460FAB67",
     "7F9C31FE850E97CEFD4C4591DF93FC757C7C12549DDD55F8EEAECC34FE76C029",
-    "E398A69646B8CEACA9F0B84F553726C1C49270558C57DF5F3C368F05A7D71354",
+    "8CD087E31C67568103E8C2A28653337E90E6B8EDA0D765D57C6B5172B4F1F04C",
 };
 
-int tox_weechat_bootstrap_count = sizeof(tox_weechat_bootstrap_addresses)/sizeof(tox_weechat_bootstrap_addresses[0]);
+int tox_weechat_bootstrap_count = sizeof(tox_weechat_bootstrap_addresses)
+                                  / sizeof(tox_weechat_bootstrap_addresses[0]);
 
 char *
 tox_weechat_identity_data_file_path(struct t_tox_weechat_identity *identity)
