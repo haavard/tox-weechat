@@ -727,7 +727,7 @@ tox_weechat_commands_init()
                          "identity but keep the Tox data file\n"
                          "connect: connect a Tox identity to the network\n",
                          "list"
-                         " || add"
+                         " || create"
                          " || delete %(tox_identities) -yes|-keepdata"
                          " || connect %(tox_identities)",
                          tox_weechat_cmd_tox, NULL);
