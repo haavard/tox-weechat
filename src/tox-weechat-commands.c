@@ -592,18 +592,29 @@ tox_weechat_cmd_tox(void *data, struct t_gui_buffer *buffer,
         struct t_tox_weechat_identity *identity;
         if ((identity = tox_weechat_identity_name_search(name)))
         {
-            if (strcmp(flag, "-keepdata") == 0)
+            if (argc == 4 && strcmp(flag, "-keepdata") == 0)
+            {
                 tox_weechat_identity_delete(identity, false);
-            else if (strcmp(flag, "-yes") == 0)
+            }
+            else if (argc == 4 && strcmp(flag, "-yes") == 0)
+            {
                 tox_weechat_identity_delete(identity, true);
+            }
             else
+            {
                 weechat_printf(NULL,
                                "%s%s: You must confirm deletion with either "
                                "\"-keepdata\" or \"-yes\" (see /help tox)",
                                weechat_prefix("error"),
                                weechat_plugin->name);
+                return WEECHAT_RC_OK;
+            }
 
-            return WEECHAT_RC_OK;
+            weechat_printf(NULL,
+                           "%s%s: Identity \"%s\" has been deleted.",
+                           weechat_prefix("error"),
+                           weechat_plugin->name,
+                           name);
         }
         else
         {
@@ -612,9 +623,9 @@ tox_weechat_cmd_tox(void *data, struct t_gui_buffer *buffer,
                            weechat_prefix("error"),
                            weechat_plugin->name,
                            identity->name);
-
-            return WEECHAT_RC_OK;
         }
+
+        return WEECHAT_RC_OK;
     }
 
     else if (argc == 3 && (weechat_strcasecmp(argv[1], "connect") == 0))

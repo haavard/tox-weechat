@@ -222,9 +222,12 @@ tox_weechat_identity_connect(struct t_tox_weechat_identity *identity)
         return;
 
     // create main buffer
-    identity->buffer = weechat_buffer_new(identity->name,
-                                          NULL, NULL,
-                                          tox_weechat_identity_buffer_close_callback, identity);
+    if (identity->buffer == NULL)
+    {
+        identity->buffer = weechat_buffer_new(identity->name,
+                                              NULL, NULL,
+                                              tox_weechat_identity_buffer_close_callback, identity);
+    }
 
     // create Tox
     identity->tox = tox_new(NULL);
@@ -371,6 +374,13 @@ tox_weechat_identity_free(struct t_tox_weechat_identity *identity)
 
     // disconnect
     tox_weechat_identity_disconnect(identity);
+
+    // close buffer
+    if (identity->buffer)
+    {
+        weechat_buffer_set_pointer(identity->buffer, "close_callback", NULL);
+        weechat_buffer_close(identity->buffer);
+    }
 
     // remove from list
     if (identity == tox_weechat_last_identity)
