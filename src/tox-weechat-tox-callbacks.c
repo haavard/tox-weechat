@@ -47,8 +47,7 @@ tox_weechat_do_timer_cb(void *data,
         int connected = tox_isconnected(identity->tox);
         if (connected ^ identity->tox_online)
         {
-            identity->tox_online = connected;
-            weechat_bar_item_update("buffer_plugin");
+            tox_weechat_identity_set_online_status(identity, connected);
         }
     }
 

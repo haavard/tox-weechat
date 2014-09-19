@@ -649,6 +649,27 @@ tox_weechat_cmd_tox(void *data, struct t_gui_buffer *buffer,
         return WEECHAT_RC_OK;
     }
 
+    else if (argc == 3 && (weechat_strcasecmp(argv[1], "disconnect") == 0))
+    {
+        char *name = argv[2];
+
+        struct t_tox_weechat_identity *identity = tox_weechat_identity_name_search(name);
+        if (!identity)
+        {
+            weechat_printf(NULL,
+                           "%s%s: Identity \"%s\" does not exist.",
+                           weechat_prefix("error"),
+                           weechat_plugin->name,
+                           name);
+        }
+        else
+        {
+            tox_weechat_identity_disconnect(identity);
+        }
+
+        return WEECHAT_RC_OK;
+    }
+
     return WEECHAT_RC_ERROR;
 }
 
@@ -719,16 +740,19 @@ tox_weechat_commands_init()
                          "list"
                          " || create <name>"
                          " || delete <name> -yes|-keepdata"
-                         " || connect <name>",
-                         "   list: list all Tox identity\n"
-                         " create: create a new Tox identity\n"
-                         " delete: delete a Tox identity; requires either "
+                         " || connect <name>"
+                         " || disconnect <name>",
+                         "      list: list all Tox identity\n"
+                         "    create: create a new Tox identity\n"
+                         "    delete: delete a Tox identity; requires either "
                          "-yes to confirm deletion or -keepdata to delete the "
                          "identity but keep the Tox data file\n"
-                         "connect: connect a Tox identity to the network\n",
+                         "   connect: connect a Tox identity to the network\n"
+                         "disconnect: connect a Tox identity to the network\n",
                          "list"
                          " || create"
                          " || delete %(tox_identities) -yes|-keepdata"
-                         " || connect %(tox_identities)",
+                         " || connect %(tox_disconnected_identities)"
+                         " || disconnect %(tox_connected_identities)",
                          tox_weechat_cmd_tox, NULL);
 }
