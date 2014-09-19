@@ -23,7 +23,7 @@ Usage
  - Create a new identity with `/tox add <name>`. The data file is stored in `~/.weechat/tox/` by default.
  - Connect your identity to the Tox network with `/tox connect <name>`.
  - Change your name with `/name <new name>`.
- - Get your Tox address with `/myaddress`.
+ - Get your Tox ID with `/myid`.
  - To add friends or respond to friend requests, `/help friend` will get you started.
  - Message a friend with `/msg <friend number>`. Get their friend number with `/friend list`.
 
