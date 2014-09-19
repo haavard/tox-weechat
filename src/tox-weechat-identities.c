@@ -352,13 +352,13 @@ tox_weechat_identity_for_buffer(struct t_gui_buffer *buffer)
 
 void
 tox_weechat_identity_delete(struct t_tox_weechat_identity *identity,
-                            bool keep_data)
+                            bool delete_data)
 {
     char *data_path = tox_weechat_identity_data_file_path(identity);
 
     tox_weechat_identity_free(identity);
 
-    if (!keep_data)
+    if (delete_data)
         unlink(data_path);
 }
 

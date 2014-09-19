@@ -78,7 +78,7 @@ tox_weechat_identity_for_buffer(struct t_gui_buffer *buffer);
 
 void
 tox_weechat_identity_delete(struct t_tox_weechat_identity *identity,
-                            bool keep_data);
+                            bool delete_data);
 
 void
 tox_weechat_identity_free(struct t_tox_weechat_identity *identity);
