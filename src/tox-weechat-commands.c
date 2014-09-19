@@ -583,28 +583,38 @@ tox_weechat_cmd_tox(void *data, struct t_gui_buffer *buffer,
         return WEECHAT_RC_OK;
     }
 
-    else if (argc == 3 && (weechat_strcasecmp(argv[1], "delete") == 0))
+    else if (argc >= 3 && argc <= 4
+             && (weechat_strcasecmp(argv[1], "delete") == 0))
     {
         char *name = argv[2];
+        char *flag = argv[3];
 
-        if (tox_weechat_identity_name_search(name))
+        struct t_tox_weechat_identity *identity;
+        if ((identity = tox_weechat_identity_name_search(name)))
         {
-            weechat_printf(NULL,
-                           "%s%s: Identity \"%s\" already exists!",
-                           weechat_prefix("error"),
-                           weechat_plugin->name,
-                           name);
+            if (strcmp(flag, "-keepdata") == 0)
+                tox_weechat_identity_delete(identity, false);
+            else if (strcmp(flag, "-yes") == 0)
+                tox_weechat_identity_delete(identity, true);
+            else
+                weechat_printf(NULL,
+                               "%s%s: You must confirm deletion with either "
+                               "\"-keepdata\" or \"-yes\" (see /help tox)",
+                               weechat_prefix("error"),
+                               weechat_plugin->name);
+
             return WEECHAT_RC_OK;
         }
+        else
+        {
+            weechat_printf(NULL,
+                           "%s%s: Identity \"%s\" does not exist.",
+                           weechat_prefix("error"),
+                           weechat_plugin->name,
+                           identity->name);
 
-        struct t_tox_weechat_identity *identity = tox_weechat_identity_new(name);
-        weechat_printf(NULL,
-                       "%s%s: Identity \"%s\" created!",
-                       weechat_prefix("network"),
-                       weechat_plugin->name,
-                       identity->name);
-
-        return WEECHAT_RC_OK;
+            return WEECHAT_RC_OK;
+        }
     }
 
     else if (argc == 3 && (weechat_strcasecmp(argv[1], "connect") == 0))
@@ -697,15 +707,17 @@ tox_weechat_commands_init()
                          "manage Tox identities",
                          "list"
                          " || create <name>"
-                         " || delete <name>"
+                         " || delete <name> -yes|-keepdata"
                          " || connect <name>",
                          "   list: list all Tox identity\n"
                          " create: create a new Tox identity\n"
-                         " delete: delete a Tox identity\n"
+                         " delete: delete a Tox identity; requires either "
+                         "-yes to confirm deletion or -keepdata to delete the "
+                         "identity but keep the Tox data file\n"
                          "connect: connect a Tox identity to the network\n",
                          "list"
                          " || add"
-                         " || delete %(tox_identities)"
+                         " || delete %(tox_identities) -yes|-keepdata"
                          " || connect %(tox_identities)",
                          tox_weechat_cmd_tox, NULL);
 }
