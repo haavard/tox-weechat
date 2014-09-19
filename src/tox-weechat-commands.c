@@ -393,8 +393,8 @@ tox_weechat_cmd_msg(void *data, struct t_gui_buffer *buffer,
 }
 
 int
-tox_weechat_cmd_myaddress(void *data, struct t_gui_buffer *buffer,
-                          int argc, char **argv, char **argv_eol)
+tox_weechat_cmd_myid(void *data, struct t_gui_buffer *buffer,
+                     int argc, char **argv, char **argv_eol)
 {
     struct t_tox_weechat_identity *identity = tox_weechat_identity_for_buffer(buffer);
     if (!identity)
@@ -583,6 +583,30 @@ tox_weechat_cmd_tox(void *data, struct t_gui_buffer *buffer,
         return WEECHAT_RC_OK;
     }
 
+    else if (argc == 3 && (weechat_strcasecmp(argv[1], "delete") == 0))
+    {
+        char *name = argv[2];
+
+        if (tox_weechat_identity_name_search(name))
+        {
+            weechat_printf(NULL,
+                           "%s%s: Identity \"%s\" already exists!",
+                           weechat_prefix("error"),
+                           weechat_plugin->name,
+                           name);
+            return WEECHAT_RC_OK;
+        }
+
+        struct t_tox_weechat_identity *identity = tox_weechat_identity_new(name);
+        weechat_printf(NULL,
+                       "%s%s: Identity \"%s\" created!",
+                       weechat_prefix("network"),
+                       weechat_plugin->name,
+                       identity->name);
+
+        return WEECHAT_RC_OK;
+    }
+
     else if (argc == 3 && (weechat_strcasecmp(argv[1], "connect") == 0))
     {
         char *name = argv[2];
@@ -646,10 +670,10 @@ tox_weechat_commands_init()
                          "message: message to send",
                          NULL, tox_weechat_cmd_msg, NULL);
 
-    weechat_hook_command("myaddress",
-                         "get your Tox address to give to friends",
+    weechat_hook_command("myid",
+                         "get your Tox ID to give to friends",
                          "", "",
-                         NULL, tox_weechat_cmd_myaddress, NULL);
+                         NULL, tox_weechat_cmd_myid, NULL);
 
     weechat_hook_command("name",
                          "change your Tox name",
