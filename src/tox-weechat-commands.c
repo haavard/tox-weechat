@@ -559,7 +559,7 @@ tox_weechat_cmd_tox(void *data, struct t_gui_buffer *buffer,
         return WEECHAT_RC_OK;
     }
 
-    else if (argc == 3 && (weechat_strcasecmp(argv[1], "add") == 0))
+    else if (argc == 3 && (weechat_strcasecmp(argv[1], "create") == 0))
     {
         char *name = argv[2];
 
@@ -672,12 +672,16 @@ tox_weechat_commands_init()
     weechat_hook_command("tox",
                          "manage Tox identities",
                          "list"
-                         " || add <name>"
-                         " || del <name>"
+                         " || create <name>"
+                         " || delete <name>"
                          " || connect <name>",
                          "   list: list all Tox identity\n"
-                         "    add: create a new Tox identity\n"
-                         "    del: delete a Tox identity\n"
+                         " create: create a new Tox identity\n"
+                         " delete: delete a Tox identity\n"
                          "connect: connect a Tox identity to the network\n",
-                         NULL, tox_weechat_cmd_tox, NULL);
+                         "list"
+                         " || add"
+                         " || delete %(tox_identities)"
+                         " || connect %(tox_identities)",
+                         tox_weechat_cmd_tox, NULL);
 }

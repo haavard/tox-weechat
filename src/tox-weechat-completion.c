@@ -29,7 +29,7 @@ tox_weechat_completion_identity(void *data,
 void
 tox_weechat_completion_init()
 {
-    weechat_hook_completion("tox_identity",
+    weechat_hook_completion("tox_identities",
                             "identity",
                             tox_weechat_completion_identity, NULL);
 }
