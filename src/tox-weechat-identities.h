@@ -21,6 +21,7 @@
 #define TOX_WEECHAT_IDENTITIES_H
 
 #include <stdint.h>
+#include <stdbool.h>
 
 enum t_tox_weechat_identity_option
 {
@@ -74,6 +75,10 @@ tox_weechat_identity_name_search(const char *name);
 
 struct t_tox_weechat_identity *
 tox_weechat_identity_for_buffer(struct t_gui_buffer *buffer);
+
+void
+tox_weechat_identity_delete(struct t_tox_weechat_identity *identity,
+                            bool keep_data);
 
 void
 tox_weechat_identity_free(struct t_tox_weechat_identity *identity);

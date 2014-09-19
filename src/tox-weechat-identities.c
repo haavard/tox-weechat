@@ -23,6 +23,7 @@
 #include <string.h>
 #include <pwd.h>
 #include <unistd.h>
+#include <stdbool.h>
 
 #include <weechat/weechat-plugin.h>
 #include <tox/tox.h>
@@ -347,6 +348,18 @@ tox_weechat_identity_for_buffer(struct t_gui_buffer *buffer)
     }
 
     return NULL;
+}
+
+void
+tox_weechat_identity_delete(struct t_tox_weechat_identity *identity,
+                            bool keep_data)
+{
+    char *data_path = tox_weechat_identity_data_file_path(identity);
+
+    tox_weechat_identity_free(identity);
+
+    if (!keep_data)
+        unlink(data_path);
 }
 
 void
