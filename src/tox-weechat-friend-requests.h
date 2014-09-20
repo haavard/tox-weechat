@@ -24,12 +24,12 @@
 
 #include <tox/tox.h>
 
+/**
+ * Represents a friend request with a Tox ID and a message.
+ */
 struct t_tox_weechat_friend_request
 {
-    // public address of friend request
-    uint8_t address[TOX_CLIENT_ID_SIZE];
-
-    // message sent with request
+    uint8_t tox_id[TOX_CLIENT_ID_SIZE];
     char *message;
 
     struct t_tox_weechat_identity *identity;
@@ -37,9 +37,6 @@ struct t_tox_weechat_friend_request
     struct t_tox_weechat_friend_request *next_request;
     struct t_tox_weechat_friend_request *prev_request;
 };
-
-void
-tox_weechat_friend_request_init_identity(struct t_tox_weechat_identity *identity);
 
 int
 tox_weechat_friend_request_add(struct t_tox_weechat_identity *identity,
@@ -49,15 +46,12 @@ tox_weechat_friend_request_add(struct t_tox_weechat_identity *identity,
 void
 tox_weechat_accept_friend_request(struct t_tox_weechat_friend_request *request);
 
-void
-tox_weechat_decline_friend_request(struct t_tox_weechat_friend_request *request);
-
 struct t_tox_weechat_friend_request *
 tox_weechat_friend_request_with_num(struct t_tox_weechat_identity *identity,
                                     unsigned int num);
 
 void
-tox_weechat_friend_request_save_identity(struct t_tox_weechat_identity *identity);
+tox_weechat_friend_request_free(struct t_tox_weechat_friend_request *request);
 
 void
 tox_weechat_friend_request_free_identity(struct t_tox_weechat_identity *identity);
