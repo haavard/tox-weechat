@@ -17,30 +17,28 @@
  * along with Tox-WeeChat.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef TOX_WEECHAT_JSON_H
-#define TOX_WEECHAT_JSON_H
+#ifndef TOX_WEECHAT_DATA_H
+#define TOX_WEECHAT_DATA_H
 
-#include "tox-weechat-identities.h"
+struct t_tox_weechat_identity;
 
-extern const char *tox_weechat_json_key_friend_requests;
-extern const char *tox_weechat_json_friend_request_key_client_id;
-extern const char *tox_weechat_json_friend_request_key_message;
-
-struct json_t;
+extern const char *tox_weechat_data_key_friend_requests;
+extern const char *tox_weechat_data_friend_request_key_client_id;
+extern const char *tox_weechat_data_friend_request_key_message;
 
 void
-tox_weechat_json_load();
+tox_weechat_data_load();
 
 void
-tox_weechat_json_identity_save(struct t_tox_weechat_identity *identity);
+tox_weechat_data_identity_save(struct t_tox_weechat_identity *identity);
 
 void
-tox_weechat_json_identity_load(struct t_tox_weechat_identity *identity);
+tox_weechat_data_identity_load(struct t_tox_weechat_identity *identity);
 
 int
-tox_weechat_json_save();
+tox_weechat_data_save();
 
 void
-tox_weechat_json_free();
+tox_weechat_data_free();
 
-#endif // TOX_WEECHAT_JSON_H
+#endif // TOX_WEECHAT_DATA_H

@@ -26,7 +26,7 @@
 #include "tox-weechat-friend-requests.h"
 #include "tox-weechat-utils.h"
 
-#include "tox-weechat-json.h"
+#include "tox-weechat-data.h"
 
 #define TOX_WEECHAT_JSON_CONFIG_PATH "%h/tox/data.json"
 
@@ -65,7 +65,7 @@ tox_weechat_json_get_identity_key(struct t_tox_weechat_identity *identity)
  * Save an identity's data.
  */
 void
-tox_weechat_json_identity_save(struct t_tox_weechat_identity *identity)
+tox_weechat_data_identity_save(struct t_tox_weechat_identity *identity)
 {
     json_t *json_data = json_object();
     json_t *friend_request_array = json_array();
@@ -114,7 +114,7 @@ tox_weechat_json_identity_save(struct t_tox_weechat_identity *identity)
  * Load an identity's data from a JSON object.
  */
 void
-tox_weechat_json_identity_load(struct t_tox_weechat_identity *identity)
+tox_weechat_data_identity_load(struct t_tox_weechat_identity *identity)
 {
     char *identity_key = tox_weechat_json_get_identity_key(identity);
     json_t *identity_data = json_object_get(tox_weechat_json_data, identity_key);
@@ -150,10 +150,10 @@ tox_weechat_json_identity_load(struct t_tox_weechat_identity *identity)
 }
 
 /**
- * Load the JSON data on disk into memory.
+ * Load the data on disk into memory.
  */
 void
-tox_weechat_json_load()
+tox_weechat_data_load()
 {
     char *full_path = tox_weechat_json_data_file_path();
 
@@ -173,11 +173,11 @@ tox_weechat_json_load()
 }
 
 /**
- * Save all in-memory data to JSON data on disk. Return 0 on success, -1 on
+ * Save all in-memory data to data on disk. Return 0 on success, -1 on
  * error.
  */
 int
-tox_weechat_json_save()
+tox_weechat_data_save()
 {
     char *full_path = tox_weechat_json_data_file_path();
     int rc = json_dump_file(tox_weechat_json_data,
@@ -192,7 +192,7 @@ tox_weechat_json_save()
  * Free in-memory JSON data.
  */
 void
-tox_weechat_json_free()
+tox_weechat_data_free()
 {
     json_decref(tox_weechat_json_data);
 }

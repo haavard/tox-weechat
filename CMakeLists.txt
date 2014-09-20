@@ -41,7 +41,7 @@ add_library(tox MODULE
     src/tox-weechat-gui.c
     src/tox-weechat-utils.c
     src/tox-weechat-config.c
-    src/tox-weechat-json.c
+    src/tox-weechat-data.c
     src/tox-weechat-completion.c
 )
 

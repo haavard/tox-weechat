@@ -34,7 +34,7 @@
 #include "tox-weechat-chats.h"
 #include "tox-weechat-tox-callbacks.h"
 #include "tox-weechat-utils.h"
-#include "tox-weechat-json.h"
+#include "tox-weechat-data.h"
 
 #include "tox-weechat-identities.h"
 
