@@ -46,10 +46,9 @@ weechat_plugin_init(struct t_weechat_plugin *plugin, int argc, char *argv[])
 {
     weechat_plugin = plugin;
 
-    tox_weechat_json_init();
-
     tox_weechat_config_init();
     tox_weechat_config_read();
+    tox_weechat_json_load();
     tox_weechat_commands_init();
     tox_weechat_gui_init();
     tox_weechat_completion_init();
@@ -63,8 +62,8 @@ int
 weechat_plugin_end(struct t_weechat_plugin *plugin)
 {
     tox_weechat_config_write();
-    tox_weechat_identity_free_all();
     tox_weechat_json_save();
+    tox_weechat_identity_free_all();
 
     return WEECHAT_RC_OK;
 }

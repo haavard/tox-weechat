@@ -53,7 +53,6 @@ char *tox_weechat_bootstrap_addresses[] = {
     "54.199.139.199",
     "63.165.243.15",
 };
-
 uint16_t tox_weechat_bootstrap_ports[] = {
     33445, 443, 33445, 33445, 33445,
     33445, 33445, 33445, 33445, 33445,

@@ -23,7 +23,6 @@
 
 #include <weechat/weechat-plugin.h>
 #include <tox/tox.h>
-#include <jansson.h>
 
 #include "tox-weechat.h"
 #include "tox-weechat-identities.h"
@@ -76,8 +75,7 @@ tox_weechat_friend_request_add(struct t_tox_weechat_identity *identity,
 void
 tox_weechat_friend_request_remove(struct t_tox_weechat_friend_request *request)
 {
-    struct t_tox_weechat_identity *identity = request->identity;
-    if (request == identity->last_friend_request)
+    struct t_tox_weechat_identity *identity = request->identity; if (request == identity->last_friend_request)
         identity->last_friend_request = request->prev_request;
 
     if (request->prev_request)
@@ -121,81 +119,6 @@ tox_weechat_friend_request_with_num(struct t_tox_weechat_identity *identity,
     }
 
     return request;
-}
-
-/**
- * Remove all friend requests from an identity and add new ones from the JSON
- * array json_request_array.
- */
-void
-tox_weechat_friend_requests_load_json(struct t_tox_weechat_identity *identity,
-                                      json_t *json_request_array)
-{
-    identity->friend_requests = identity->last_friend_request = NULL;
-    identity->friend_request_count = 0;
-
-    size_t index;
-    json_t *json_request;
-    json_array_foreach(json_request_array, index, json_request)
-    {
-        char client_id[TOX_CLIENT_ID_SIZE];
-        const char *message;
-
-        json_t *json_id = json_object_get(json_request,
-                                          tox_weechat_json_friend_request_key_client_id);
-        json_t *json_message = json_object_get(json_request,
-                                               tox_weechat_json_friend_request_key_message);
-
-        tox_weechat_hex2bin(json_string_value(json_id), TOX_CLIENT_ID_SIZE * 2, client_id);
-        message = json_string_value(json_message);
-
-        tox_weechat_friend_request_add(identity,
-                                       (uint8_t *)client_id,
-                                       message);
-    }
-}
-
-/**
- * Save all friend requests for an identity to a json array. Returns NULL on
- * error.
- */
-json_t *
-tox_weechat_friend_requests_save_json(struct t_tox_weechat_identity *identity)
-{
-    json_t *friend_requests = json_array();
-    if (!json_array)
-        return NULL;
-
-    for (struct t_tox_weechat_friend_request *request = identity->friend_requests;
-         request;
-         request = request->next_request)
-    {
-        json_t *json_request = json_object();
-
-        char hex_id[TOX_CLIENT_ID_SIZE * 2 + 1];
-        tox_weechat_bin2hex(request->tox_id, TOX_CLIENT_ID_SIZE, hex_id);
-
-        json_t *json_id = json_string(hex_id);
-        json_t *json_message = json_string(request->message);
-
-        if (!json_request || !json_id || !json_message)
-            break;
-
-        json_object_set(json_request,
-                        tox_weechat_json_friend_request_key_client_id,
-                        json_id);
-        json_decref(json_id);
-
-        json_object_set(json_request,
-                        tox_weechat_json_friend_request_key_message,
-                        json_message);
-        json_decref(json_message);
-
-        json_array_append(friend_requests, json_request);
-        json_decref(json_request);
-    }
-
-    return friend_requests;
 }
 
 /**
