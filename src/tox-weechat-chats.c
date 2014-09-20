@@ -25,6 +25,7 @@
 
 #include "tox-weechat.h"
 #include "tox-weechat-identities.h"
+#include "tox-weechat-messages.h"
 #include "tox-weechat-utils.h"
 
 #include "tox-weechat-chats.h"
@@ -195,16 +196,12 @@ tox_weechat_buffer_input_callback(void *data,
                                   const char *input_data)
 {
     struct t_tox_weechat_chat *chat = data;
-
-    tox_send_message(chat->identity->tox,
-                     chat->friend_number,
-                     (uint8_t *)input_data,
-                     strlen(input_data));
+    tox_weechat_send_friend_message(chat->identity,
+                                    chat->friend_number,
+                                    input_data);
 
     char *name = tox_weechat_get_self_name_nt(chat->identity->tox);
-
     tox_weechat_chat_print_message(chat, name, input_data);
-
     free(name);
 
     return WEECHAT_RC_OK;

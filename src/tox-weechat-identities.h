@@ -23,6 +23,8 @@
 #include <stdint.h>
 #include <stdbool.h>
 
+#include <tox/tox.h>
+
 enum t_tox_weechat_identity_option
 {
     TOX_WEECHAT_IDENTITY_OPTION_SAVEFILE = 0,
@@ -49,6 +51,9 @@ struct t_tox_weechat_identity
     struct t_tox_weechat_friend_request *friend_requests;
     struct t_tox_weechat_friend_request *last_friend_request;
     unsigned int friend_request_count;
+
+    struct t_tox_weechat_unsent_message *unsent_messages;
+    struct t_tox_weechat_unsent_message *last_unsent_message;
 
     struct t_tox_weechat_identity *next_identity;
     struct t_tox_weechat_identity *prev_identity;

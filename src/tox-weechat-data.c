@@ -29,6 +29,7 @@
 #include "tox-weechat.h"
 #include "tox-weechat-identities.h"
 #include "tox-weechat-friend-requests.h"
+#include "tox-weechat-messages.h"
 #include "tox-weechat-utils.h"
 
 #include "tox-weechat-data.h"
@@ -38,6 +39,9 @@
 const char *tox_weechat_json_key_friend_requests = "friend_requests";
 const char *tox_weechat_json_friend_request_key_client_id = "client_id";
 const char *tox_weechat_json_friend_request_key_message = "message";
+const char *tox_weechat_json_key_unsent_messages = "unsent_messages";
+const char *tox_weechat_json_unsent_messages_key_recipient_id = "recipient_id";
+const char *tox_weechat_json_unsent_messages_key_message = "message";
 
 json_t *tox_weechat_json_data = NULL;
 
@@ -67,15 +71,14 @@ tox_weechat_json_get_identity_key(struct t_tox_weechat_identity *identity)
 }
 
 /**
- * Save an identity's data.
+ * Save an identity's friend requests into a json array.
  */
-void
-tox_weechat_data_identity_save(struct t_tox_weechat_identity *identity)
+json_t *
+tox_weechat_data_friend_requests_json(struct t_tox_weechat_identity *identity)
 {
-    json_t *json_data = json_object();
     json_t *friend_request_array = json_array();
-    if (!json_data || !friend_request_array)
-        return;
+    if (!friend_request_array)
+        return NULL;
 
     for (struct t_tox_weechat_friend_request *request = identity->friend_requests;
          request;
@@ -104,15 +107,131 @@ tox_weechat_data_identity_save(struct t_tox_weechat_identity *identity)
         json_decref(json_request);
     }
 
+    return friend_request_array;
+}
+
+/**
+ * Save an identity's unsent messages into a json array.
+ */
+json_t *
+tox_weechat_data_unsent_messages_json(struct t_tox_weechat_identity *identity)
+{
+    json_t *unsent_messages_array = json_array();
+    if (!unsent_messages_array)
+        return NULL;
+
+    for (struct t_tox_weechat_unsent_message *message = identity->unsent_messages;
+         message;
+         message = message->next_message)
+    {
+        char hex_id[TOX_CLIENT_ID_SIZE * 2 + 1];
+        tox_weechat_bin2hex(message->recipient_id, TOX_CLIENT_ID_SIZE, hex_id);
+
+        json_t *json_message = json_object();
+        json_t *json_id = json_string(hex_id);
+        json_t *json_message_data = json_string(message->message);
+        if (!json_message || !json_id || !json_message_data)
+            break;
+
+        json_object_set(json_message,
+                        tox_weechat_json_unsent_messages_key_recipient_id,
+                        json_id);
+        json_decref(json_id);
+
+        json_object_set(json_message,
+                        tox_weechat_json_unsent_messages_key_message,
+                        json_message_data);
+        json_decref(json_message_data);
+
+        json_array_append(unsent_messages_array, json_message);
+        json_decref(json_message);
+    }
+
+    return unsent_messages_array;
+}
+
+/**
+ * Save an identity's data.
+ */
+void
+tox_weechat_data_identity_save(struct t_tox_weechat_identity *identity)
+{
+    json_t *json_data = json_object();
+    if (!json_data)
+        return;
+
+    json_t *friend_requests = tox_weechat_data_friend_requests_json(identity);
     json_object_set(json_data,
                     tox_weechat_json_key_friend_requests,
-                    friend_request_array);
-    json_decref(friend_request_array);
+                    friend_requests);
+    json_decref(friend_requests);
+
+    json_t *unsent_messages = tox_weechat_data_unsent_messages_json(identity);
+    json_object_set(json_data,
+                    tox_weechat_json_key_unsent_messages,
+                    unsent_messages);
+    json_decref(unsent_messages);
 
     char *identity_key = tox_weechat_json_get_identity_key(identity);
     json_object_set(tox_weechat_json_data, identity_key, json_data);
     free(identity_key);
     json_decref(json_data);
+}
+
+/**
+ * Load friend requests from a json array.
+ */
+void
+tox_weechat_data_load_friend_requests(struct t_tox_weechat_identity *identity,
+                                      json_t *friend_requests)
+{
+    tox_weechat_friend_request_free_identity(identity);
+
+    size_t index;
+    json_t *json_request;
+    json_array_foreach(friend_requests, index, json_request)
+    {
+        char client_id[TOX_CLIENT_ID_SIZE];
+        const char *message;
+
+        json_t *json_id = json_object_get(json_request,
+                                          tox_weechat_json_friend_request_key_client_id);
+        json_t *json_message = json_object_get(json_request,
+                                               tox_weechat_json_friend_request_key_message);
+
+        tox_weechat_hex2bin(json_string_value(json_id), TOX_CLIENT_ID_SIZE * 2, client_id);
+        message = json_string_value(json_message);
+
+        tox_weechat_friend_request_add(identity,
+                                       (uint8_t *)client_id,
+                                       message);
+    }
+}
+
+/**
+ * Load unsent messages from a json array.
+ */
+void
+tox_weechat_data_load_unsent_messages(struct t_tox_weechat_identity *identity,
+                                      json_t *friend_requests)
+{
+    size_t index;
+    json_t *json_message;
+    json_array_foreach(friend_requests, index, json_message)
+    {
+        char client_id[TOX_CLIENT_ID_SIZE];
+        const char *message;
+
+        json_t *json_id = json_object_get(json_message,
+                                          tox_weechat_json_unsent_messages_key_recipient_id);
+        json_t *json_message_data = json_object_get(json_message,
+                                                    tox_weechat_json_unsent_messages_key_message);
+
+        tox_weechat_hex2bin(json_string_value(json_id), TOX_CLIENT_ID_SIZE * 2, client_id);
+        message = json_string_value(json_message_data);
+
+        // TODO
+    }
 }
 
 /**
@@ -125,33 +244,15 @@ tox_weechat_data_identity_load(struct t_tox_weechat_identity *identity)
     json_t *identity_data = json_object_get(tox_weechat_json_data, identity_key);
     free(identity_key);
 
-    json_t *friend_request_array = json_object_get(identity_data,
-                                                   tox_weechat_json_key_friend_requests);
+    json_t *friend_requests = json_object_get(identity_data,
+                                              tox_weechat_json_key_friend_requests);
+    if (friend_requests)
+        tox_weechat_data_load_friend_requests(identity, friend_requests);
 
-    if (friend_request_array)
-    {
-        tox_weechat_friend_request_free_identity(identity);
-
-        size_t index;
-        json_t *json_request;
-        json_array_foreach(friend_request_array, index, json_request)
-        {
-            char client_id[TOX_CLIENT_ID_SIZE];
-            const char *message;
-
-            json_t *json_id = json_object_get(json_request,
-                                              tox_weechat_json_friend_request_key_client_id);
-            json_t *json_message = json_object_get(json_request,
-                                                   tox_weechat_json_friend_request_key_message);
-
-            tox_weechat_hex2bin(json_string_value(json_id), TOX_CLIENT_ID_SIZE * 2, client_id);
-            message = json_string_value(json_message);
-
-            tox_weechat_friend_request_add(identity,
-                                           (uint8_t *)client_id,
-                                           message);
-        }
-    }
+    json_t *unsent_messages = json_object_get(identity_data,
+                                              tox_weechat_json_key_unsent_messages);
+    if (unsent_messages)
+        tox_weechat_data_load_unsent_messages(identity, unsent_messages);
 }
 
 /**
