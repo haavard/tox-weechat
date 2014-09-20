@@ -27,7 +27,6 @@
 #include "tox-weechat.h"
 #include "tox-weechat-identities.h"
 #include "tox-weechat-utils.h"
-#include "tox-weechat-json.h"
 
 #include "tox-weechat-friend-requests.h"
 

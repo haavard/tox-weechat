@@ -17,6 +17,11 @@
  * along with Tox-WeeChat.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+
+/////// TODO //////////
+// get rid of data from deleted/nonexisting identities so it doesn't accumulate
+///////////////////////
+
 #include <weechat/weechat-plugin.h>
 #include <tox/tox.h>
 #include <jansson.h>

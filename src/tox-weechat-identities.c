@@ -262,8 +262,8 @@ tox_weechat_identity_connect(struct t_tox_weechat_identity *identity)
                      (uint8_t *)name, strlen(name));
     }
 
-    // load JSON data
-    tox_weechat_json_identity_load(identity);
+    // load data
+    tox_weechat_data_identity_load(identity);
 
     // bootstrap DHT
     int max_bootstrap_nodes = 5;
@@ -292,8 +292,8 @@ tox_weechat_identity_disconnect(struct t_tox_weechat_identity *identity)
     if (!identity->tox)
         return;
 
-    // save JSON data
-    tox_weechat_json_identity_save(identity);
+    // save data
+    tox_weechat_data_identity_save(identity);
 
     // save and kill tox
     int result = tox_weechat_save_identity_data_file(identity);
