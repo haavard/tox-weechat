@@ -175,6 +175,14 @@ tox_weechat_bootstrap_tox(Tox *tox, const char *address, uint16_t port, const ch
     return result;
 }
 
+void
+tox_weechat_bootstrap_random_node(Tox *tox)
+{
+    int i = rand() % tox_weechat_bootstrap_count;
+    tox_weechat_bootstrap_tox(tox, tox_weechat_bootstrap_addresses[i],
+                                   tox_weechat_bootstrap_ports[i],
+                                   tox_weechat_bootstrap_keys[i]);
+}
 
 struct t_tox_weechat_identity *
 tox_weechat_identity_new(const char *name)
@@ -208,15 +216,6 @@ tox_weechat_identity_new(const char *name)
 }
 
 void
-tox_weechat_bootstrap_random_node(Tox *tox)
-{
-    int i = rand() % tox_weechat_bootstrap_count;
-    tox_weechat_bootstrap_tox(tox, tox_weechat_bootstrap_addresses[i],
-                                   tox_weechat_bootstrap_ports[i],
-                                   tox_weechat_bootstrap_keys[i]);
-}
-
-void
 tox_weechat_identity_connect(struct t_tox_weechat_identity *identity)
 {
     if (identity->tox)
@@ -229,6 +228,12 @@ tox_weechat_identity_connect(struct t_tox_weechat_identity *identity)
                                               NULL, NULL,
                                               tox_weechat_identity_buffer_close_callback, identity);
     }
+
+    weechat_printf(identity->buffer,
+                   "%s%s: identity %s connecting",
+                   weechat_prefix("network"),
+                   weechat_plugin->name,
+                   identity->name);
 
     // create Tox
     identity->tox = tox_new(NULL);
@@ -302,10 +307,12 @@ tox_weechat_identity_disconnect(struct t_tox_weechat_identity *identity)
         free(path);
     }
 
-    tox_weechat_identity_set_online_status(identity, false);
-
     // stop Tox timer
     weechat_unhook(identity->tox_do_timer);
+
+    // have to refresh and hide bar items even if we were already offline
+    tox_weechat_identity_refresh_online_status(identity);
+    tox_weechat_identity_set_online_status(identity, false);
 }
 
 void
@@ -321,31 +328,39 @@ tox_weechat_identity_autoconnect()
 }
 
 void
+tox_weechat_identity_refresh_online_status(struct t_tox_weechat_identity *identity)
+{
+    weechat_bar_item_update("buffer_plugin");
+    weechat_bar_item_update("input_prompt");
+    weechat_bar_item_update("away");
+}
+
+void
 tox_weechat_identity_set_online_status(struct t_tox_weechat_identity *identity,
                                        bool online)
 {
-    identity->tox_online = identity->tox && online;
-
-    weechat_bar_item_update("input_prompt");
-    weechat_bar_item_update("away");
-
-    struct t_gui_buffer *buffer = identity->buffer ?: NULL;
-
-    if (identity->tox_online)
+    if (identity->tox_online ^ online)
     {
-        weechat_printf(buffer,
-                       "%s%s: identity %s connected",
-                       weechat_prefix("network"),
-                       weechat_plugin->name,
-                       identity->name);
-    }
-    else
-    {
-        weechat_printf(buffer,
-                       "%s%s: identity %s disconnected",
-                       weechat_prefix("network"),
-                       weechat_plugin->name,
-                       identity->name);
+        identity->tox_online = online;
+        tox_weechat_identity_refresh_online_status(identity);
+
+        struct t_gui_buffer *buffer = identity->buffer ?: NULL;
+        if (identity->tox_online)
+        {
+            weechat_printf(buffer,
+                           "%s%s: identity %s connected",
+                           weechat_prefix("network"),
+                           weechat_plugin->name,
+                           identity->name);
+        }
+        else
+        {
+            weechat_printf(buffer,
+                           "%s%s: identity %s disconnected",
+                           weechat_prefix("network"),
+                           weechat_plugin->name,
+                           identity->name);
+        }
     }
 }
 

@@ -628,43 +628,47 @@ tox_weechat_cmd_tox(void *data, struct t_gui_buffer *buffer,
         return WEECHAT_RC_OK;
     }
 
-    else if (argc == 3 && (weechat_strcasecmp(argv[1], "connect") == 0))
+    else if (argc >= 3 && (weechat_strcasecmp(argv[1], "connect") == 0))
     {
-        char *name = argv[2];
-
-        struct t_tox_weechat_identity *identity = tox_weechat_identity_name_search(name);
-        if (!identity)
+        for (int i = 2; i < argc; ++i)
         {
-            weechat_printf(NULL,
-                           "%s%s: Identity \"%s\" does not exist.",
-                           weechat_prefix("error"),
-                           weechat_plugin->name,
-                           name);
-        }
-        else
-        {
-            tox_weechat_identity_connect(identity);
+            char *name = argv[i];
+            struct t_tox_weechat_identity *identity = tox_weechat_identity_name_search(name);
+            if (!identity)
+            {
+                weechat_printf(NULL,
+                               "%s%s: Identity \"%s\" does not exist.",
+                               weechat_prefix("error"),
+                               weechat_plugin->name,
+                               name);
+            }
+            else
+            {
+                tox_weechat_identity_connect(identity);
+            }
         }
 
         return WEECHAT_RC_OK;
     }
 
-    else if (argc == 3 && (weechat_strcasecmp(argv[1], "disconnect") == 0))
+    else if (argc >= 3 && (weechat_strcasecmp(argv[1], "disconnect") == 0))
     {
-        char *name = argv[2];
-
-        struct t_tox_weechat_identity *identity = tox_weechat_identity_name_search(name);
-        if (!identity)
+        for (int i = 2; i < argc; ++i)
         {
-            weechat_printf(NULL,
-                           "%s%s: Identity \"%s\" does not exist.",
-                           weechat_prefix("error"),
-                           weechat_plugin->name,
-                           name);
-        }
-        else
-        {
-            tox_weechat_identity_disconnect(identity);
+            char *name = argv[i];
+            struct t_tox_weechat_identity *identity = tox_weechat_identity_name_search(name);
+            if (!identity)
+            {
+                weechat_printf(NULL,
+                               "%s%s: Identity \"%s\" does not exist.",
+                               weechat_prefix("error"),
+                               weechat_plugin->name,
+                               name);
+            }
+            else
+            {
+                tox_weechat_identity_disconnect(identity);
+            }
         }
 
         return WEECHAT_RC_OK;
@@ -740,8 +744,8 @@ tox_weechat_commands_init()
                          "list"
                          " || create <name>"
                          " || delete <name> -yes|-keepdata"
-                         " || connect <name>"
-                         " || disconnect <name>",
+                         " || connect [<name>...]"
+                         " || disconnect [<name>...]",
                          "      list: list all Tox identity\n"
                          "    create: create a new Tox identity\n"
                          "    delete: delete a Tox identity; requires either "
@@ -752,7 +756,7 @@ tox_weechat_commands_init()
                          "list"
                          " || create"
                          " || delete %(tox_identities) -yes|-keepdata"
-                         " || connect %(tox_disconnected_identities)"
-                         " || disconnect %(tox_connected_identities)",
+                         " || connect %(tox_disconnected_identities)|%*"
+                         " || disconnect %(tox_connected_identities)|%*",
                          tox_weechat_cmd_tox, NULL);
 }

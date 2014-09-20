@@ -71,6 +71,9 @@ void
 tox_weechat_identity_autoconnect();
 
 void
+tox_weechat_identity_refresh_online_status(struct t_tox_weechat_identity *identity);
+
+void
 tox_weechat_identity_set_online_status(struct t_tox_weechat_identity *identity,
                                        bool online);
 

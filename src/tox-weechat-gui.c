@@ -39,10 +39,7 @@ bar_item_away(void *data,
 {
     struct t_tox_weechat_identity *identity = tox_weechat_identity_for_buffer(buffer);
 
-    if (!identity)
-        return NULL;
-
-    if (identity->tox == NULL || identity->tox_online == false)
+    if (!identity || !(identity->tox))
         return NULL;
 
     char *status = NULL;;
@@ -68,7 +65,7 @@ bar_item_input_prompt(void *data,
 {
     struct t_tox_weechat_identity *identity = tox_weechat_identity_for_buffer(buffer);
 
-    if (identity->tox == NULL || identity->tox_online == false)
+    if (!identity || !(identity->tox))
         return NULL;
 
     return tox_weechat_get_self_name_nt(identity->tox);
@@ -88,11 +85,14 @@ bar_item_buffer_plugin(void *data, struct t_gui_bar_item *item,
     const char *identity_name = identity->name;
 
     snprintf(string, sizeof(string),
-             "%s%s/%s%s",
+             "%s%s/%s%s%s/%s%s",
              plugin_name,
              weechat_color("bar_delim"),
              weechat_color("bar_fg"),
-             identity_name);
+             identity_name,
+             weechat_color("bar_delim"),
+             weechat_color("bar_fg"),
+             identity->tox_online ? "online" : "offline");
 
     return strdup(string);
 }
