@@ -26,7 +26,7 @@
 #include <tox/tox.h>
 
 void
-tox_weechat_hex2bin(const char *hex, char *out);
+tox_weechat_hex2bin(const char *hex, size_t length, char *out);
 
 void
 tox_weechat_bin2hex(const uint8_t *bin, size_t size, char *out);

@@ -141,7 +141,7 @@ tox_weechat_friend_request_init_identity(struct t_tox_weechat_identity *identity
         json_t *json_message = json_object_get(json_request,
                                                tox_weechat_json_friend_request_key_message);
 
-        tox_weechat_hex2bin(json_string_value(json_id), client_id);
+        tox_weechat_hex2bin(json_string_value(json_id), TOX_CLIENT_ID_SIZE * 2, client_id);
         message = json_string_value(json_message);
 
         tox_weechat_friend_request_add(identity,

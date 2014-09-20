@@ -165,7 +165,7 @@ int
 tox_weechat_bootstrap_tox(Tox *tox, const char *address, uint16_t port, const char *public_key)
 {
     char binary_key[TOX_FRIEND_ADDRESS_SIZE];
-    tox_weechat_hex2bin(public_key, binary_key);
+    tox_weechat_hex2bin(public_key, TOX_FRIEND_ADDRESS_SIZE * 2, binary_key);
 
     int result = tox_bootstrap_from_address(tox,
                                             address,

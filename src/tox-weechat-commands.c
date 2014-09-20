@@ -125,7 +125,7 @@ tox_weechat_cmd_friend(void *data, struct t_gui_buffer *buffer,
     else if (argc >= 3 && (weechat_strcasecmp(argv[1], "add") == 0))
     {
         char address[TOX_FRIEND_ADDRESS_SIZE];
-        tox_weechat_hex2bin(argv[2], address);
+        tox_weechat_hex2bin(argv[2], TOX_FRIEND_ADDRESS_SIZE * 2, address);
 
         char *message;
         if (argc == 3 || strlen(argv_eol[3]) == 0)

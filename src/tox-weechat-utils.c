@@ -30,12 +30,11 @@
 #include "tox-weechat-utils.h"
 
 void
-tox_weechat_hex2bin(const char *hex, char *out)
+tox_weechat_hex2bin(const char *hex, size_t length, char *out)
 {
-    size_t length = strlen(hex) / 2;
     const char *position = hex;
 
-    for (size_t i = 0; i < length; ++i)
+    for (size_t i = 0; i < length / 2; ++i)
     {
         sscanf(position, "%2hhx", &out[i]);
         position += 2;
