@@ -6,7 +6,7 @@ Current build status: [![Build Status](https://travis-ci.org/haavardp/tox-weecha
 
 Installation
 ------------
-> Tox-WeeChat is available on the [AUR][3].
+> Tox-WeeChat is available in the [AUR][3].
 
 Tox-WeeChat requires [WeeChat][1] >=1.0, [libjansson][4] >=2.5, and the latest-ish [libtoxcore][5]. It also requires CMake to be built. Installation is fairly simple; after getting the source, compile and install using CMake:
 
