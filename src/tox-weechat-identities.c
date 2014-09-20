@@ -34,6 +34,7 @@
 #include "tox-weechat-chats.h"
 #include "tox-weechat-tox-callbacks.h"
 #include "tox-weechat-utils.h"
+#include "tox-weechat-json.h"
 
 #include "tox-weechat-identities.h"
 
@@ -229,10 +230,18 @@ tox_weechat_identity_connect(struct t_tox_weechat_identity *identity)
     }
 
     weechat_printf(identity->buffer,
-                   "%s%s: identity %s connecting",
+                   "%s%s: identity %s connecting...",
                    weechat_prefix("network"),
                    weechat_plugin->name,
                    identity->name);
+
+    if (identity->friend_request_count > 0)
+    {
+        weechat_printf(identity->buffer,
+                       "%sYou have %d pending friend requests.",
+                       weechat_prefix("network"),
+                       identity->friend_request_count);
+    }
 
     // create Tox
     identity->tox = tox_new(NULL);
@@ -253,14 +262,8 @@ tox_weechat_identity_connect(struct t_tox_weechat_identity *identity)
                      (uint8_t *)name, strlen(name));
     }
 
-    // initialize friend requests
-    tox_weechat_friend_request_init_identity(identity);
-
-    if (identity->friend_request_count > 0)
-        weechat_printf(identity->buffer,
-                       "%sYou have %d pending friend requests.",
-                       weechat_prefix("network"),
-                       identity->friend_request_count);
+    // load JSON data
+    tox_weechat_json_identity_load(identity);
 
     // bootstrap DHT
     int max_bootstrap_nodes = 5;
@@ -288,6 +291,9 @@ tox_weechat_identity_disconnect(struct t_tox_weechat_identity *identity)
     // check that we're not already disconnected
     if (!identity->tox)
         return;
+
+    // save JSON data
+    tox_weechat_json_identity_save(identity);
 
     // save and kill tox
     int result = tox_weechat_save_identity_data_file(identity);
@@ -415,7 +421,6 @@ void
 tox_weechat_identity_free(struct t_tox_weechat_identity *identity)
 {
     // save friend requests
-    tox_weechat_friend_request_save_identity(identity);
     tox_weechat_friend_request_free_identity(identity);
 
     // disconnect

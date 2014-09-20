@@ -26,10 +26,21 @@ extern const char *tox_weechat_json_key_friend_requests;
 extern const char *tox_weechat_json_friend_request_key_client_id;
 extern const char *tox_weechat_json_friend_request_key_message;
 
+struct json_t;
+
 void
 tox_weechat_json_load();
 
+void
+tox_weechat_json_identity_save(struct t_tox_weechat_identity *identity);
+
+void
+tox_weechat_json_identity_load(struct t_tox_weechat_identity *identity);
+
 int
 tox_weechat_json_save();
+
+void
+tox_weechat_json_free();
 
 #endif // TOX_WEECHAT_JSON_H

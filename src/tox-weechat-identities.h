@@ -38,11 +38,10 @@ struct t_tox_weechat_identity
     struct t_config_option *options[TOX_WEECHAT_IDENTITY_NUM_OPTIONS];
 
     struct Tox *tox;
+    int tox_online;
 
     struct t_gui_buffer *buffer;
     struct t_hook *tox_do_timer;
-
-    int tox_online;
 
     struct t_tox_weechat_chat *chats;
     struct t_tox_weechat_chat *last_chat;

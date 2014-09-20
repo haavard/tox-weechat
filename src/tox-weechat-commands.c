@@ -255,7 +255,7 @@ tox_weechat_cmd_friend(void *data, struct t_gui_buffer *buffer,
             }
 
             char hex_address[TOX_CLIENT_ID_SIZE * 2 + 1];
-            tox_weechat_bin2hex(request->address,
+            tox_weechat_bin2hex(request->tox_id,
                                 TOX_CLIENT_ID_SIZE,
                                 hex_address);
 
@@ -294,7 +294,7 @@ tox_weechat_cmd_friend(void *data, struct t_gui_buffer *buffer,
                  request = request->next_request)
             {
                 char hex_address[TOX_CLIENT_ID_SIZE * 2 + 1];
-                tox_weechat_bin2hex(request->address,
+                tox_weechat_bin2hex(request->tox_id,
                                     TOX_CLIENT_ID_SIZE,
                                     hex_address);
 

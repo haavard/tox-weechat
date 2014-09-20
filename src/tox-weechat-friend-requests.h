@@ -46,6 +46,9 @@ tox_weechat_friend_request_add(struct t_tox_weechat_identity *identity,
 void
 tox_weechat_accept_friend_request(struct t_tox_weechat_friend_request *request);
 
+void
+tox_weechat_decline_friend_request(struct t_tox_weechat_friend_request *request);
+
 struct t_tox_weechat_friend_request *
 tox_weechat_friend_request_with_num(struct t_tox_weechat_identity *identity,
                                     unsigned int num);

@@ -92,12 +92,21 @@ tox_weechat_friend_request_remove(struct t_tox_weechat_friend_request *request)
 }
 
 /**
- * Accept a friend request. Removes and frees the request.
+ * Accept a friend request. Remove and free the request.
  */
 void
 tox_weechat_accept_friend_request(struct t_tox_weechat_friend_request *request)
 {
     tox_add_friend_norequest(request->identity->tox, request->tox_id);
+    tox_weechat_friend_request_remove(request);
+}
+
+/**
+ * Decline a friend request. Remove and free the request.
+ */
+void
+tox_weechat_decline_friend_request(struct t_tox_weechat_friend_request *request)
+{
     tox_weechat_friend_request_remove(request);
 }
 

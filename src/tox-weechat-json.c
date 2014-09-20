@@ -34,6 +34,8 @@ const char *tox_weechat_json_key_friend_requests = "friend_requests";
 const char *tox_weechat_json_friend_request_key_client_id = "client_id";
 const char *tox_weechat_json_friend_request_key_message = "message";
 
+json_t *tox_weechat_json_data = NULL;
+
 /**
  * Return the full path to the JSON data file.
  */
@@ -60,15 +62,15 @@ tox_weechat_json_get_identity_key(struct t_tox_weechat_identity *identity)
 }
 
 /**
- * Save an identity's data to a JSON object.
+ * Save an identity's data.
  */
-json_t *
+void
 tox_weechat_json_identity_save(struct t_tox_weechat_identity *identity)
 {
     json_t *json_data = json_object();
     json_t *friend_request_array = json_array();
     if (!json_data || !friend_request_array)
-        return NULL;
+        return;
 
     for (struct t_tox_weechat_friend_request *request = identity->friend_requests;
          request;
@@ -102,17 +104,24 @@ tox_weechat_json_identity_save(struct t_tox_weechat_identity *identity)
                     friend_request_array);
     json_decref(friend_request_array);
 
-    return json_data;
+    char *identity_key = tox_weechat_json_get_identity_key(identity);
+    json_object_set(tox_weechat_json_data, identity_key, json_data);
+    free(identity_key);
+    json_decref(json_data);
 }
 
 /**
  * Load an identity's data from a JSON object.
  */
 void
-tox_weechat_json_identity_load(struct t_tox_weechat_identity *identity,
-                               json_t *data)
+tox_weechat_json_identity_load(struct t_tox_weechat_identity *identity)
 {
-    json_t *friend_request_array = json_object_get(data, tox_weechat_json_key_friend_requests);
+    char *identity_key = tox_weechat_json_get_identity_key(identity);
+    json_t *identity_data = json_object_get(tox_weechat_json_data, identity_key);
+    free(identity_key);
+
+    json_t *friend_request_array = json_object_get(identity_data,
+                                                   tox_weechat_json_key_friend_requests);
 
     if (friend_request_array)
     {
@@ -141,7 +150,7 @@ tox_weechat_json_identity_load(struct t_tox_weechat_identity *identity,
 }
 
 /**
- * Load the JSON data on disk into the in-memory identity objects.
+ * Load the JSON data on disk into memory.
  */
 void
 tox_weechat_json_load()
@@ -149,22 +158,17 @@ tox_weechat_json_load()
     char *full_path = tox_weechat_json_data_file_path();
 
     json_error_t error;
-    json_t *json_data = json_load_file(full_path, 0, &error);
+    tox_weechat_json_data = json_load_file(full_path, 0, &error);
     free(full_path);
 
-    if (json_data)
+    if (!tox_weechat_json_data)
     {
-        for (struct t_tox_weechat_identity *identity = tox_weechat_identities;
-             identity;
-             identity = identity->next_identity)
-        {
-            char *hex_id = tox_weechat_json_get_identity_key(identity);
-            json_t *identity_data = json_object_get(json_data, hex_id);
+        weechat_printf(NULL,
+                       "%s%s: could not load on-disk data",
+                       weechat_prefix("error"),
+                       weechat_plugin->name);
 
-            if (identity_data)
-                tox_weechat_json_identity_load(identity, identity_data);
-        }
-        json_decref(json_data);
+        tox_weechat_json_data = json_object();
     }
 }
 
@@ -175,28 +179,21 @@ tox_weechat_json_load()
 int
 tox_weechat_json_save()
 {
-    json_t *json_data = json_object();
-    if (!json_data)
-        return -1;
-
-    for (struct t_tox_weechat_identity *identity = tox_weechat_identities;
-         identity;
-         identity = identity->next_identity)
-    {
-        char *hex_id = tox_weechat_json_get_identity_key(identity);
-        json_t *identity_data = tox_weechat_json_identity_save(identity);
-
-        json_object_set(json_data, hex_id, identity_data);
-        json_decref(identity_data);
-    }
-
     char *full_path = tox_weechat_json_data_file_path();
-    int rc = json_dump_file(json_data,
+    int rc = json_dump_file(tox_weechat_json_data,
                             full_path,
                             0);
     free(full_path);
-    json_decref(json_data);
 
     return rc;
+}
+
+/**
+ * Free in-memory JSON data.
+ */
+void
+tox_weechat_json_free()
+{
+    json_decref(tox_weechat_json_data);
 }
 
