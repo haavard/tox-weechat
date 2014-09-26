@@ -27,6 +27,7 @@ struct t_tox_weechat_identity;
 struct t_tox_weechat_unsent_message_recipient
 {
     uint8_t recipient_id[TOX_CLIENT_ID_SIZE];
+    struct t_tox_weechat_identity *identity;
 
     struct t_tox_weechat_unsent_message *unsent_messages;
     struct t_tox_weechat_unsent_message *last_unsent_message;
@@ -37,7 +38,8 @@ struct t_tox_weechat_unsent_message_recipient
 
 struct t_tox_weechat_unsent_message
 {
-    const char *message;
+    char *message;
+    struct t_tox_weechat_unsent_message_recipient *recipient;
 
     struct t_tox_weechat_unsent_message *next_message;
     struct t_tox_weechat_unsent_message *prev_message;
@@ -52,5 +54,8 @@ void
 tox_weechat_add_unsent_message(struct t_tox_weechat_identity *identity,
                                const uint8_t *recipient_id,
                                const char *message);
+
+void
+tox_weechat_unsent_messages_free(struct t_tox_weechat_identity *identity);
 
 #endif // TOX_WEECHAT_MESSAGES_H

@@ -74,7 +74,8 @@ tox_weechat_friend_request_add(struct t_tox_weechat_identity *identity,
 void
 tox_weechat_friend_request_remove(struct t_tox_weechat_friend_request *request)
 {
-    struct t_tox_weechat_identity *identity = request->identity; if (request == identity->last_friend_request)
+    struct t_tox_weechat_identity *identity = request->identity;
+    if (request == identity->last_friend_request)
         identity->last_friend_request = request->prev_request;
 
     if (request->prev_request)

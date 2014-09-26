@@ -57,7 +57,7 @@ tox_weechat_unsent_message_recipient_new(struct t_tox_weechat_identity *identity
         return NULL;
 
     memcpy(recipient->recipient_id, id, TOX_CLIENT_ID_SIZE);
-
+    recipient->identity = identity;
     recipient->unsent_messages = recipient->last_unsent_message = NULL;
 
     recipient->prev_recipient = identity->last_unsent_message_recipient;
@@ -93,6 +93,7 @@ tox_weechat_add_unsent_message(struct t_tox_weechat_identity *identity,
         return;
 
     unsent_message->message = strdup(message);
+    unsent_message->recipient = recipient;
 
     unsent_message->prev_message = recipient->last_unsent_message;
     unsent_message->next_message = NULL;
@@ -103,6 +104,25 @@ tox_weechat_add_unsent_message(struct t_tox_weechat_identity *identity,
         recipient->last_unsent_message->next_message = unsent_message;
 
     recipient->last_unsent_message = unsent_message;
+}
+
+void
+tox_weechat_remove_unsent_message(struct t_tox_weechat_unsent_message *message)
+{
+    struct t_tox_weechat_unsent_message_recipient *recipient = message->recipient;
+    if (message == recipient->last_unsent_message)
+        recipient->last_unsent_message = message->prev_message;
+
+    if (message->prev_message)
+        message->prev_message->next_message = message->next_message;
+    else
+        recipient->unsent_messages = message->next_message;
+
+    if (message->next_message)
+        message->next_message->prev_message = message->prev_message;
+
+    free(message->message);
+    free(message);
 }
 
 /**
@@ -128,3 +148,22 @@ tox_weechat_send_friend_message(struct t_tox_weechat_identity *identity,
     return rc;
 }
 
+void
+tox_weechat_unsent_messages_free(struct t_tox_weechat_identity *identity)
+{
+    struct t_tox_weechat_unsent_message_recipient *recipient;
+    for (recipient = identity->unsent_message_recipients;
+         recipient;
+         recipient = recipient->next_recipient)
+    {
+        while (recipient->unsent_messages)
+            tox_weechat_remove_unsent_message(recipient->unsent_messages);
+    }
+}
+
+void
+tox_weechat_attempt_message_flush(struct t_tox_weechat_identity *identity,
+                                  int32_t friend_number)
+{
+
+}

@@ -120,6 +120,9 @@ tox_weechat_data_unsent_messages_json(struct t_tox_weechat_identity *identity)
          recipient;
          recipient = recipient->next_recipient)
     {
+        if (!(recipient->unsent_messages))
+            continue;
+
         char hex_id[TOX_CLIENT_ID_SIZE * 2 + 1];
         tox_weechat_bin2hex(recipient->recipient_id, TOX_CLIENT_ID_SIZE, hex_id);
 
@@ -204,9 +207,26 @@ tox_weechat_data_load_friend_requests(struct t_tox_weechat_identity *identity,
  */
 void
 tox_weechat_data_load_unsent_messages(struct t_tox_weechat_identity *identity,
-                                      json_t *friend_requests)
+                                      json_t *recipient_object)
 {
-    // TODO
+    tox_weechat_unsent_messages_free(identity);
+
+    const char *key;
+    json_t *message_array;
+    json_object_foreach(recipient_object, key, message_array)
+    {
+        uint8_t client_id[TOX_CLIENT_ID_SIZE];
+        tox_weechat_hex2bin(key, TOX_CLIENT_ID_SIZE * 2, (char *)client_id);
+
+        size_t index;
+        json_t *message;
+        json_array_foreach(message_array, index, message)
+        {
+            tox_weechat_add_unsent_message(identity,
+                                           client_id,
+                                           json_string_value(message));
+        }
+    }
 }
 
 /**
