@@ -22,10 +22,6 @@
 
 struct t_tox_weechat_identity;
 
-extern const char *tox_weechat_data_key_friend_requests;
-extern const char *tox_weechat_data_friend_request_key_client_id;
-extern const char *tox_weechat_data_friend_request_key_message;
-
 void
 tox_weechat_data_load();
 
