@@ -24,10 +24,20 @@
 
 struct t_tox_weechat_identity;
 
+struct t_tox_weechat_unsent_message_recipient
+{
+    uint8_t recipient_id[TOX_CLIENT_ID_SIZE];
+
+    struct t_tox_weechat_unsent_message *unsent_messages;
+    struct t_tox_weechat_unsent_message *last_unsent_message;
+
+    struct t_tox_weechat_unsent_message_recipient *next_recipient;
+    struct t_tox_weechat_unsent_message_recipient *prev_recipient;
+};
+
 struct t_tox_weechat_unsent_message
 {
     const char *message;
-    uint8_t recipient_id[TOX_CLIENT_ID_SIZE];
 
     struct t_tox_weechat_unsent_message *next_message;
     struct t_tox_weechat_unsent_message *prev_message;

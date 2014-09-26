@@ -52,8 +52,8 @@ struct t_tox_weechat_identity
     struct t_tox_weechat_friend_request *last_friend_request;
     unsigned int friend_request_count;
 
-    struct t_tox_weechat_unsent_message *unsent_messages;
-    struct t_tox_weechat_unsent_message *last_unsent_message;
+    struct t_tox_weechat_unsent_message_recipient *unsent_message_recipients;
+    struct t_tox_weechat_unsent_message_recipient *last_unsent_message_recipient;
 
     struct t_tox_weechat_identity *next_identity;
     struct t_tox_weechat_identity *prev_identity;

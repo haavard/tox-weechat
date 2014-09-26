@@ -207,7 +207,7 @@ tox_weechat_identity_new(const char *name)
     identity->tox_do_timer = NULL;
     identity->chats = identity->last_chat = NULL;
     identity->friend_requests = identity->last_friend_request = NULL;
-    identity->unsent_messages = identity->last_unsent_message = NULL;
+    identity->unsent_message_recipients = identity->last_unsent_message_recipient = NULL;
     identity->tox_online = false;
 
     // set up config

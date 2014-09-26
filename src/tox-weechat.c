@@ -62,8 +62,9 @@ int
 weechat_plugin_end(struct t_weechat_plugin *plugin)
 {
     tox_weechat_config_write();
-    tox_weechat_data_save();
     tox_weechat_identity_free_all();
+    tox_weechat_data_save();
+    tox_weechat_data_free();
 
     return WEECHAT_RC_OK;
 }
