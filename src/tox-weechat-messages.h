@@ -48,4 +48,9 @@ tox_weechat_send_friend_message(struct t_tox_weechat_identity *identity,
                                 int32_t friend_number,
                                 const char *message);
 
+void
+tox_weechat_add_unsent_message(struct t_tox_weechat_identity *identity,
+                               const uint8_t *recipient_id,
+                               const char *message);
+
 #endif // TOX_WEECHAT_MESSAGES_H
