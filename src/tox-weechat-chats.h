@@ -24,6 +24,10 @@
 
 #include <tox/tox.h>
 
+extern const char *tox_weechat_tag_unsent_message;
+extern const char *tox_weechat_tag_sent_message;
+extern const char *tox_weechat_tag_received_message;
+
 struct t_tox_weechat_chat
 {
     struct t_gui_buffer *buffer;
@@ -49,11 +53,13 @@ tox_weechat_get_chat_for_buffer(struct t_gui_buffer *target_buffer);
 
 void tox_weechat_chat_print_message(struct t_tox_weechat_chat *chat,
                                     const char *sender,
-                                    const char *message);
+                                    const char *message,
+                                    const char *tags);
 
 void tox_weechat_chat_print_action(struct t_tox_weechat_chat *chat,
                                    const char *sender,
-                                   const char *message);
+                                   const char *message,
+                                   const char *tags);
 
 void
 tox_weechat_chat_refresh(struct t_tox_weechat_chat *chat);

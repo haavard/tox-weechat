@@ -65,7 +65,7 @@ tox_weechat_friend_message_callback(Tox *tox,
     char *name = tox_weechat_get_name_nt(identity->tox, friend_number);
     char *message_nt = tox_weechat_null_terminate(message, length);
 
-    tox_weechat_chat_print_message(chat, name, message_nt);
+    tox_weechat_chat_print_message(chat, "", name, message_nt);
 
     free(name);
     free(message_nt);
@@ -85,7 +85,7 @@ tox_weechat_friend_action_callback(Tox *tox,
     char *name = tox_weechat_get_name_nt(identity->tox, friend_number);
     char *message_nt = tox_weechat_null_terminate(message, length);
 
-    tox_weechat_chat_print_action(chat, name, message_nt);
+    tox_weechat_chat_print_action(chat, "", name, message_nt);
 
     free(name);
     free(message_nt);

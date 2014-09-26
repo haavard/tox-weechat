@@ -341,7 +341,7 @@ tox_weechat_cmd_me(void *data, struct t_gui_buffer *buffer,
                     strlen(argv_eol[1]));
 
     char *name = tox_weechat_get_self_name_nt(identity->tox);
-    tox_weechat_chat_print_action(chat, name, argv_eol[1]);
+    tox_weechat_chat_print_action(chat, "", name, argv_eol[1]);
 
     free(name);
 
@@ -385,7 +385,7 @@ tox_weechat_cmd_msg(void *data, struct t_gui_buffer *buffer,
                          (uint8_t *)argv_eol[2],
                          strlen(argv_eol[2]));
         char *name = tox_weechat_get_self_name_nt(identity->tox);
-        tox_weechat_chat_print_message(chat, name, argv_eol[2]);
+        tox_weechat_chat_print_message(chat, "", name, argv_eol[2]);
         free(name);
     }
 

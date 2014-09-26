@@ -30,6 +30,10 @@
 
 #include "tox-weechat-chats.h"
 
+const char *tox_weechat_tag_unsent_message = "tox_unsent";
+const char *tox_weechat_tag_sent_message = "tox_sent";
+const char *tox_weechat_tag_received_message = "tox_received";
+
 int tox_weechat_buffer_input_callback(void *data,
                                       struct t_gui_buffer *buffer,
                                       const char *input_data);
@@ -174,20 +178,22 @@ tox_weechat_get_chat_for_buffer(struct t_gui_buffer *buffer)
 void
 tox_weechat_chat_print_message(struct t_tox_weechat_chat *chat,
                                const char *sender,
-                               const char *message)
+                               const char *message,
+                               const char *tags)
 {
-    weechat_printf(chat->buffer, "%s\t%s", sender, message);
+    weechat_printf_tags(chat->buffer, tags, "%s\t%s", sender, message);
 }
 
 void
 tox_weechat_chat_print_action(struct t_tox_weechat_chat *chat,
                               const char *sender,
-                              const char *message)
+                              const char *message,
+                              const char *tags)
 {
-    weechat_printf(chat->buffer,
-                   "%s%s %s",
-                   weechat_prefix("action"),
-                   sender, message);
+    weechat_printf_tags(chat->buffer, tags,
+                        "%s%s %s",
+                        weechat_prefix("action"),
+                        sender, message);
 }
 
 int
@@ -196,12 +202,12 @@ tox_weechat_buffer_input_callback(void *data,
                                   const char *input_data)
 {
     struct t_tox_weechat_chat *chat = data;
-    tox_weechat_send_friend_message(chat->identity,
-                                    chat->friend_number,
-                                    input_data);
+    int rc = tox_weechat_send_friend_message(chat->identity,
+                                             chat->friend_number,
+                                             input_data);
 
     char *name = tox_weechat_get_self_name_nt(chat->identity->tox);
-    tox_weechat_chat_print_message(chat, name, input_data);
+    tox_weechat_chat_print_message(chat, "", name, input_data);
     free(name);
 
     return WEECHAT_RC_OK;
