@@ -23,12 +23,12 @@
 #include <tox/tox.h>
 
 #include "twc.h"
-#include "twc-utils.h"
+#include "twc-list.h"
 #include "twc-profile.h"
 #include "twc-chat.h"
 #include "twc-friend-request.h"
 #include "twc-bootstrap.h"
-#include "twc-list.h"
+#include "twc-utils.h"
 
 #include "twc-commands.h"
 

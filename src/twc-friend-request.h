@@ -20,8 +20,6 @@
 #ifndef TOX_WEECHAT_FRIEND_REQUEST_H
 #define TOX_WEECHAT_FRIEND_REQUEST_H
 
-#include <stdint.h>
-
 #include <tox/tox.h>
 
 /**

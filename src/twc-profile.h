@@ -20,7 +20,6 @@
 #ifndef TOX_WEECHAT_PROFILE_H
 #define TOX_WEECHAT_PROFILE_H
 
-#include <stdint.h>
 #include <stdbool.h>
 
 #include <tox/tox.h>

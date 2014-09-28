@@ -17,14 +17,11 @@
  * along with Tox-WeeChat.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <stdlib.h>
-#include <inttypes.h>
-
 #include <weechat/weechat-plugin.h>
 
 #include "twc.h"
-#include "twc-profile.h"
 #include "twc-list.h"
+#include "twc-profile.h"
 
 #include "twc-completion.h"
 

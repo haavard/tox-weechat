@@ -21,7 +21,6 @@
 #define TOX_WEECHAT_UTILS_H
 
 #include <stdlib.h>
-#include <stdint.h>
 
 #include <tox/tox.h>
 

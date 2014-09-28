@@ -18,15 +18,14 @@
  */
 
 #include <string.h>
-#include <time.h>
 
 #include <weechat/weechat-plugin.h>
 #include <tox/tox.h>
 
 #include "twc.h"
+#include "twc-list.h"
 #include "twc-profile.h"
 #include "twc-utils.h"
-#include "twc-list.h"
 
 #include "twc-message-queue.h"
 

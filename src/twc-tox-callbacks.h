@@ -20,8 +20,6 @@
 #ifndef TOX_WEECHAT_TOX_CALLBACKS_H
 #define TOX_WEECHAT_TOX_CALLBACKS_H
 
-#include <stdint.h>
-
 #include <tox/tox.h>
 
 int

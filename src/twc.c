@@ -24,9 +24,7 @@
 #include "twc-profile.h"
 #include "twc-commands.h"
 #include "twc-gui.h"
-#include "twc-friend-request.h"
 #include "twc-config.h"
-#include "twc-data.h"
 #include "twc-completion.h"
 
 #include "twc.h"
