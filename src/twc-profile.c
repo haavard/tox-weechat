@@ -177,7 +177,7 @@ twc_profile_new(const char *name)
 
     profile->chats = twc_list_new();
     profile->friend_requests = twc_list_new();
-    profile->message_queues = weechat_hashtable_new(10,
+    profile->message_queues = weechat_hashtable_new(32,
                                                     WEECHAT_HASHTABLE_INTEGER,
                                                     WEECHAT_HASHTABLE_POINTER,
                                                     NULL, NULL);
