@@ -8,7 +8,7 @@ Installation
 ------------
 > Tox-WeeChat is available in the [AUR][3].
 
-Tox-WeeChat requires [WeeChat][1] >= 1.0 and the latest-ish [libtoxcore][4]. It also requires CMake to be built. Installation is fairly simple; after getting the source, compile and install using CMake:
+Tox-WeeChat requires [WeeChat][1] >= 1.0.1 and the latest-ish [libtoxcore][4]. It also requires CMake to be built. Installation is fairly simple; after getting the source, compile and install using CMake:
 
     $ mkdir build && cd build
     $ cmake -DHOME_FOLDER_INSTALL=ON ..
