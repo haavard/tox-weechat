@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015 Håvard Pettersson <haavard.pettersson@gmail.com>
+ * Copyright (c) 2014 Håvard Pettersson <haavard.pettersson@gmail.com>
  *
  * This file is part of Tox-WeeChat.
  *
@@ -17,9 +17,19 @@
  * along with Tox-WeeChat.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef TOX_WEECHAT_GUI_H
-#define TOX_WEECHAT_GUI_H
+#ifndef TOX_WEECHAT_BOOTSTRAP_H
+#define TOX_WEECHAT_BOOTSTRAP_H
 
-void tox_weechat_gui_init();
+#include <tox/tox.h>
 
-#endif // TOX_WEECHAT_GUI_H
+int
+twc_bootstrap_tox(Tox *tox,
+                  const char *address,
+                  uint16_t port,
+                  const char *public_key);
+
+void
+twc_bootstrap_random_node(Tox *tox);
+
+#endif // TOX_WEECHAT_BOOTSTRAP_H
+

@@ -21,15 +21,15 @@
 
 #include <weechat/weechat-plugin.h>
 
-#include "tox-weechat-identities.h"
-#include "tox-weechat-commands.h"
-#include "tox-weechat-gui.h"
-#include "tox-weechat-friend-requests.h"
-#include "tox-weechat-config.h"
-#include "tox-weechat-data.h"
-#include "tox-weechat-completion.h"
+#include "twc-profile.h"
+#include "twc-commands.h"
+#include "twc-gui.h"
+#include "twc-friend-request.h"
+#include "twc-config.h"
+#include "twc-data.h"
+#include "twc-completion.h"
 
-#include "tox-weechat.h"
+#include "twc.h"
 
 WEECHAT_PLUGIN_NAME("tox");
 WEECHAT_PLUGIN_DESCRIPTION("Tox protocol");
@@ -38,22 +38,22 @@ WEECHAT_PLUGIN_VERSION("0.1");
 WEECHAT_PLUGIN_LICENSE("GPL3");
 
 struct t_weechat_plugin *weechat_plugin = NULL;
-struct t_gui_buffer *tox_main_buffer = NULL;
-int tox_weechat_online_status = 0;
 
 int
 weechat_plugin_init(struct t_weechat_plugin *plugin, int argc, char *argv[])
 {
     weechat_plugin = plugin;
 
-    tox_weechat_config_init();
-    tox_weechat_config_read();
-    tox_weechat_data_load();
-    tox_weechat_commands_init();
-    tox_weechat_gui_init();
-    tox_weechat_completion_init();
+    twc_profile_init();
+    twc_commands_init();
+    twc_gui_init();
+    twc_completion_init();
 
-    tox_weechat_identity_autoconnect();
+    twc_config_init();
+    twc_config_read();
+
+    // TODO: respect weechat flag for no autoconnect
+    twc_profile_autoload();
 
     return WEECHAT_RC_OK;
 }
@@ -61,10 +61,10 @@ weechat_plugin_init(struct t_weechat_plugin *plugin, int argc, char *argv[])
 int
 weechat_plugin_end(struct t_weechat_plugin *plugin)
 {
-    tox_weechat_config_write();
-    tox_weechat_identity_free_all();
-    tox_weechat_data_save();
-    tox_weechat_data_free();
+    twc_config_write();
+
+    twc_profile_free_all();
 
     return WEECHAT_RC_OK;
 }
+

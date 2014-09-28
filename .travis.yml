@@ -3,19 +3,8 @@ language: c
 install:
   - _libsodium_version=0.7.0
   - _weechat_version=v1.0
-  - _libjansson_version=v2.5
 
-    # install libjansson
-  - git clone git://github.com/akheron/jansson.git
-  - pushd jansson
-  - git checkout tags/${_libjansson_version}
-  - autoreconf -i
-  - ./configure --prefix=/usr
-  - make -j3
-  - sudo make install
-  - popd
-
-    # install libsodium (needed for libtoxcore)
+    # install libsodium (libtoxcore dependency)
   - git clone git://github.com/jedisct1/libsodium.git
   - pushd libsodium
   - git checkout tags/${_libsodium_version}

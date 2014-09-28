@@ -25,28 +25,37 @@
 #include <weechat/weechat-plugin.h>
 #include <tox/tox.h>
 
-#include "tox-weechat.h"
+#include "twc.h"
 
-#include "tox-weechat-utils.h"
+#include "twc-utils.h"
 
+/**
+ * Convert a hex string to it's binary equivalent of max size bytes.
+ */
 void
-tox_weechat_hex2bin(const char *hex, size_t length, char *out)
+twc_hex2bin(const char *hex, size_t size, char *out)
 {
     const char *position = hex;
 
-    for (size_t i = 0; i < length / 2; ++i)
+    size_t i;
+    for (i = 0; i < size; ++i)
     {
         sscanf(position, "%2hhx", &out[i]);
         position += 2;
     }
 }
 
+/**
+ * Convert size bytes to a hex string. out must be at lesat size * 2 + 1
+ * bytes.
+ */
 void
-tox_weechat_bin2hex(const uint8_t *bin, size_t size, char *out)
+twc_bin2hex(const uint8_t *bin, size_t size, char *out)
 {
     char *position = out;
 
-    for (size_t i = 0; i < size; ++i)
+    size_t i;
+    for (i = 0; i < size; ++i)
     {
         sprintf(position, "%02X", bin[i]);
         position += 2;
@@ -54,8 +63,11 @@ tox_weechat_bin2hex(const uint8_t *bin, size_t size, char *out)
     *position = 0;
 }
 
+/**
+ * Return a null-terminated copy of str. Must be freed.
+ */
 char *
-tox_weechat_null_terminate(const uint8_t *str, size_t length)
+twc_null_terminate(const uint8_t *str, size_t length)
 {
     char *str_null = malloc(length + 1);
     memcpy(str_null, str, length);
@@ -64,44 +76,66 @@ tox_weechat_null_terminate(const uint8_t *str, size_t length)
     return str_null;
 }
 
+/**
+ * Get the null-terminated name of a Tox friend. Must be freed.
+ */
 char *
-tox_weechat_get_name_nt(Tox *tox, int32_t friend_number)
+twc_get_name_nt(Tox *tox, int32_t friend_number)
 {
     size_t length = tox_get_name_size(tox, friend_number);
     uint8_t name[length];
 
     // if no name, return client ID instead
     if (!length)
-    {
-        uint8_t client_id[TOX_CLIENT_ID_SIZE];
-        tox_get_client_id(tox, friend_number, client_id);
-
-        char *hex = malloc(TOX_CLIENT_ID_SIZE * 2 + 1);
-        tox_weechat_bin2hex(client_id, TOX_CLIENT_ID_SIZE, hex);
-
-        return hex;
-    }
+        return twc_get_friend_id_short(tox, friend_number);
 
     tox_get_name(tox, friend_number, name);
-    return tox_weechat_null_terminate(name, length);
+    return twc_null_terminate(name, length);
 }
 
+/**
+ * Return the null-terminated status message of a Tox friend. Must be freed.
+ */
 char *
-tox_weechat_get_status_message_nt(Tox *tox, int32_t friend_number)
+twc_get_status_message_nt(Tox *tox, int32_t friend_number)
 {
     size_t length = tox_get_status_message_size(tox, friend_number);
     uint8_t message[length];
     tox_get_status_message(tox, friend_number, message, length);
 
-    return tox_weechat_null_terminate(message, length);
+    return twc_null_terminate(message, length);
 }
 
+/**
+ * Return the users own name, null-terminated. Must be freed.
+ */
 char *
-tox_weechat_get_self_name_nt(Tox *tox)
+twc_get_self_name_nt(Tox *tox)
 {
     size_t length = tox_get_self_name_size(tox);
     uint8_t name[length];
     tox_get_self_name(tox, name);
 
-    return tox_weechat_null_terminate(name, length);
+    return twc_null_terminate(name, length);
 }
+
+/**
+ * Return a friend's Tox ID in short form. Return value must be freed.
+ */
+char *
+twc_get_friend_id_short(Tox *tox, int32_t friend_number)
+{
+    uint8_t client_id[TOX_CLIENT_ID_SIZE];
+    tox_get_client_id(tox, friend_number, client_id);
+
+    // TODO: config
+    size_t short_id_length = 8;
+
+    char *hex_address = malloc(short_id_length + 1);
+    twc_bin2hex(client_id,
+                short_id_length / 2,
+                hex_address);
+
+    return hex_address;
+}
+

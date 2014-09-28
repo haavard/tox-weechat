@@ -17,24 +17,22 @@
  * along with Tox-WeeChat.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef TOX_WEECHAT_DATA_H
-#define TOX_WEECHAT_DATA_H
+#ifndef TOX_WEECHAT_CONFIG_H
+#define TOX_WEECHAT_CONFIG_H
 
-struct t_tox_weechat_identity;
-
-void
-tox_weechat_data_load();
+#include "twc-profile.h"
 
 void
-tox_weechat_data_identity_save(struct t_tox_weechat_identity *identity);
-
-void
-tox_weechat_data_identity_load(struct t_tox_weechat_identity *identity);
+twc_config_init();
 
 int
-tox_weechat_data_save();
+twc_config_read();
+
+int
+twc_config_write();
 
 void
-tox_weechat_data_free();
+twc_config_init_profile(struct t_twc_profile *profile);
 
-#endif // TOX_WEECHAT_DATA_H
+#endif // TOX_WEECHAT_CONFIG_H
+

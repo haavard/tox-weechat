@@ -17,11 +17,8 @@
  * along with Tox-WeeChat.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef TOX_WEECHAT_H
-#define TOX_WEECHAT_H
+#ifndef TOX_WEECHAT_DATA_H
+#define TOX_WEECHAT_DATA_H
 
-#include <tox/tox.h>
+#endif // TOX_WEECHAT_DATA_H
 
-extern struct t_weechat_plugin *weechat_plugin;
-
-#endif // TOX_WEECHAT_H

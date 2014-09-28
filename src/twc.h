@@ -17,12 +17,10 @@
  * along with Tox-WeeChat.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef TOX_WEECHAT_COMMANDS_H
-#define TOX_WEECHAT_COMMANDS_H
+#ifndef TOX_WEECHAT_H
+#define TOX_WEECHAT_H
 
-/**
- * Register command callbacks.
- */
-void tox_weechat_commands_init();
+extern struct t_weechat_plugin *weechat_plugin;
 
-#endif // TOX_WEECHAT_COMMANDS_H
+#endif // TOX_WEECHAT_H
+
