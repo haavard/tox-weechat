@@ -19,7 +19,7 @@ This installs the plugin binary `tox.so` to the recommended location `~/.weechat
 
 Usage
 -----
- - If the plugin does no automatically load, load it with `/plugin load tox`. You may have to specify the full path to the plugin binary.
+ - If the plugin does not automatically load, load it with `/plugin load tox`. You may have to specify the full path to the plugin binary.
  - Create a new profile with `/tox create <name>`. The data file is stored in `~/.weechat/tox/` by default.
  - Load your profile and connect to the Tox network with `/tox load <name>`.
  - Change your name with `/name <new name>`.
