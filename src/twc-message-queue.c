@@ -155,6 +155,9 @@ twc_message_queue_free_map_callback(void *data, struct t_hashtable *hashtable,
     free(message_queue);
 }
 
+/**
+ * Free the entire message queue for a profile.
+ */
 void
 twc_message_queue_free_profile(struct t_twc_profile *profile)
 {

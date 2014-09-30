@@ -20,5 +20,24 @@
 #ifndef TOX_WEECHAT_DATA_H
 #define TOX_WEECHAT_DATA_H
 
-#endif // TOX_WEECHAT_DATA_H
+struct t_twc_profile;
 
+void
+twc_data_read();
+
+int
+twc_data_write();
+
+void
+twc_data_load_profile(struct t_twc_profile *profile);
+
+void
+twc_data_save_profile(struct t_twc_profile *profile);
+
+void
+twc_data_delete_profile(struct t_twc_profile *profile);
+
+void
+twc_data_free();
+
+#endif // TOX_WEECHAT_DATA_H

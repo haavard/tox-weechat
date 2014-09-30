@@ -1,25 +1,24 @@
 Tox-WeeChat
 ===========
-Tox-WeeChat is a plugin for [WeeChat][1] that enables it to connect to the [Tox][2] network. It is functional, but currently only intended for experimental use.
+Tox-WeeChat is a [Tox][1] protocol plugin for [WeeChat][2]. It is functional, but lacks certain features like Tox DNS (e.g. user@toxme.se) and group chats.
 
-Current build status: [![Build Status](https://travis-ci.org/haavardp/tox-weechat.svg?branch=master)](https://travis-ci.org/haavardp/tox-weechat)
+Current build status: [![Build Status](https://travis-ci.org/haavardp/tox-weechat.svg?branch=master)][3]
 
 Installation
 ------------
-> Tox-WeeChat is available in the [AUR][3].
+> Tox-WeeChat is available in the [AUR][4].
 
-Tox-WeeChat requires [WeeChat][1] >= 1.0.1, [libjansson][4] >= 2.5 and the latest-ish [libtoxcore][5]. It also requires CMake to be built. Installation is fairly simple; after getting the source, compile and install using CMake:
+Tox-WeeChat requires [WeeChat][1] >= 1.0.1, [libjansson][5] >= 2.5 and the latest-ish [libtoxcore][6]. It also requires CMake to be built. Installation is fairly simple; after getting the source, compile and install using CMake:
 
     $ mkdir build && cd build
     $ cmake -DHOME_FOLDER_INSTALL=ON ..
-    $ make
     $ make install
 
 This installs the plugin binary `tox.so` to the recommended location `~/.weechat/plugins`. Without the home folder flag, the binary is placed in `/usr/local/lib/weechat/plugins`. Installing to a custom WeeChat folder or elsewhere is achieved by setting `INSTALL_PATH`.
 
 Usage
 -----
- - If the plugin does not automatically load, load it with `/plugin load tox`. You may have to specify the full path to the plugin binary.
+ - If the plugin does not load automatically, load it with `/plugin load tox`. You may have to specify the full path to the plugin binary.
  - Create a new profile with `/tox create <name>`. The data file is stored in `~/.weechat/tox/` by default.
  - Load your profile and connect to the Tox network with `/tox load <name>`.
  - Change your name with `/name <new name>`.
@@ -27,7 +26,7 @@ Usage
  - To add friends or respond to friend requests, `/help friend` will get you started.
  - Message a friend with `/msg <friend number>`. Get their friend number with `/friend list`.
 
-Run `/help -list tox` to get a list of all available commands.
+Run `/help -listfull tox` to get a list of all available commands.
 
 TODO
 ----
@@ -37,7 +36,7 @@ TODO
  - Group chats
  - Support proxies (e.g. TOR)
  - Support WeeChat `/upgrade`
- - A/V
+ - Audio/video chats
 
 License
 ---------
@@ -58,9 +57,10 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with Tox-WeeChat.  If not, see <http://www.gnu.org/licenses/>.
 
-[1]: http://weechat.org
-[2]: http://tox.im
-[3]: https://aur.archlinux.org/packages/tox-weechat-git
-[3]: http://www.digip.org/jansson
-[5]: https://github.com/irungentoo/toxcore
+[1]: http://tox.im
+[2]: http://weechat.org
+[3]: https://travis-ci.org/haavardp/tox-weechat
+[4]: https://aur.archlinux.org/packages/tox-weechat-git
+[5]: http://www.digip.org/jansson
+[6]: https://github.com/irungentoo/toxcore
 
