@@ -8,7 +8,7 @@ Installation
 ------------
 > Tox-WeeChat is available in the [AUR][3].
 
-Tox-WeeChat requires [WeeChat][1] >= 1.0.1 and the latest-ish [libtoxcore][4]. It also requires CMake to be built. Installation is fairly simple; after getting the source, compile and install using CMake:
+Tox-WeeChat requires [WeeChat][1] >= 1.0.1, [libjansson][4] >= 2.5 and the latest-ish [libtoxcore][5]. It also requires CMake to be built. Installation is fairly simple; after getting the source, compile and install using CMake:
 
     $ mkdir build && cd build
     $ cmake -DHOME_FOLDER_INSTALL=ON ..
@@ -36,6 +36,7 @@ TODO
  - Tox DNS
  - Group chats
  - Support proxies (e.g. TOR)
+ - Support WeeChat `/upgrade`
  - A/V
 
 License
@@ -60,5 +61,6 @@ along with Tox-WeeChat.  If not, see <http://www.gnu.org/licenses/>.
 [1]: http://weechat.org
 [2]: http://tox.im
 [3]: https://aur.archlinux.org/packages/tox-weechat-git
-[4]: https://github.com/irungentoo/toxcore
+[3]: http://www.digip.org/jansson
+[5]: https://github.com/irungentoo/toxcore
 
