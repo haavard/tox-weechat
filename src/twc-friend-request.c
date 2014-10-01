@@ -30,7 +30,7 @@
 #include "twc-friend-request.h"
 
 /**
- * Add a new friend request to an profile.
+ * Add a new friend request to a profile.
  *
  * Returns 0 on success, -1 on a full friend request list, -2 on other error.
  */
