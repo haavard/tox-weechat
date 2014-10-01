@@ -48,7 +48,7 @@ add_library(tox MODULE
     src/twc-utils.c
 )
 
-set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -std=gnu99 -Wall -Wextra -Werror-implicit-function-declaration -Wno-unused-parameter")
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -std=gnu99 -Wall -Wextra -Werror -Wno-unused-parameter")
 
 target_link_libraries(tox toxcore)
 target_link_libraries(tox jansson)
