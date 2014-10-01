@@ -38,7 +38,6 @@ add_library(tox MODULE
     src/twc-commands.c
     src/twc-completion.c
     src/twc-config.c
-    src/twc-data.c
     src/twc-friend-request.c
     src/twc-gui.c
     src/twc-list.c
@@ -51,7 +50,6 @@ add_library(tox MODULE
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -std=gnu99 -Wall -Wextra -Werror -Wno-unused-parameter")
 
 target_link_libraries(tox toxcore)
-target_link_libraries(tox jansson)
 
 # remove lib prefix (libtox.so -> tox.so)
 set_target_properties(tox PROPERTIES PREFIX "")
