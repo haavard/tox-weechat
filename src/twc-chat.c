@@ -265,10 +265,12 @@ twc_chat_send_message(struct t_twc_chat *chat,
                       const char *message,
                       enum TWC_MESSAGE_TYPE message_type)
 {
-    // TODO: fix for group messages
-    twc_message_queue_add_friend_message(chat->profile,
-                                         chat->friend_number,
-                                         message, message_type);
+    if (chat->friend_number >= 0)
+    {
+        twc_message_queue_add_friend_message(chat->profile,
+                                             chat->friend_number,
+                                             message, message_type);
+    }
 
     char *name = twc_get_self_name_nt(chat->profile->tox);
     twc_chat_print_message(chat, "", name, message, message_type);
