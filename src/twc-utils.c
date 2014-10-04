@@ -148,3 +148,18 @@ twc_get_friend_id_short(Tox *tox, int32_t friend_number)
     return hex_address;
 }
 
+/**
+ * Reverse the bytes of a 32-bit integer.
+ */
+uint32_t
+twc_uint32_reverse_bytes(uint32_t num)
+{
+    uint32_t res = 0;
+
+    res += num & 0xFF; num >>= 8; res <<= 8;
+    res += num & 0xFF; num >>= 8; res <<= 8;
+    res += num & 0xFF; num >>= 8; res <<= 8;
+    res += num & 0xFF;
+
+    return res;
+}

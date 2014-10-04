@@ -48,5 +48,8 @@ twc_get_self_name_nt(Tox *tox);
 char *
 twc_get_friend_id_short(Tox *tox, int32_t friend_number);
 
+uint32_t
+twc_uint32_reverse_bytes(uint32_t num);
+
 #endif // TOX_WEECHAT_UTILS_H
 
