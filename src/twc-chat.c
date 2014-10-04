@@ -57,10 +57,13 @@ twc_chat_create(struct t_twc_profile *profile,
     chat->profile = profile;
     chat->friend_number = chat->group_number = -1;
 
-    // TODO: prepend profile name
-    chat->buffer = weechat_buffer_new(name,
+    size_t full_name_size = strlen(profile->name) + 1 + strlen(name) + 1;
+    char *full_name = malloc(full_name_size);
+    snprintf(full_name, full_name_size, "%s/%s", profile->name, name);
+    chat->buffer = weechat_buffer_new(full_name,
                                       twc_chat_buffer_input_callback, chat,
                                       twc_chat_buffer_close_callback, chat);
+    free(full_name);
 
     if (!(chat->buffer))
     {
