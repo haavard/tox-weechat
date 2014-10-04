@@ -576,6 +576,54 @@ twc_cmd_name(void *data, struct t_gui_buffer *buffer,
 }
 
 /**
+ * Command /nospam callback.
+ */
+int
+twc_cmd_nospam(void *data, struct t_gui_buffer *buffer,
+               int argc, char **argv, char **argv_eol)
+{
+    if (argc > 2)
+        return WEECHAT_RC_ERROR;
+
+    struct t_twc_profile *profile = twc_profile_search_buffer(buffer);
+    TWC_CHECK_PROFILE(profile);
+    TWC_CHECK_PROFILE_LOADED(profile);
+
+    uint32_t new_nospam;
+    if (argc == 2)
+    {
+        char *endptr;
+        unsigned long value = strtoul(argv[1], &endptr, 16);
+        if (endptr == argv[1] || value > UINT32_MAX)
+        {
+            weechat_printf(profile->buffer,
+                           "%snospam must be a hexadecimal value between "
+                           "0x00000000 and 0xFFFFFFFF",
+                           weechat_prefix("error"));
+
+            return WEECHAT_RC_OK;
+        }
+
+        // reverse the value bytes so it's displayed as entered in the Tox ID
+        new_nospam = twc_uint32_reverse_bytes(value);
+    }
+    else
+    {
+        new_nospam = random();
+    }
+
+    uint32_t old_nospam = tox_get_nospam(profile->tox);
+    tox_set_nospam(profile->tox, new_nospam);
+
+    weechat_printf(profile->buffer,
+                   "%snew nospam has been set; this changes your Tox ID! To "
+                   "revert, run \"/nospam %x\"",
+                   weechat_prefix("network"), twc_uint32_reverse_bytes(old_nospam));
+
+    return WEECHAT_RC_OK;
+}
+
+/**
  * Command /status callback.
  */
 int
@@ -845,6 +893,15 @@ twc_commands_init()
                          "<name>",
                          "name: your new name",
                          NULL, twc_cmd_name, NULL);
+
+    weechat_hook_command("nospam",
+                         "change nospam value",
+                         "[<hex value>]",
+                         "hex value: new nospam value; when omitted, a random "
+                         "new value is used\n\n"
+                         "Warning: changing your nospam value will alter your "
+                         "Tox ID!",
+                         NULL, twc_cmd_nospam, NULL);
 
     weechat_hook_command("status",
                          "change your Tox status",
