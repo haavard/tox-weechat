@@ -22,6 +22,7 @@
 #include "twc.h"
 #include "twc-list.h"
 #include "twc-profile.h"
+#include "twc-utils.h"
 
 #include "twc-completion.h"
 
@@ -31,6 +32,61 @@ enum
     TWC_LOADED_PROFILES,
     TWC_UNLOADED_PROFILES,
 };
+
+enum
+{
+    TWC_COMPLETE_FRIEND_NAME = 2 << 0,
+    TWC_COMPLETE_FRIEND_ID = 1 << 1,
+};
+
+/**
+ * Complete a friends number, name and/or Tox ID.
+ */
+int
+twc_completion_friend(void *data,
+                      const char *completion_item,
+                      struct t_gui_buffer *buffer,
+                      struct t_gui_completion *completion)
+{
+    int flags = (int)(intptr_t)data;
+    struct t_twc_profile *profile = twc_profile_search_buffer(buffer);
+
+    if (!profile)
+        return WEECHAT_RC_OK;
+
+    uint32_t friend_count = tox_count_friendlist(profile->tox);
+    int32_t *friend_numbers = malloc(sizeof(int32_t) * friend_count);
+    tox_get_friendlist(profile->tox, friend_numbers, friend_count);
+
+    for (uint32_t i = 0; i < friend_count; ++i)
+    {
+        if (flags & TWC_COMPLETE_FRIEND_ID)
+        {
+            uint8_t tox_id[TOX_CLIENT_ID_SIZE];
+            char hex_id[TOX_CLIENT_ID_SIZE * 2 + 1];
+
+            tox_get_client_id(profile->tox, friend_numbers[i], tox_id);
+            twc_bin2hex(tox_id, TOX_CLIENT_ID_SIZE, hex_id);
+
+            weechat_hook_completion_list_add(completion,
+                                             hex_id,
+                                             0,
+                                             WEECHAT_LIST_POS_SORT);
+        }
+
+        if (flags & TWC_COMPLETE_FRIEND_NAME)
+        {
+            char *name = twc_get_name_nt(profile->tox, friend_numbers[i]);
+
+            weechat_hook_completion_list_add(completion,
+                                             name,
+                                             0,
+                                             WEECHAT_LIST_POS_SORT);
+        }
+    }
+
+    return WEECHAT_RC_OK;
+}
 
 /**
  * Complete a profile name, possibly filtering by loaded/unloaded profiles.
@@ -69,12 +125,20 @@ twc_completion_init()
                             twc_completion_profile,
                             (void *)(intptr_t)TWC_ALL_PROFILES);
     weechat_hook_completion("tox_loaded_profiles",
-                            "profile",
+                            "loaded profile",
                             twc_completion_profile,
                             (void *)(intptr_t)TWC_LOADED_PROFILES);
     weechat_hook_completion("tox_unloaded_profiles",
-                            "profile",
+                            "unloaded profile",
                             twc_completion_profile,
                             (void *)(intptr_t)TWC_UNLOADED_PROFILES);
+    weechat_hook_completion("tox_friend_tox_id",
+                            "friend Tox ID",
+                            twc_completion_friend,
+                            (void *)(intptr_t)TWC_COMPLETE_FRIEND_ID);
+    weechat_hook_completion("tox_friend_name",
+                            "friend name",
+                            twc_completion_friend,
+                            (void *)(intptr_t)TWC_COMPLETE_FRIEND_NAME);
 }
 

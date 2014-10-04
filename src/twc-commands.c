@@ -838,10 +838,10 @@ twc_commands_init()
                          "manage friends",
                          "list"
                          " || add <address> [<message>]"
-                         " || remove <number>"
+                         " || remove <number>|<name>|<Tox ID>"
                          " || requests"
-                         " || accept <number>|all"
-                         " || decline <number>|all",
+                         " || accept <number>|<name>|<Tox ID>|all"
+                         " || decline <number>|<name>|<Tox ID>|all",
                          "    list: list all friends\n"
                          "     add: add a friend by their public Tox address\n"
                          "requests: list friend requests\n"
@@ -849,10 +849,10 @@ twc_commands_init()
                          " decline: decline friend requests\n",
                          "list"
                          " || add"
-                         " || remove"
+                         " || remove %(tox_friend_name)|%(tox_friend_tox_id)"
                          " || requests"
-                         " || accept"
-                         " || decline",
+                         " || accept %(tox_friend_name)|%(tox_friend_tox_id)"
+                         " || decline %(tox_friend_name)|%(tox_friend_tox_id)",
                          twc_cmd_friend, NULL);
 
     weechat_hook_command("group",
@@ -878,10 +878,11 @@ twc_commands_init()
 
     weechat_hook_command("msg",
                          "send a message to a Tox friend",
-                         "<id> [<message>]",
-                         "     id: friend number of the person to message\n"
+                         "<number>|<name>|<Tox ID> [<message>]",
+                         "number, name, Tox ID: friend to message\n"
                          "message: message to send",
-                         NULL, twc_cmd_msg, NULL);
+                         "%(tox_friend_name)|%(tox_friend_tox_id)",
+                         twc_cmd_msg, NULL);
 
     weechat_hook_command("myid",
                          "get your Tox ID to give to friends",
