@@ -32,7 +32,7 @@
 /**
  * Add a new group invite to a profile.
  *
- * Returns 0 on success, -1 on error.
+ * Returns the index of the invite on success, -1 on error.
  */
 int
 twc_group_chat_invite_add(struct t_twc_profile *profile,
@@ -47,23 +47,29 @@ twc_group_chat_invite_add(struct t_twc_profile *profile,
         return -1;
 
     invite->profile = profile;
+    invite->friend_number = friend_number;
     invite->data = data;
     invite->data_size = size;
 
-    return 0;
+    twc_list_item_new_data_add(profile->group_chat_invites, invite);
+
+    return profile->group_chat_invites->count - 1;
 }
 
 /**
- * Accept a group chat invite. Remove and free the invite.
+ * Accept a group chat invite. Remove and free the invite. Returns group chat
+ * number. -1 on failure.
  */
-void
-twc_group_chat_invite_accept(struct t_twc_group_chat_invite *invite)
+int
+twc_group_chat_invite_join(struct t_twc_group_chat_invite *invite)
 {
-    tox_join_groupchat(invite->profile->tox,
-                       invite->friend_number,
-                       invite->data,
-                       invite->data_size);
+    int rc = tox_join_groupchat(invite->profile->tox,
+                                invite->friend_number,
+                                invite->data,
+                                invite->data_size);
     twc_group_chat_invite_remove(invite);
+
+    return rc;
 }
 
 /**

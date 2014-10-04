@@ -73,5 +73,28 @@ twc_friend_request_callback(Tox *tox,
                             uint16_t length,
                             void *data);
 
+void
+twc_group_invite_callback(Tox *tox,
+                          int32_t friend_number,
+                          const uint8_t *invite_data,
+                          uint16_t length,
+                          void *data);
+
+void
+twc_group_message_callback(Tox *tox,
+                           int32_t group_number,
+                           int32_t peer_number,
+                           const uint8_t *message,
+                           uint16_t length,
+                           void *data);
+
+void
+twc_group_action_callback(Tox *tox,
+                          int32_t group_number,
+                          int32_t peer_number,
+                          const uint8_t *message,
+                          uint16_t length,
+                          void *data);
+
 #endif // TOX_WEECHAT_TOX_CALLBACKS_H
 

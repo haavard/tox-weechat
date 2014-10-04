@@ -270,6 +270,9 @@ twc_profile_load(struct t_twc_profile *profile)
     tox_callback_user_status(profile->tox, twc_user_status_callback, profile);
     tox_callback_status_message(profile->tox, twc_status_message_callback, profile);
     tox_callback_friend_request(profile->tox, twc_friend_request_callback, profile);
+    tox_callback_group_invite(profile->tox, twc_group_invite_callback, profile);
+    tox_callback_group_message(profile->tox, twc_group_message_callback, profile);
+    tox_callback_group_action(profile->tox, twc_group_action_callback, profile);
 }
 
 /**

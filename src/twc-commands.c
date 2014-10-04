@@ -27,6 +27,7 @@
 #include "twc-profile.h"
 #include "twc-chat.h"
 #include "twc-friend-request.h"
+#include "twc-group-invite.h"
 #include "twc-bootstrap.h"
 #include "twc-sqlite.h"
 #include "twc-utils.h"
@@ -370,6 +371,86 @@ twc_cmd_friend(void *data, struct t_gui_buffer *buffer,
     return WEECHAT_RC_ERROR;
 }
 
+/**
+ * Command /group callback.
+ */
+int
+twc_cmd_group(void *data, struct t_gui_buffer *buffer,
+              int argc, char **argv, char **argv_eol)
+{
+    struct t_twc_profile *profile = twc_profile_search_buffer(buffer);
+    TWC_CHECK_PROFILE(profile);
+    TWC_CHECK_PROFILE_LOADED(profile);
+
+    // /group create
+    if (argc == 2 && weechat_strcasecmp(argv[1], "create") == 0)
+    {
+        weechat_printf(profile->buffer,
+                       "%sNot implemented :|",
+                       weechat_prefix("error"));
+        return WEECHAT_RC_OK;
+    }
+
+    // /group join|decline <number>
+    else if (argc == 3 &&
+            (weechat_strcasecmp(argv[1], "join") == 0
+             || weechat_strcasecmp(argv[1], "decline") == 0))
+    {
+        bool join = weechat_strcasecmp(argv[1], "join") == 0;
+
+        struct t_twc_group_chat_invite *invite;
+
+        char *endptr;
+        unsigned long num = strtoul(argv[2], &endptr, 10);
+        if (endptr == argv[2] || (invite = twc_group_chat_invite_with_index(profile, num)) == NULL)
+        {
+            weechat_printf(profile->buffer,
+                           "%sInvalid group chat invite ID.",
+                           weechat_prefix("error"));
+            return WEECHAT_RC_OK;
+        }
+
+        if (join)
+        {
+            int group_number = twc_group_chat_invite_join(invite);
+
+            // create a buffer for the new group chat
+            if (group_number >= 0)
+                twc_chat_search_group(profile, group_number, true);
+        }
+        else
+        {
+            twc_group_chat_invite_remove(invite);
+        }
+
+        return WEECHAT_RC_OK;
+    }
+
+    // /group invites
+    else if (argc == 2 && weechat_strcasecmp(argv[1], "invites") == 0)
+    {
+        weechat_printf(profile->buffer,
+                       "%sPending group chat invites:",
+                       weechat_prefix("network"));
+
+        size_t index;
+        struct t_twc_list_item *item;
+        twc_list_foreach(profile->group_chat_invites, index, item)
+        {
+            char *friend_name =
+                twc_get_name_nt(profile->tox, item->group_chat_invite->friend_number);
+            weechat_printf(profile->buffer,
+                           "%s[%d] From: %s",
+                           weechat_prefix("network"),
+                           index, friend_name);
+            free(friend_name);
+        }
+
+        return WEECHAT_RC_OK;
+    }
+
+    return WEECHAT_RC_ERROR;
+}
 /**
  * Command /me callback.
  */
@@ -725,6 +806,21 @@ twc_commands_init()
                          " || accept"
                          " || decline",
                          twc_cmd_friend, NULL);
+
+    weechat_hook_command("group",
+                         "manage group chats",
+                         "create"
+                         " || invites"
+                         " || join <number>"
+                         " || decline <number>",
+                         " create: create a new group chat\n"
+                         "invites: list group chat invites\n"
+                         "   join: join a group chat by its invite ID\n"
+                         "decline: decline a group chat invite\n",
+                         "create"
+                         " || invites"
+                         " || join",
+                         twc_cmd_group, NULL);
 
     weechat_hook_command("me",
                          "send an action to the current chat",

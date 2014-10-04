@@ -103,6 +103,19 @@ twc_get_status_message_nt(Tox *tox, int32_t friend_number)
 }
 
 /**
+ * Return the name of a group chat peer as a null terminated string. Must be
+ * freed.
+ */
+char *
+twc_get_peer_name_nt(Tox *tox, int32_t group_number, int32_t peer_number)
+{
+    uint8_t name[TOX_MAX_NAME_LENGTH] = {0};
+
+    tox_group_peername(tox, group_number, peer_number, name);
+    return twc_null_terminate(name, strlen((char *)name));
+}
+
+/**
  * Return the users own name, null-terminated. Must be freed.
  */
 char *

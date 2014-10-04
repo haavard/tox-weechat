@@ -40,6 +40,9 @@ char *
 twc_get_status_message_nt(Tox *tox, int32_t friend_number);
 
 char *
+twc_get_peer_name_nt(Tox *tox, int32_t group_number, int32_t peer_number);
+
+char *
 twc_get_self_name_nt(Tox *tox);
 
 char *

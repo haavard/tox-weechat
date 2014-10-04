@@ -203,7 +203,7 @@ twc_chat_search_group(struct t_twc_profile *profile,
     }
 
     if (create_new)
-        return twc_chat_new_friend(profile, group_number);
+        return twc_chat_new_group(profile, group_number);
 
     return NULL;
 }

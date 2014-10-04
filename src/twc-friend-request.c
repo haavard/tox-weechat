@@ -31,9 +31,9 @@
 #include "twc-friend-request.h"
 
 /**
- * Add a new friend request to a profile.
+ * Add a new friend request to a profile. Return it's index for accepting.
  *
- * Returns 0 on success, -1 on a full friend request list, -2 on other error.
+ * Returns ID on success, -1 on a full friend request list, -2 on other error.
  */
 int
 twc_friend_request_add(struct t_twc_profile *profile,

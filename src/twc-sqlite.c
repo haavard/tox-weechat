@@ -206,7 +206,7 @@ twc_sqlite_delete_profile(struct t_twc_profile *profile)
 }
 
 /**
- * Add a friend request. Return 0 on success, -1 on error.
+ * Add a friend request. Return ID on success, -1 on error.
  */
 int
 twc_sqlite_add_friend_request(struct t_twc_profile *profile,
@@ -236,7 +236,7 @@ twc_sqlite_add_friend_request(struct t_twc_profile *profile,
     if (rc != SQLITE_DONE)
         return -1;
     else
-        return 0;
+        return sqlite3_last_insert_rowid(twc_sqlite_db);
 }
 
 /**

@@ -44,8 +44,8 @@ twc_group_chat_invite_add(struct t_twc_profile *profile,
                           const uint8_t *data,
                           size_t size);
 
-void
-twc_group_chat_invite_accept(struct t_twc_group_chat_invite *invite);
+int
+twc_group_chat_invite_join(struct t_twc_group_chat_invite *invite);
 
 void
 twc_group_chat_invite_remove(struct t_twc_group_chat_invite *invite);

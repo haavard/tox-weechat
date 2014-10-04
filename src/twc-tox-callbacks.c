@@ -26,6 +26,7 @@
 #include "twc-profile.h"
 #include "twc-chat.h"
 #include "twc-friend-request.h"
+#include "twc-group-invite.h"
 #include "twc-message-queue.h"
 #include "twc-utils.h"
 
@@ -50,11 +51,13 @@ twc_do_timer_cb(void *data,
 }
 
 void
-twc_friend_message_callback(Tox *tox,
-                            int32_t friend_number,
-                            const uint8_t *message,
-                            uint16_t length,
-                            void *data)
+twc_handle_friend_message(Tox *tox,
+                          int32_t friend_number,
+                          const uint8_t *message,
+                          uint16_t length,
+                          void *data,
+                          enum TWC_MESSAGE_TYPE message_type)
+
 {
     struct t_twc_profile *profile = data;
     struct t_twc_chat *chat = twc_chat_search_friend(profile,
@@ -65,10 +68,25 @@ twc_friend_message_callback(Tox *tox,
     char *message_nt = twc_null_terminate(message, length);
 
     twc_chat_print_message(chat, "", name,
-                           message_nt, TWC_MESSAGE_TYPE_MESSAGE);
+                           message_nt, message_type);
 
     free(name);
     free(message_nt);
+}
+
+void
+twc_friend_message_callback(Tox *tox,
+                            int32_t friend_number,
+                            const uint8_t *message,
+                            uint16_t length,
+                            void *data)
+{
+    twc_handle_friend_message(tox,
+                              friend_number,
+                              message,
+                              length,
+                              data,
+                              TWC_MESSAGE_TYPE_MESSAGE);
 }
 
 void
@@ -78,20 +96,12 @@ twc_friend_action_callback(Tox *tox,
                            uint16_t length,
                            void *data)
 {
-    struct t_twc_profile *profile = data;
-
-    struct t_twc_chat *chat = twc_chat_search_friend(profile,
-                                                    friend_number,
-                                                    true);
-
-    char *name = twc_get_name_nt(profile->tox, friend_number);
-    char *message_nt = twc_null_terminate(message, length);
-
-    twc_chat_print_message(chat, "", name,
-                           message_nt, TWC_MESSAGE_TYPE_ACTION);
-
-    free(name);
-    free(message_nt);
+    twc_handle_friend_message(tox,
+                              friend_number,
+                              message,
+                              length,
+                              data,
+                              TWC_MESSAGE_TYPE_ACTION);
 }
 
 void
@@ -212,10 +222,12 @@ twc_friend_request_callback(Tox *tox,
         twc_bin2hex(public_key, TOX_CLIENT_ID_SIZE, hex_address);
 
         weechat_printf(profile->buffer,
-                       "%sReceived a friend request with message \"%s\" from %s",
+                       "%sReceived a friend request from %s with message \"%s\"; "
+                       "accept it with \"/friend accept %d\"",
                        weechat_prefix("network"),
+                       hex_address,
                        message_nt,
-                       hex_address);
+                       rc);
 
         if (rc == -2)
         {
@@ -227,5 +239,86 @@ twc_friend_request_callback(Tox *tox,
     }
 
     free(message_nt);
+}
+
+void
+twc_group_invite_callback(Tox *tox,
+                          int32_t friend_number,
+                          const uint8_t *invite_data,
+                          uint16_t length,
+                          void *data)
+{
+    struct t_twc_profile *profile = data;
+
+    int64_t rc = twc_group_chat_invite_add(profile, friend_number, invite_data, length);
+
+    char *friend_name = twc_get_name_nt(profile->tox, friend_number);
+    weechat_printf(profile->buffer,
+                   "%sReceived a group chat invite from %s; "
+                   "join with \"/group join %d\"",
+                   weechat_prefix("network"),
+                   friend_name, rc);
+
+
+    free(friend_name);
+}
+
+void
+twc_handle_group_message(Tox *tox,
+                           int32_t group_number,
+                           int32_t peer_number,
+                           const uint8_t *message,
+                           uint16_t length,
+                           void *data,
+                           enum TWC_MESSAGE_TYPE message_type)
+{
+    struct t_twc_profile *profile = data;
+
+    struct t_twc_chat *chat = twc_chat_search_group(profile,
+                                                    group_number,
+                                                    true);
+
+    char *name = twc_get_peer_name_nt(profile->tox, group_number, peer_number);
+    char *message_nt = twc_null_terminate(message, length);
+
+    twc_chat_print_message(chat, "", name,
+                           message_nt, message_type);
+
+    free(name);
+    free(message_nt);
+}
+
+void
+twc_group_message_callback(Tox *tox,
+                           int32_t group_number,
+                           int32_t peer_number,
+                           const uint8_t *message,
+                           uint16_t length,
+                           void *data)
+{
+    twc_handle_group_message(tox,
+                             group_number,
+                             peer_number,
+                             message,
+                             length,
+                             data,
+                             TWC_MESSAGE_TYPE_MESSAGE);
+}
+
+void
+twc_group_action_callback(Tox *tox,
+                          int32_t group_number,
+                          int32_t peer_number,
+                          const uint8_t *message,
+                          uint16_t length,
+                          void *data)
+{
+    twc_handle_group_message(tox,
+                             group_number,
+                             peer_number,
+                             message,
+                             length,
+                             data,
+                             TWC_MESSAGE_TYPE_ACTION);
 }
 
