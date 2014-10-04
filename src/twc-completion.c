@@ -17,6 +17,9 @@
  * along with Tox-WeeChat.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <string.h>
+#include <stdio.h>
+
 #include <weechat/weechat-plugin.h>
 
 #include "twc.h"
@@ -78,10 +81,23 @@ twc_completion_friend(void *data,
         {
             char *name = twc_get_name_nt(profile->tox, friend_numbers[i]);
 
+            // add quotes if needed
+            if (strchr(name, ' '))
+            {
+                size_t length = strlen(name) + 3;
+                char *quoted_name = malloc(length);
+                snprintf(quoted_name, length, "\"%s\"", name);
+
+                free(name);
+                name = quoted_name;
+            }
+
             weechat_hook_completion_list_add(completion,
                                              name,
                                              0,
                                              WEECHAT_LIST_POS_SORT);
+
+            free(name);
         }
     }
 
