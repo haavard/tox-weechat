@@ -265,12 +265,12 @@ twc_group_invite_callback(Tox *tox,
 
 void
 twc_handle_group_message(Tox *tox,
-                           int32_t group_number,
-                           int32_t peer_number,
-                           const uint8_t *message,
-                           uint16_t length,
-                           void *data,
-                           enum TWC_MESSAGE_TYPE message_type)
+                         int32_t group_number,
+                         int32_t peer_number,
+                         const uint8_t *message,
+                         uint16_t length,
+                         void *data,
+                         enum TWC_MESSAGE_TYPE message_type)
 {
     struct t_twc_profile *profile = data;
 
