@@ -43,6 +43,7 @@ add_library(tox MODULE
     src/twc-list.c
     src/twc-message-queue.c
     src/twc-profile.c
+    src/twc-sqlite.c
     src/twc-tox-callbacks.c
     src/twc-utils.c
 )
@@ -50,6 +51,7 @@ add_library(tox MODULE
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -std=gnu99 -Wall -Wextra -Werror -Wno-unused-parameter")
 
 target_link_libraries(tox toxcore)
+target_link_libraries(tox sqlite3)
 
 # remove lib prefix (libtox.so -> tox.so)
 set_target_properties(tox PROPERTIES PREFIX "")

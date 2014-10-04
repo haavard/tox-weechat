@@ -28,6 +28,7 @@
 #include "twc-chat.h"
 #include "twc-friend-request.h"
 #include "twc-bootstrap.h"
+#include "twc-sqlite.h"
 #include "twc-utils.h"
 
 #include "twc-commands.h"
@@ -279,22 +280,22 @@ twc_cmd_friend(void *data, struct t_gui_buffer *buffer,
         struct t_twc_friend_request *request;
         if (weechat_strcasecmp(argv[2], "all") == 0)
         {
-            int count = 0;
-            while ((request = twc_friend_request_with_index(profile, 0)) != NULL)
+            struct t_twc_list *requests = twc_sqlite_friend_requests(profile);
+            size_t index;
+            struct t_twc_list_item *item;
+            twc_list_foreach(requests, index, item)
             {
                 if (accept)
-                    twc_friend_request_accept(request);
+                    twc_friend_request_accept(item->friend_request);
                 else
-                    twc_friend_request_remove(request);
-
-                ++count;
+                    twc_friend_request_remove(item->friend_request);
             }
 
             weechat_printf(profile->buffer,
                            "%s%s %d friend requests.",
                            weechat_prefix("network"),
                            accept ? "Accepted" : "Declined",
-                           count);
+                           index);
 
             return WEECHAT_RC_OK;
         }
@@ -312,13 +313,15 @@ twc_cmd_friend(void *data, struct t_gui_buffer *buffer,
 
             char hex_address[TOX_CLIENT_ID_SIZE * 2 + 1];
             twc_bin2hex(request->tox_id,
-                                TOX_CLIENT_ID_SIZE,
-                                hex_address);
+                                 TOX_CLIENT_ID_SIZE,
+                                 hex_address);
 
             if (accept)
                 twc_friend_request_accept(request);
             else
                 twc_friend_request_remove(request);
+
+            twc_friend_request_free(request);
 
             weechat_printf(profile->buffer,
                            "%s%s friend request from %s.",
@@ -333,36 +336,33 @@ twc_cmd_friend(void *data, struct t_gui_buffer *buffer,
     // /friend requests
     else if (argc == 2 && weechat_strcasecmp(argv[1], "requests") == 0)
     {
-        if (profile->friend_requests == NULL)
-        {
-            weechat_printf(profile->buffer,
-                           "%sNo pending friend requests :(",
-                           weechat_prefix("network"));
-        }
-        else
-        {
-            weechat_printf(profile->buffer,
-                           "%sPending friend requests:",
-                           weechat_prefix("network"));
+        weechat_printf(profile->buffer,
+                       "%sPending friend requests:",
+                       weechat_prefix("network"));
 
-            size_t index;
-            struct t_twc_list_item *item;
-            twc_list_foreach(profile->friend_requests, index, item)
-            {
-                // TODO: load short form address length from config
-                char hex_address[12 + 1];
-                twc_bin2hex(item->friend_request->tox_id,
-                            6,
-                            hex_address);
+        struct t_twc_list *friend_requests = twc_sqlite_friend_requests(profile);
 
-                weechat_printf(profile->buffer,
-                               "%s[%d] Address: %s\n"
-                               "[%d] Message: %s",
-                               weechat_prefix("network"),
-                               index, hex_address,
-                               index, item->friend_request->message);
-            }
+        size_t index;
+        struct t_twc_list_item *item;
+        twc_list_foreach(friend_requests, index, item)
+        {
+            // TODO: load short form address length from config
+            char hex_address[12 + 1];
+            twc_bin2hex(item->friend_request->tox_id,
+                        6,
+                        hex_address);
+
+            weechat_printf(profile->buffer,
+                           "%s[%d] Address: %s\n"
+                           "[%d] Message: %s",
+                           weechat_prefix("network"),
+                           item->friend_request->request_id,
+                           hex_address,
+                           item->friend_request->request_id,
+                           item->friend_request->message);
         }
+
+        twc_friend_request_free_list(friend_requests);
 
         return WEECHAT_RC_OK;
     }
@@ -388,7 +388,6 @@ twc_cmd_me(void *data, struct t_gui_buffer *buffer,
 
     return WEECHAT_RC_OK;
 }
-
 /**
  * Command /msg callback.
  */
@@ -704,7 +703,7 @@ twc_commands_init()
                          "address: internet address of node to bootstrap with\n"
                          "   port: port of the node\n"
                          " Tox ID: Tox ID of the node",
-                         NULL, twc_cmd_bootstrap, NULL);
+                         "connect", twc_cmd_bootstrap, NULL);
 
     weechat_hook_command("friend",
                          "manage friends",
@@ -719,7 +718,13 @@ twc_commands_init()
                          "requests: list friend requests\n"
                          "  accept: accept friend requests\n"
                          " decline: decline friend requests\n",
-                         NULL, twc_cmd_friend, NULL);
+                         "list"
+                         " || add"
+                         " || remove"
+                         " || requests"
+                         " || accept"
+                         " || decline",
+                         twc_cmd_friend, NULL);
 
     weechat_hook_command("me",
                          "send an action to the current chat",

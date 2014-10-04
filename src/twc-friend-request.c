@@ -25,6 +25,7 @@
 #include "twc.h"
 #include "twc-list.h"
 #include "twc-profile.h"
+#include "twc-sqlite.h"
 #include "twc-utils.h"
 
 #include "twc-friend-request.h"
@@ -39,14 +40,6 @@ twc_friend_request_add(struct t_twc_profile *profile,
                        const uint8_t *client_id,
                        const char *message)
 {
-    struct t_config_option *option =
-        profile->options[TWC_PROFILE_OPTION_MAX_FRIEND_REQUESTS];
-    unsigned int max_requests = weechat_config_integer(option);
-
-    // check for a full friend request list
-    if (profile->friend_requests->count >= max_requests)
-        return -1;
-
     // create a new request
     struct t_twc_friend_request *request
         = malloc(sizeof(struct t_twc_friend_request));
@@ -58,7 +51,8 @@ twc_friend_request_add(struct t_twc_profile *profile,
     memcpy(request->tox_id, client_id, TOX_CLIENT_ID_SIZE);
 
     // add to list
-    twc_list_item_new_data_add(profile->friend_requests, request);
+    if (twc_sqlite_add_friend_request(profile, request) == -1)
+        return -2;
 
     return 0;
 }
@@ -79,8 +73,8 @@ twc_friend_request_accept(struct t_twc_friend_request *request)
 void
 twc_friend_request_remove(struct t_twc_friend_request *request)
 {
-    twc_list_remove_with_data(request->profile->friend_requests, request);
-    twc_friend_request_free(request);
+    twc_sqlite_delete_friend_request_with_id(request->profile,
+                                             request->request_id);
 }
 
 /**
@@ -88,13 +82,9 @@ twc_friend_request_remove(struct t_twc_friend_request *request)
  */
 struct t_twc_friend_request *
 twc_friend_request_with_index(struct t_twc_profile *profile,
-                              unsigned int index)
+                              int64_t index)
 {
-    struct t_twc_list_item *item = twc_list_get(profile->friend_requests, index);
-    if (item)
-        return item->friend_request;
-    else
-        return NULL;
+    return twc_sqlite_friend_request_with_id(profile, index);
 }
 
 /**
@@ -108,16 +98,15 @@ twc_friend_request_free(struct t_twc_friend_request *request)
 }
 
 /**
- * Free all friend requests from a profile.
+ * Free all friend requests from a list.
  */
 void
-twc_friend_request_free_profile(struct t_twc_profile *profile)
+twc_friend_request_free_list(struct t_twc_list *list)
 {
     struct t_twc_friend_request *request;
-
-    while ((request = twc_list_pop(profile->friend_requests)))
+    while ((request = twc_list_pop(list)))
         twc_friend_request_free(request);
 
-    free(profile->friend_requests);
+    free(list);
 }
 

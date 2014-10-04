@@ -22,6 +22,8 @@
 
 #include <tox/tox.h>
 
+struct t_twc_list;
+
 /**
  * Represents a friend request with a Tox ID and a message.
  */
@@ -29,6 +31,7 @@ struct t_twc_friend_request
 {
     struct t_twc_profile *profile;
 
+    int request_id;
     uint8_t tox_id[TOX_CLIENT_ID_SIZE];
     char *message;
 };
@@ -46,13 +49,13 @@ twc_friend_request_remove(struct t_twc_friend_request *request);
 
 struct t_twc_friend_request *
 twc_friend_request_with_index(struct t_twc_profile *profile,
-                              unsigned int index);
+                              int64_t index);
 
 void
 twc_friend_request_free(struct t_twc_friend_request *request);
 
 void
-twc_friend_request_free_profile(struct t_twc_profile *profile);
+twc_friend_request_free_list(struct t_twc_list *list);
 
 #endif // TOX_WEECHAT_FRIEND_REQUEST_H
 
