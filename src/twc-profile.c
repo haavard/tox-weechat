@@ -30,6 +30,7 @@
 #include "twc-bootstrap.h"
 #include "twc-config.h"
 #include "twc-friend-request.h"
+#include "twc-group-invite.h"
 #include "twc-message-queue.h"
 #include "twc-chat.h"
 #include "twc-tox-callbacks.h"
@@ -177,6 +178,7 @@ twc_profile_new(const char *name)
     profile->tox_online = false;
 
     profile->chats = twc_list_new();
+    profile->group_chat_invites = twc_list_new();
     profile->message_queues = weechat_hashtable_new(32,
                                                     WEECHAT_HASHTABLE_INTEGER,
                                                     WEECHAT_HASHTABLE_POINTER,
@@ -432,7 +434,8 @@ twc_profile_free(struct t_twc_profile *profile)
     }
 
     // free things
-    twc_chat_free_profile(profile);
+    twc_chat_free_list(profile->chats);
+    twc_group_chat_invite_free_list(profile->group_chat_invites);
     twc_message_queue_free_profile(profile);
     free(profile->name);
     free(profile);

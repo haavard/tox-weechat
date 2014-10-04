@@ -40,6 +40,7 @@ struct t_twc_list_item
         void *data;
         struct t_twc_profile *profile;
         struct t_twc_friend_request *friend_request;
+        struct t_twc_group_chat_invite *group_chat_invite;
         struct t_twc_chat *chat;
         struct t_twc_queued_message *queued_message;
     };

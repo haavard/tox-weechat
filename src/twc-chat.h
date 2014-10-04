@@ -71,7 +71,7 @@ void
 twc_chat_queue_refresh(struct t_twc_chat *chat);
 
 void
-twc_chat_free_profile(struct t_twc_profile *profile);
+twc_chat_free_list(struct t_twc_list *list);
 
 #endif // TOX_WEECHAT_CHAT_H
 

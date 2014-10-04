@@ -40,6 +40,7 @@ add_library(tox MODULE
     src/twc-config.c
     src/twc-friend-request.c
     src/twc-gui.c
+    src/twc-group-invite.c
     src/twc-list.c
     src/twc-message-queue.c
     src/twc-profile.c

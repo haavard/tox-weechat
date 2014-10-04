@@ -308,16 +308,16 @@ twc_chat_buffer_close_callback(void *data,
  * Free all chats connected to a profile.
  */
 void
-twc_chat_free_profile(struct t_twc_profile *profile)
+twc_chat_free_list(struct t_twc_list *list)
 {
     struct t_twc_chat *chat;
-    while ((chat = twc_list_pop(profile->chats)))
+    while ((chat = twc_list_pop(list)))
     {
         weechat_buffer_set_pointer(chat->buffer, "close_callback", NULL);
         weechat_buffer_close(chat->buffer);
         free(chat);
     }
 
-    free(profile->chats);
+    free(list);
 }
 
