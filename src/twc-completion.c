@@ -40,7 +40,7 @@ enum
 };
 
 /**
- * Complete a friends number, name and/or Tox ID.
+ * Complete a friends name and/or Tox ID.
  */
 int
 twc_completion_friend(void *data,
