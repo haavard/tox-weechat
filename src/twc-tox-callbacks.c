@@ -322,3 +322,35 @@ twc_group_action_callback(Tox *tox,
                              TWC_MESSAGE_TYPE_ACTION);
 }
 
+void
+twc_group_namelist_change_callback(Tox *tox,
+                                   int group_number,
+                                   int peer_number,
+                                   uint8_t change_type,
+                                   void *data)
+{
+    struct t_twc_profile *profile = data;
+    struct t_twc_chat *chat = twc_chat_search_group(profile,
+                                                    group_number,
+                                                    false);
+
+    struct t_gui_nick *nick;
+    char *name = twc_get_peer_name_nt(profile->tox, group_number, peer_number);
+
+    if (change_type == TOX_CHAT_CHANGE_PEER_DEL
+        || change_type == TOX_CHAT_CHANGE_PEER_NAME)
+    {
+        nick = weechat_hashtable_get(chat->nicks, &peer_number);
+        weechat_nicklist_remove_nick(chat->buffer, nick);
+        weechat_hashtable_remove(chat->nicks, &peer_number);
+    }
+
+    if (change_type == TOX_CHAT_CHANGE_PEER_ADD
+        || change_type == TOX_CHAT_CHANGE_PEER_NAME)
+    {
+        nick = weechat_nicklist_add_nick(chat->buffer, chat->nicklist_group,
+                                         name, NULL, NULL, NULL, 1);
+        weechat_hashtable_set(chat->nicks, &peer_number, nick);
+    }
+}
+

@@ -273,6 +273,7 @@ twc_profile_load(struct t_twc_profile *profile)
     tox_callback_group_invite(profile->tox, twc_group_invite_callback, profile);
     tox_callback_group_message(profile->tox, twc_group_message_callback, profile);
     tox_callback_group_action(profile->tox, twc_group_action_callback, profile);
+    tox_callback_group_namelist_change(profile->tox, twc_group_namelist_change_callback, profile);
 }
 
 /**

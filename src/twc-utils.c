@@ -111,8 +111,11 @@ twc_get_peer_name_nt(Tox *tox, int32_t group_number, int32_t peer_number)
 {
     uint8_t name[TOX_MAX_NAME_LENGTH] = {0};
 
-    tox_group_peername(tox, group_number, peer_number, name);
-    return twc_null_terminate(name, strlen((char *)name));
+    int length = tox_group_peername(tox, group_number, peer_number, name);
+    if (length >= 0)
+        return twc_null_terminate(name, length);
+    else
+        return "<unknown>";
 }
 
 /**

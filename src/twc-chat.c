@@ -47,8 +47,8 @@ twc_chat_buffer_close_callback(void *data,
  * Create a new chat.
  */
 struct t_twc_chat *
-twc_chat_create(struct t_twc_profile *profile,
-                const char *name)
+twc_chat_new(struct t_twc_profile *profile,
+             const char *name)
 {
     struct t_twc_chat *chat = malloc(sizeof(struct t_twc_chat));
     if (!chat)
@@ -56,6 +56,7 @@ twc_chat_create(struct t_twc_profile *profile,
 
     chat->profile = profile;
     chat->friend_number = chat->group_number = -1;
+    chat->nicks = NULL;
 
     size_t full_name_size = strlen(profile->name) + 1 + strlen(name) + 1;
     char *full_name = malloc(full_name_size);
@@ -90,7 +91,7 @@ twc_chat_new_friend(struct t_twc_profile *profile,
     char buffer_name[TOX_CLIENT_ID_SIZE * 2 + 1];
     twc_bin2hex(client_id, TOX_CLIENT_ID_SIZE, buffer_name);
 
-    struct t_twc_chat *chat = twc_chat_create(profile, buffer_name);
+    struct t_twc_chat *chat = twc_chat_new(profile, buffer_name);
     if (chat)
         chat->friend_number = friend_number;
 
@@ -98,7 +99,7 @@ twc_chat_new_friend(struct t_twc_profile *profile,
 }
 
 /**
- * Create a new friend chat.
+ * Create a new group chat.
  */
 struct t_twc_chat *
 twc_chat_new_group(struct t_twc_profile *profile,
@@ -107,9 +108,18 @@ twc_chat_new_group(struct t_twc_profile *profile,
     char buffer_name[32];
     sprintf(buffer_name, "group_chat_%d", group_number);
 
-    struct t_twc_chat *chat = twc_chat_create(profile, buffer_name);
+    struct t_twc_chat *chat = twc_chat_new(profile, buffer_name);
     if (chat)
         chat->group_number = group_number;
+
+    chat->nicklist_group = weechat_nicklist_add_group(chat->buffer, NULL,
+                                                      NULL, NULL, true);
+    chat->nicks = weechat_hashtable_new(256,
+                                        WEECHAT_HASHTABLE_INTEGER,
+                                        WEECHAT_HASHTABLE_POINTER,
+                                        NULL, NULL);
+
+    weechat_buffer_set(chat->buffer, "nicklist", "1");
 
     return chat;
 }
@@ -279,8 +289,12 @@ twc_chat_send_message(struct t_twc_chat *chat,
     }
     else if (chat->group_number >= 0)
     {
-        tox_group_message_send(chat->profile->tox, chat->group_number,
-                               (uint8_t *)message, strlen(message));
+        if (message_type == TWC_MESSAGE_TYPE_MESSAGE)
+            tox_group_message_send(chat->profile->tox, chat->group_number,
+                                   (uint8_t *)message, strlen(message));
+        else if (message_type == TWC_MESSAGE_TYPE_ACTION)
+            tox_group_action_send(chat->profile->tox, chat->group_number,
+                                  (uint8_t *)message, strlen(message));
     }
 }
 
@@ -308,9 +322,20 @@ twc_chat_buffer_close_callback(void *data,
     struct t_twc_chat *chat = data;
 
     twc_list_remove_with_data(chat->profile->chats, chat);
-    free(chat);
+    twc_chat_free(chat);
 
     return WEECHAT_RC_OK;
+}
+
+/**
+ * Free a chat object.
+ */
+void
+twc_chat_free(struct t_twc_chat *chat)
+{
+    if (chat->nicks)
+        weechat_hashtable_free(chat->nicks);
+    free(chat);
 }
 
 /**
@@ -324,7 +349,7 @@ twc_chat_free_list(struct t_twc_list *list)
     {
         weechat_buffer_set_pointer(chat->buffer, "close_callback", NULL);
         weechat_buffer_close(chat->buffer);
-        free(chat);
+        twc_chat_free(chat);
     }
 
     free(list);

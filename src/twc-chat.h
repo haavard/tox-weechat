@@ -23,6 +23,8 @@
 #include <stdint.h>
 #include <stdbool.h>
 
+struct t_twc_list;
+
 extern const char *twc_tag_unsent_message;
 extern const char *twc_tag_sent_message;
 extern const char *twc_tag_received_message;
@@ -40,6 +42,9 @@ struct t_twc_chat
     struct t_gui_buffer *buffer;
     int32_t friend_number;
     int32_t group_number;
+
+    struct t_gui_nick_group *nicklist_group;
+    struct t_hashtable *nicks;
 };
 
 struct t_twc_chat *
@@ -69,6 +74,9 @@ twc_chat_send_message(struct t_twc_chat *chat,
 
 void
 twc_chat_queue_refresh(struct t_twc_chat *chat);
+
+void
+twc_chat_free(struct t_twc_chat *chat);
 
 void
 twc_chat_free_list(struct t_twc_list *list);
