@@ -30,12 +30,10 @@ Run `/help -listfull tox` to get a list of all available commands.
 
 TODO
 ----
- - Persist data (friend requests etc.)
- - Support encrypted save files
+ - Encrypted save files
  - Tox DNS
- - Group chats
  - Support proxies (e.g. TOR)
- - Support WeeChat `/upgrade`
+ - WeeChat's `/upgrade`
  - Audio/video chats
 
 License
