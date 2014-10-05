@@ -273,11 +273,15 @@ twc_chat_send_message(struct t_twc_chat *chat,
         twc_message_queue_add_friend_message(chat->profile,
                                              chat->friend_number,
                                              message, message_type);
+        char *name = twc_get_self_name_nt(chat->profile->tox);
+        twc_chat_print_message(chat, "", name, message, message_type);
+        free(name);
     }
-
-    char *name = twc_get_self_name_nt(chat->profile->tox);
-    twc_chat_print_message(chat, "", name, message, message_type);
-    free(name);
+    else if (chat->group_number >= 0)
+    {
+        tox_group_message_send(chat->profile->tox, chat->group_number,
+                               (uint8_t *)message, strlen(message));
+    }
 }
 
 /**

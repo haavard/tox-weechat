@@ -250,7 +250,8 @@ twc_group_invite_callback(Tox *tox,
 {
     struct t_twc_profile *profile = data;
 
-    int64_t rc = twc_group_chat_invite_add(profile, friend_number, invite_data, length);
+    int64_t rc = twc_group_chat_invite_add(profile, friend_number,
+                                           (uint8_t *)invite_data, length);
 
     char *friend_name = twc_get_name_nt(profile->tox, friend_number);
     weechat_printf(profile->buffer,
@@ -258,7 +259,6 @@ twc_group_invite_callback(Tox *tox,
                    "join with \"/group join %d\"",
                    weechat_prefix("network"),
                    friend_name, rc);
-
 
     free(friend_name);
 }

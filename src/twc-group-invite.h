@@ -34,14 +34,14 @@ struct t_twc_group_chat_invite
     struct t_twc_profile *profile;
 
     int32_t friend_number;
-    const uint8_t *data;
+    uint8_t *data;
     size_t data_size;
 };
 
 int
 twc_group_chat_invite_add(struct t_twc_profile *profile,
                           int32_t friend_number,
-                          const uint8_t *data,
+                          uint8_t *data,
                           size_t size);
 
 int

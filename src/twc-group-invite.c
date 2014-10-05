@@ -37,7 +37,7 @@
 int
 twc_group_chat_invite_add(struct t_twc_profile *profile,
                           int32_t friend_number,
-                          const uint8_t *data,
+                          uint8_t *data,
                           size_t size)
 {
     // create a new invite object
@@ -46,9 +46,12 @@ twc_group_chat_invite_add(struct t_twc_profile *profile,
     if (!invite)
         return -1;
 
+    uint8_t *data_copy = malloc(size);
+    memcpy(data_copy, data, size);
+
     invite->profile = profile;
     invite->friend_number = friend_number;
-    invite->data = data;
+    invite->data = data_copy;
     invite->data_size = size;
 
     twc_list_item_new_data_add(profile->group_chat_invites, invite);
@@ -98,6 +101,7 @@ twc_group_chat_invite_with_index(struct t_twc_profile *profile,
 void
 twc_group_chat_invite_free(struct t_twc_group_chat_invite *invite)
 {
+    free(invite->data);
     free(invite);
 }
 
