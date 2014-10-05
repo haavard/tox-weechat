@@ -96,7 +96,7 @@ twc_message_queue_flush_friend(struct t_twc_profile *profile,
         struct t_twc_queued_message *queued_message = item->queued_message;
 
         // TODO: store and deal with message IDs
-        uint32_t rc;
+        uint32_t rc = 0;
         switch(queued_message->message_type)
         {
             case TWC_MESSAGE_TYPE_MESSAGE:
