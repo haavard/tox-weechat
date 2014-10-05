@@ -59,8 +59,17 @@ weechat_plugin_init(struct t_weechat_plugin *plugin, int argc, char *argv[])
     twc_config_init();
     twc_config_read();
 
-    // TODO: respect weechat flag for no autoconnect
-    twc_profile_autoload();
+    bool no_autoconnect = false;
+    for (int i = 0; i < argc; i++)
+    {
+        if (weechat_strcasecmp(argv[i], "-a") == 0
+            || weechat_strcasecmp(argv[i], "--no-connect") == 0)
+        {
+            no_autoconnect = true;
+        }
+    }
+    if (!no_autoconnect)
+        twc_profile_autoload();
 
     return WEECHAT_RC_OK;
 }
