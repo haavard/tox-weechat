@@ -68,6 +68,9 @@ twc_profile_unload(struct t_twc_profile *profile);
 void
 twc_profile_autoload();
 
+int
+twc_save_profile_data_file(struct t_twc_profile *profile);
+
 void
 twc_profile_refresh_online_status(struct t_twc_profile *profile);
 
