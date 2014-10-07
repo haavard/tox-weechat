@@ -707,6 +707,32 @@ twc_cmd_nospam(void *data, struct t_gui_buffer *buffer,
     return WEECHAT_RC_OK;
 }
 
+int
+twc_cmd_save(void *data, struct t_gui_buffer *buffer, const char *command)
+{
+    size_t index;
+    struct t_twc_list_item *item;
+    twc_list_foreach(twc_profiles, index, item)
+    {
+        if (!(item->profile->tox)) continue;
+
+        int rc = twc_profile_save_data_file(item->profile);
+        if (rc == -1)
+        {
+            weechat_printf(NULL,
+                           "%s%s: failed to save data for profile %s",
+                           weechat_prefix("error"), weechat_plugin->name,
+                           item->profile->name);
+        }
+    }
+
+    weechat_printf(NULL,
+                   "%s: profile data saved",
+                   weechat_plugin->name);
+
+    return WEECHAT_RC_OK;
+}
+
 /**
  * Command /status callback.
  */
@@ -987,6 +1013,8 @@ twc_commands_init()
                          "Warning: changing your nospam value will alter your "
                          "Tox ID!",
                          NULL, twc_cmd_nospam, NULL);
+
+    weechat_hook_command_run("/save", twc_cmd_save, NULL);
 
     weechat_hook_command("status",
                          "change your Tox status",
