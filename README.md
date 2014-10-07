@@ -28,6 +28,15 @@ Usage
 
 Run `/help -listfull tox` to get a list of all available commands.
 
+Common issues
+-------------
+### Long Tox names messing up WeeChat layout
+
+Tox allows names up to 128 bytes long. To prevent long names from taking all your screen space, you can set the following options in WeeChat:
+ - `weechat.bar.nicklist.size_max`
+ - `weechat.look.prefix_align_max`
+ - `buffers.look.name_size_max` (if using buffers.pl)
+
 TODO
 ----
  - Encrypted save files
