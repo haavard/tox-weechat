@@ -104,7 +104,7 @@ twc_profile_load_data(struct t_twc_profile *profile)
  * TODO: support encrypted save files
  */
 int
-twc_save_profile_data_file(struct t_twc_profile *profile)
+twc_profile_save_data_file(struct t_twc_profile *profile)
 {
     if (!(profile->tox))
         return -1;
@@ -287,7 +287,7 @@ twc_profile_unload(struct t_twc_profile *profile)
         return;
 
     // save and kill tox
-    int result = twc_save_profile_data_file(profile);
+    int result = twc_profile_save_data_file(profile);
     tox_kill(profile->tox);
     profile->tox = NULL;
 
