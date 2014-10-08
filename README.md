@@ -1,6 +1,6 @@
 Tox-WeeChat
 ===========
-Tox-WeeChat is a [Tox][1] protocol plugin for [WeeChat][2]. It is functional, but lacks certain features like Tox DNS (e.g. user@toxme.se) and group chats.
+Tox-WeeChat is a [Tox][1] protocol plugin for [WeeChat][2]. It is functional, but lacks certain features like Tox DNS and proxies.
 
 Current build status: [![Build Status](https://travis-ci.org/haavardp/tox-weechat.svg?branch=master)][3]
 
@@ -28,10 +28,9 @@ Usage
 
 Run `/help -listfull tox` to get a list of all available commands.
 
-Common issues
--------------
-### Long Tox names messing up WeeChat layout
+### Common issues
 
+#### Long Tox names messing up WeeChat layout
 Tox allows names up to 128 bytes long. To prevent long names from taking all your screen space, you can set the following options in WeeChat:
  - `weechat.bar.nicklist.size_max`
  - `weechat.look.prefix_align_max`
@@ -39,9 +38,9 @@ Tox allows names up to 128 bytes long. To prevent long names from taking all you
 
 TODO
 ----
- - Encrypted save files
- - Tox DNS
  - Support proxies (e.g. TOR)
+ - Tox DNS
+ - Encrypted save files
  - WeeChat's `/upgrade`
  - Audio/video chats
 
