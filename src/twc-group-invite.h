@@ -52,7 +52,7 @@ twc_group_chat_invite_remove(struct t_twc_group_chat_invite *invite);
 
 struct t_twc_group_chat_invite *
 twc_group_chat_invite_with_index(struct t_twc_profile *profile,
-                                 int64_t index);
+                                 size_t index);
 
 void
 twc_group_chat_invite_free(struct t_twc_group_chat_invite *invite);

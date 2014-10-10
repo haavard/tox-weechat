@@ -90,9 +90,14 @@ twc_group_chat_invite_remove(struct t_twc_group_chat_invite *invite)
  */
 struct t_twc_group_chat_invite *
 twc_group_chat_invite_with_index(struct t_twc_profile *profile,
-                                 int64_t index)
+                                 size_t index)
 {
-    return twc_list_get(profile->group_chat_invites, index)->group_chat_invite;
+    struct t_twc_list_item *item =
+        twc_list_get(profile->group_chat_invites, index);
+    if (item)
+        return item->group_chat_invite;
+    else
+        return NULL;
 }
 
 /**
