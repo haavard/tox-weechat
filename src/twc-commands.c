@@ -972,8 +972,8 @@ twc_commands_init()
                          " || add [-force] <address> [<message>]"
                          " || remove <number>|<name>|<Tox ID>"
                          " || requests"
-                         " || accept <number>|<name>|<Tox ID>|all"
-                         " || decline <number>|<name>|<Tox ID>|all",
+                         " || accept <number>|<Tox ID>|all"
+                         " || decline <number>|<Tox ID>|all",
                          "    list: list all friends\n"
                          "     add: add a friend by their public Tox address\n"
                          "requests: list friend requests\n"
