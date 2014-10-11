@@ -247,10 +247,30 @@ twc_cmd_friend(void *data, struct t_gui_buffer *buffer,
         return WEECHAT_RC_OK;
     }
 
-    // /friend add <Tox ID> [<message>]
+    // /friend add [-force] <Tox ID> [<message>]
     else if (argc >= 3 && weechat_strcasecmp(argv[1], "add") == 0)
     {
-        if (strlen(argv[2]) != TOX_FRIEND_ADDRESS_SIZE * 2)
+        bool force;
+        const char *hex_id;
+        const char *message;
+
+        force = weechat_strcasecmp(argv[2], "-force") == 0;
+        if (force)
+        {
+            hex_id = argv[3];
+            message = argc >= 5 ? argv_eol[4] : NULL;
+        }
+        else
+        {
+            hex_id = argv[2];
+            message = argc >= 4 ? argv_eol[3] : NULL;
+        }
+
+        if (!message)
+            // TODO: default message as option
+            message = "Hi! Please add me on Tox!";
+
+        if (strlen(hex_id) != TOX_FRIEND_ADDRESS_SIZE * 2)
         {
             weechat_printf(profile->buffer,
                            "%sTox ID length invalid. Please try again.",
@@ -260,14 +280,29 @@ twc_cmd_friend(void *data, struct t_gui_buffer *buffer,
         }
 
         char address[TOX_FRIEND_ADDRESS_SIZE];
-        twc_hex2bin(argv[2], TOX_FRIEND_ADDRESS_SIZE, address);
+        twc_hex2bin(hex_id, TOX_FRIEND_ADDRESS_SIZE, address);
 
-        char *message;
-        if (argc == 3 || strlen(argv_eol[3]) == 0)
-            // TODO: default message as option
-            message = "Hi! Please add me on Tox!";
-        else
-            message = argv_eol[3];
+        if (force)
+        {
+            bool fail = false;
+            char *hex_key = strndup(hex_id, TOX_CLIENT_ID_SIZE * 2);
+            int32_t friend_number = twc_match_friend(profile, hex_key);
+            free(hex_key);
+
+            if (friend_number == TWC_FRIEND_MATCH_AMBIGUOUS)
+                fail = true;
+            else if (friend_number != TWC_FRIEND_MATCH_NOMATCH)
+                fail = tox_del_friend(profile->tox, friend_number) != 0;
+
+            if (fail)
+            {
+                weechat_printf(profile->buffer,
+                               "%scould not remove friend; please remove "
+                               "manually before resending friend request",
+                               weechat_prefix("error"));
+                return WEECHAT_RC_OK;
+            }
+        }
 
         int32_t result = tox_add_friend(profile->tox,
                                         (uint8_t *)address,
@@ -283,7 +318,8 @@ twc_cmd_friend(void *data, struct t_gui_buffer *buffer,
                 break;
             case TOX_FAERR_ALREADYSENT:
                 weechat_printf(profile->buffer,
-                               "%sYou have already sent a friend request to that address.",
+                               "%sYou have already sent a friend request to "
+                               "that address (use -force to circumvent)",
                                weechat_prefix("error"));
                 break;
             case TOX_FAERR_OWNKEY:
@@ -933,7 +969,7 @@ twc_commands_init()
     weechat_hook_command("friend",
                          "manage friends",
                          "list"
-                         " || add <address> [<message>]"
+                         " || add [-force] <address> [<message>]"
                          " || remove <number>|<name>|<Tox ID>"
                          " || requests"
                          " || accept <number>|<name>|<Tox ID>|all"
