@@ -239,11 +239,12 @@ twc_profile_load(struct t_twc_profile *profile)
                            "missing; aborting",
                            weechat_prefix("error"),
                            options->proxy_address, options->proxy_port);
+            return;
         }
         else
         {
             weechat_printf(profile->buffer,
-                           "%sUsing proxy %s:%d",
+                           "%susing proxy %s:%d",
                            weechat_prefix("network"),
                            options->proxy_address, options->proxy_port);
         }

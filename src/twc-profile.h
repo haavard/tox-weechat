@@ -58,19 +58,31 @@ struct t_twc_profile
 extern struct t_twc_list *twc_profiles;
 
 #define TWC_PROFILE_OPTION_BOOLEAN(profile, index)                            \
-    ((!weechat_config_option_is_null(profile->options[index])) ?              \
-        weechat_config_boolean(profile->options[index]) :                     \
-        weechat_config_boolean_default(profile->options[index]))              \
+    (!weechat_config_option_is_null(profile->options[index])                  \
+     ? weechat_config_boolean(profile->options[index])                        \
+     : (!weechat_config_option_is_null(twc_config_profile_default[index])     \
+      ? weechat_config_boolean(twc_config_profile_default[index])             \
+      : (!weechat_config_option_default_is_null(twc_config_profile_default[index]) \
+       ? weechat_config_boolean_default(twc_config_profile_default[index])    \
+       : 0)))
 
 #define TWC_PROFILE_OPTION_INTEGER(profile, index)                            \
-    ((!weechat_config_option_is_null(profile->options[index])) ?              \
-        weechat_config_integer(profile->options[index]) :                     \
-        weechat_config_integer_default(profile->options[index]))              \
+    (!weechat_config_option_is_null(profile->options[index])                  \
+     ? weechat_config_integer(profile->options[index])                        \
+     : (!weechat_config_option_is_null(twc_config_profile_default[index])     \
+      ? weechat_config_integer(twc_config_profile_default[index])             \
+      : (!weechat_config_option_default_is_null(twc_config_profile_default[index]) \
+       ? weechat_config_integer_default(twc_config_profile_default[index])    \
+       : 0)))
 
 #define TWC_PROFILE_OPTION_STRING(profile, index)                             \
-    ((!weechat_config_option_is_null(profile->options[index])) ?              \
-        weechat_config_string(profile->options[index]) :                      \
-        weechat_config_string_default(profile->options[index]))               \
+    (!weechat_config_option_is_null(profile->options[index])                  \
+     ? weechat_config_string(profile->options[index])                         \
+     : (!weechat_config_option_is_null(twc_config_profile_default[index])     \
+      ? weechat_config_string(twc_config_profile_default[index])              \
+      : (!weechat_config_option_default_is_null(twc_config_profile_default[index]) \
+       ? weechat_config_string_default(twc_config_profile_default[index])     \
+       : NULL)))
 
 void
 twc_profile_init();
