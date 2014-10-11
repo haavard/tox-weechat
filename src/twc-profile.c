@@ -215,8 +215,18 @@ twc_profile_load(struct t_twc_profile *profile)
                    weechat_prefix("network"), weechat_plugin->name,
                    profile->name);
 
+    // create Tox options object
+    Tox_Options *options = malloc(sizeof(Tox_Options));
+    options->proxy_enabled =
+        weechat_config_boolean(profile->options[TWC_PROFILE_OPTION_PROXY_ENABLED]);
+    const char *proxy_address =
+           weechat_config_string(profile->options[TWC_PROFILE_OPTION_PROXY_ADDRESS]);
+    memcpy(options->proxy_address, proxy_address, strlen(proxy_address) + 1);
+    options->proxy_port =
+        weechat_config_integer(profile->options[TWC_PROFILE_OPTION_PROXY_PORT]);
+
     // create Tox
-    profile->tox = tox_new(NULL);
+    profile->tox = tox_new(options);
     if (!(profile->tox))
     {
         weechat_printf(profile->buffer,
