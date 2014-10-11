@@ -38,6 +38,9 @@ char *twc_profile_option_names[TWC_PROFILE_NUM_OPTIONS] =
     "save_file",
     "autoload",
     "max_friend_requests",
+    "proxy_address",
+    "proxy_port",
+    "proxy_enabled",
 };
 
 char *twc_profile_option_defaults[TWC_PROFILE_NUM_OPTIONS] =
@@ -45,6 +48,9 @@ char *twc_profile_option_defaults[TWC_PROFILE_NUM_OPTIONS] =
     "%h/tox/%p",
     "off",
     "100",
+    NULL,
+    NULL,
+    "off",
 };
 
 /**
@@ -224,6 +230,43 @@ twc_config_init_option(int option_index, const char *option_name)
                 twc_config_profile_check_value_callback, NULL,
                 twc_config_profile_change_callback, NULL,
                 NULL, NULL);
+        case TWC_PROFILE_OPTION_PROXY_ADDRESS:
+            return weechat_config_new_option(
+                twc_config_file, twc_config_section_profile,
+                option_name, "string",
+                "proxy address ",
+                NULL, 0, 0,
+                twc_profile_option_defaults[option_index],
+                NULL,
+                1,
+                twc_config_profile_check_value_callback, NULL,
+                twc_config_profile_change_callback, NULL,
+                NULL, NULL);
+        case TWC_PROFILE_OPTION_PROXY_ENABLED:
+            return weechat_config_new_option(
+                twc_config_file, twc_config_section_profile,
+                option_name, "boolean",
+                "whether or not to proxy this profile; requires reload to "
+                "effect",
+                NULL, 0, 0,
+                twc_profile_option_defaults[option_index],
+                NULL,
+                0,
+                twc_config_profile_check_value_callback, NULL,
+                twc_config_profile_change_callback, NULL,
+                NULL, NULL);
+        case TWC_PROFILE_OPTION_PROXY_PORT:
+            return weechat_config_new_option(
+                twc_config_file, twc_config_section_profile,
+                option_name, "integer",
+                "proxy address ",
+                NULL, 0, UINT16_MAX ,
+                twc_profile_option_defaults[option_index],
+                NULL,
+                1,
+                twc_config_profile_check_value_callback, NULL,
+                twc_config_profile_change_callback, NULL,
+                NULL, NULL);
         case TWC_PROFILE_OPTION_SAVEFILE:
             return weechat_config_new_option(
                 twc_config_file, twc_config_section_profile,
@@ -263,7 +306,7 @@ twc_config_init_profile(struct t_twc_profile *profile)
                      twc_profile_option_names[i]);
 
             profile->options[i] = twc_config_init_option(i, option_name);
-            free (option_name);
+            free(option_name);
         }
     }
 }
