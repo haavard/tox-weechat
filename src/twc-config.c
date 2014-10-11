@@ -43,6 +43,7 @@ char *twc_profile_option_names[TWC_PROFILE_NUM_OPTIONS] =
     "proxy_port",
     "proxy",
     "udp",
+    "ipv6",
 };
 
 char *twc_profile_option_defaults[TWC_PROFILE_NUM_OPTIONS] =
@@ -54,6 +55,7 @@ char *twc_profile_option_defaults[TWC_PROFILE_NUM_OPTIONS] =
     NULL,
     "off",
     "on",
+    "on",
 };
 
 bool twc_profile_option_null_allowed[TWC_PROFILE_NUM_OPTIONS] =
@@ -64,7 +66,8 @@ bool twc_profile_option_null_allowed[TWC_PROFILE_NUM_OPTIONS] =
     true, // we allow proxy information to be null
     true, // -------------------------------------
     false,
-    false
+    false,
+    false,
 };
 
 /**
@@ -219,6 +222,11 @@ twc_config_init_option(struct t_config_section *section,
             type = "boolean";
             description = "automatically load profile and connect to the Tox "
                           "network when WeeChat starts";
+            break;
+        case TWC_PROFILE_OPTION_IPV6:
+            type = "boolean";
+            description = "use IPv6 as well as IPv4 to connect to the Tox "
+                          "network";
             break;
         case TWC_PROFILE_OPTION_MAX_FRIEND_REQUESTS:
             type = "integer";
