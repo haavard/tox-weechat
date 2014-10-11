@@ -58,7 +58,6 @@ twc_friend_request_add(struct t_twc_profile *profile,
 
     int rc = twc_sqlite_add_friend_request(profile, request) == -1;
 
-    // add to list
     if (rc == -1)
         return -2;
 
@@ -89,8 +88,7 @@ twc_friend_request_remove(struct t_twc_friend_request *request)
  * Get friend request with a given index.
  */
 struct t_twc_friend_request *
-twc_friend_request_with_index(struct t_twc_profile *profile,
-                              int64_t index)
+twc_friend_request_with_index(struct t_twc_profile *profile, int64_t index)
 {
     return twc_sqlite_friend_request_with_id(profile, index);
 }

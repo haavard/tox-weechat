@@ -225,9 +225,7 @@ twc_friend_request_callback(Tox *tox,
                        "%sReceived a friend request from %s with message \"%s\"; "
                        "accept it with \"/friend accept %d\"",
                        weechat_prefix("network"),
-                       hex_address,
-                       message_nt,
-                       rc);
+                       hex_address, message_nt, rc);
 
         if (rc == -2)
         {

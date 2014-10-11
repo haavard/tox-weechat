@@ -332,10 +332,8 @@ twc_sqlite_friend_request_with_id(struct t_twc_profile *profile,
                     "SELECT id, tox_id, message "
                     "FROM friend_requests "
                     "WHERE id == ? AND profile_id == ?");
-    sqlite3_bind_int(statement, 1,
-                     id);
-    sqlite3_bind_int(statement, 2,
-                     profile_id);
+    sqlite3_bind_int(statement, 1, id);
+    sqlite3_bind_int(statement, 2, profile_id);
 
     struct t_twc_friend_request *request;
     int rc = sqlite3_step(statement);
