@@ -1,6 +1,6 @@
 Tox-WeeChat
 ===========
-Tox-WeeChat is a [Tox][1] protocol plugin for [WeeChat][2]. It is functional, but lacks certain features like Tox DNS and proxies.
+Tox-WeeChat is a [Tox][1] protocol plugin for [WeeChat][2]. It is functional, but lacks certain features like Tox DNS.
 
 Current build status: [![Build Status](https://travis-ci.org/haavardp/tox-weechat.svg?branch=master)][3]
 
@@ -38,7 +38,6 @@ Tox allows names up to 128 bytes long. To prevent long names from taking all you
 
 TODO
 ----
- - Support proxies (e.g. TOR)
  - Tox DNS
  - Encrypted save files
  - WeeChat's `/upgrade`
