@@ -875,52 +875,38 @@ twc_cmd_tox(void *data, struct t_gui_buffer *buffer,
         return WEECHAT_RC_OK;
     }
 
-    // /tox load <profile>
-    else if (argc >= 2 && (weechat_strcasecmp(argv[1], "load") == 0))
+    // /tox load|unload|reload [<profile>...]
+    else if (argc >= 2 && (weechat_strcasecmp(argv[1], "load") == 0
+                           || weechat_strcasecmp(argv[1], "unload") == 0
+                           || weechat_strcasecmp(argv[1], "reload") == 0))
     {
+        bool load = weechat_strcasecmp(argv[1], "load") == 0;
+        bool unload = weechat_strcasecmp(argv[1], "unload") == 0;
+        bool reload = weechat_strcasecmp(argv[1], "reload") == 0;
+
         if (argc == 2)
         {
             struct t_twc_profile *profile = twc_profile_search_buffer(buffer);
             if (!profile)
                 return WEECHAT_RC_ERROR;
 
-            twc_profile_load(profile);
-        }
-        else
-        {
-            for (int i = 2; i < argc; ++i)
-            {
-                char *name = argv[i];
-                struct t_twc_profile *profile = twc_profile_search_name(name);
-                TWC_CHECK_PROFILE_EXISTS(profile);
-
-                twc_profile_load(profile);
-            }
-        }
-
-        return WEECHAT_RC_OK;
-    }
-
-    // /tox unload <profile>
-    else if (argc >= 2 && (weechat_strcasecmp(argv[1], "unload") == 0))
-    {
-        if (argc == 2)
-        {
-            struct t_twc_profile *profile = twc_profile_search_buffer(buffer);
-            if (!profile)
-                return WEECHAT_RC_ERROR;
-
-            twc_profile_unload(profile);
-        }
-        else
-        {
-            for (int i = 2; i < argc; ++i)
-            {
-                char *name = argv[i];
-                struct t_twc_profile *profile = twc_profile_search_name(name);
-                TWC_CHECK_PROFILE_EXISTS(profile);
-
+            if (unload || reload)
                 twc_profile_unload(profile);
+            if (load || reload)
+                twc_profile_load(profile);
+        }
+        else
+        {
+            for (int i = 2; i < argc; ++i)
+            {
+                char *name = argv[i];
+                struct t_twc_profile *profile = twc_profile_search_name(name);
+                TWC_CHECK_PROFILE_EXISTS(profile);
+
+                if (unload || reload)
+                    twc_profile_unload(profile);
+                if (load || reload)
+                    twc_profile_load(profile);
             }
         }
 
@@ -1034,7 +1020,8 @@ twc_commands_init()
                          " || create <name>"
                          " || delete <name> -yes|-keepdata"
                          " || load [<name>...]"
-                         " || unload [<name>...]",
+                         " || unload [<name>...]"
+                         " || reload [<name>...]",
                          "  list: list all Tox profile\n"
                          "create: create a new Tox profile\n"
                          "delete: delete a Tox profile; requires either -yes "
@@ -1046,7 +1033,8 @@ twc_commands_init()
                          " || create"
                          " || delete %(tox_profiles) -yes|-keepdata"
                          " || load %(tox_unloaded_profiles)|%*"
-                         " || unload %(tox_loaded_profiles)|%*",
+                         " || unload %(tox_loaded_profiles)|%*"
+                         " || reload %(tox_loaded_profiles)|%*",
                          twc_cmd_tox, NULL);
 }
 
