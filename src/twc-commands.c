@@ -151,7 +151,7 @@ twc_match_friend(struct t_twc_profile *profile, const char *search_string)
             twc_bin2hex(tox_id, TOX_CLIENT_ID_SIZE, hex_id);
 
             if (weechat_strcasecmp(hex_id, search_string) == 0)
-                return friend_number;
+                return friend_numbers[i];
         }
 
         char *name = twc_get_name_nt(profile->tox, friend_numbers[i]);
