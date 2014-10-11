@@ -41,6 +41,7 @@ char *twc_profile_option_names[TWC_PROFILE_NUM_OPTIONS] =
     "proxy_address",
     "proxy_port",
     "proxy_enabled",
+    "udp_disabled",
 };
 
 char *twc_profile_option_defaults[TWC_PROFILE_NUM_OPTIONS] =
@@ -49,7 +50,8 @@ char *twc_profile_option_defaults[TWC_PROFILE_NUM_OPTIONS] =
     "off",
     "100",
     NULL,
-    NULL,
+    "0",
+    "off",
     "off",
 };
 
@@ -171,7 +173,7 @@ twc_config_profile_check_value_callback(void *data,
     switch (option_index)
     {
         case TWC_PROFILE_OPTION_PROXY_ADDRESS:
-            return strlen(value) < 256;
+            return !value || strlen(value) < 256;
         default:
             return 1;
     }
@@ -219,9 +221,7 @@ twc_config_init_option(int option_index, const char *option_name)
                 "automatically load a profile and connect to the Tox network "
                 "when WeeChat starts",
                 NULL, 0, 0,
-                twc_profile_option_defaults[option_index],
-                NULL,
-                0,
+                twc_profile_option_defaults[option_index], NULL, 1,
                 twc_config_profile_check_value_callback, (void *)(intptr_t)option_index,
                 twc_config_profile_change_callback, (void *)(intptr_t)option_index,
                 NULL, NULL);
@@ -232,9 +232,7 @@ twc_config_init_option(int option_index, const char *option_name)
                 "maximum amount of friend requests to retain before dropping "
                 "new ones",
                 NULL, 0, INT_MAX,
-                twc_profile_option_defaults[option_index],
-                NULL,
-                0,
+                twc_profile_option_defaults[option_index], NULL, 1,
                 twc_config_profile_check_value_callback, (void *)(intptr_t)option_index,
                 twc_config_profile_change_callback, (void *)(intptr_t)option_index,
                 NULL, NULL);
@@ -244,9 +242,7 @@ twc_config_init_option(int option_index, const char *option_name)
                 option_name, "string",
                 "proxy address ",
                 NULL, 0, 0,
-                twc_profile_option_defaults[option_index],
-                NULL,
-                1,
+                twc_profile_option_defaults[option_index], NULL, 1,
                 twc_config_profile_check_value_callback, (void *)(intptr_t)option_index,
                 twc_config_profile_change_callback, (void *)(intptr_t)option_index,
                 NULL, NULL);
@@ -257,9 +253,7 @@ twc_config_init_option(int option_index, const char *option_name)
                 "whether or not to proxy this profile; requires reload to "
                 "effect",
                 NULL, 0, 0,
-                twc_profile_option_defaults[option_index],
-                NULL,
-                0,
+                twc_profile_option_defaults[option_index], NULL, 1,
                 twc_config_profile_check_value_callback, (void *)(intptr_t)option_index,
                 twc_config_profile_change_callback, (void *)(intptr_t)option_index,
                 NULL, NULL);
@@ -267,11 +261,9 @@ twc_config_init_option(int option_index, const char *option_name)
             return weechat_config_new_option(
                 twc_config_file, twc_config_section_profile,
                 option_name, "integer",
-                "proxy address ",
-                NULL, 0, UINT16_MAX ,
-                twc_profile_option_defaults[option_index],
-                NULL,
-                1,
+                "proxy address",
+                NULL, 1, UINT16_MAX ,
+                twc_profile_option_defaults[option_index], NULL, 1,
                 twc_config_profile_check_value_callback, (void *)(intptr_t)option_index,
                 twc_config_profile_change_callback, (void *)(intptr_t)option_index,
                 NULL, NULL);
@@ -283,9 +275,17 @@ twc_config_init_option(int option_index, const char *option_name)
                 "home, \"%p\" by the profile name); will be created if it does "
                 "not exist.",
                 NULL, 0, 0,
-                twc_profile_option_defaults[option_index],
-                NULL,
-                0,
+                twc_profile_option_defaults[option_index], NULL, 1,
+                twc_config_profile_check_value_callback, (void *)(intptr_t)option_index,
+                twc_config_profile_change_callback, (void *)(intptr_t)option_index,
+                NULL, NULL);
+        case TWC_PROFILE_OPTION_UDP_DISABLED:
+            return weechat_config_new_option(
+                twc_config_file, twc_config_section_profile,
+                option_name, "boolean",
+                "disable UDP; may be necessary for certain proxies",
+                NULL, 0, 0,
+                twc_profile_option_defaults[option_index], NULL, 1,
                 twc_config_profile_check_value_callback, (void *)(intptr_t)option_index,
                 twc_config_profile_change_callback, (void *)(intptr_t)option_index,
                 NULL, NULL);
@@ -314,6 +314,7 @@ twc_config_init_profile(struct t_twc_profile *profile)
                      twc_profile_option_names[i]);
 
             profile->options[i] = twc_config_init_option(i, option_name);
+            weechat_log_printf("Initialized option %s %p", option_name, profile->options[i]);
             free(option_name);
         }
     }
