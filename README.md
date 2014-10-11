@@ -11,10 +11,10 @@ Installation
 Tox-WeeChat requires [WeeChat][1] >= 1.0.1, [SQLite][5] >= 3.6.19 and the latest-ish [libtoxcore][6]. It also requires CMake to be built. Installation is fairly simple; after getting the source, compile and install using CMake:
 
     $ mkdir build && cd build
-    $ cmake -DHOME_FOLDER_INSTALL=ON ..
+    $ cmake -DPLUGIN_PATH=~/.weechat/plugins ..
     $ make install
 
-This installs the plugin binary `tox.so` to the recommended location `~/.weechat/plugins`. Without the home folder flag, the binary is placed in `/usr/local/lib/weechat/plugins`. Installing to a custom WeeChat folder or elsewhere is achieved by setting `INSTALL_PATH`.
+This installs the plugin binary `tox.so` to the recommended location `~/.weechat/plugins`. The default location is `/usr/local/lib/weechat/plugins`.
 
 Usage
 -----
@@ -26,7 +26,7 @@ Usage
  - To add friends or respond to friend requests, `/help friend` will get you started.
  - Message a friend with `/msg <friend number>`. Get their friend number with `/friend list`.
 
-Run `/help -listfull tox` to get a list of all available commands.
+Run `/help -listfull tox` to get a list of all available commands, and `/set tox.*` for a list of options.
 
 ### Common issues
 
@@ -35,6 +35,9 @@ Tox allows names up to 128 bytes long. To prevent long names from taking all you
  - `weechat.bar.nicklist.size_max`
  - `weechat.look.prefix_align_max`
  - `buffers.look.name_size_max` (if using buffers.pl)
+
+#### Tox won't connect through my proxy
+Make sure the address and port is correct, and that UDP is disabled (`/set tox.profile.*.udp`).
 
 TODO
 ----
