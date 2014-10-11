@@ -1027,8 +1027,9 @@ twc_commands_init()
                          "delete: delete a Tox profile; requires either -yes "
                          "to confirm deletion or -keepdata to delete the "
                          "profile but keep the Tox data file\n"
-                         "  load: load a Tox profile and connect to the network\n"
-                         "unload: unload a Tox profile\n",
+                         "  load: load one or more Tox profiles and connect to the network\n"
+                         "unload: unload one or more Tox profiles\n"
+                         "reload: reload one or more Tox profiles\n",
                          "list"
                          " || create"
                          " || delete %(tox_profiles) -yes|-keepdata"
