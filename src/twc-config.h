@@ -20,9 +20,6 @@
 #ifndef TOX_WEECHAT_CONFIG_H
 #define TOX_WEECHAT_CONFIG_H
 
-#include "twc-profile.h"
-extern struct t_config_option *twc_config_profile_default[TWC_PROFILE_NUM_OPTIONS];
-
 void
 twc_config_init();
 

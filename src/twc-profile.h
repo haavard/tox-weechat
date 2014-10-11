@@ -56,6 +56,7 @@ struct t_twc_profile
 };
 
 extern struct t_twc_list *twc_profiles;
+extern struct t_config_option *twc_config_profile_default[TWC_PROFILE_NUM_OPTIONS];
 
 #define TWC_PROFILE_OPTION_BOOLEAN(profile, index)                            \
     (!weechat_config_option_is_null(profile->options[index])                  \

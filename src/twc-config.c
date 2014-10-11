@@ -34,8 +34,6 @@ struct t_config_file *twc_config_file = NULL;
 struct t_config_section *twc_config_section_profile = NULL;
 struct t_config_section *twc_config_section_profile_default = NULL;
 
-struct t_config_option *twc_config_profile_default[TWC_PROFILE_NUM_OPTIONS];
-
 char *twc_profile_option_names[TWC_PROFILE_NUM_OPTIONS] =
 {
     "save_file",

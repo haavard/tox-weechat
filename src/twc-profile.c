@@ -40,6 +40,7 @@
 #include "twc-profile.h"
 
 struct t_twc_list *twc_profiles = NULL;
+struct t_config_option *twc_config_profile_default[TWC_PROFILE_NUM_OPTIONS];
 
 /**
  * Get a profile's expanded data path, replacing:
