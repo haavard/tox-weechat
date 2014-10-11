@@ -56,7 +56,7 @@ twc_friend_request_add(struct t_twc_profile *profile,
     request->message = strdup(message);
     memcpy(request->tox_id, client_id, TOX_CLIENT_ID_SIZE);
 
-    int rc = twc_sqlite_add_friend_request(profile, request) == -1;
+    int rc = twc_sqlite_add_friend_request(profile, request);
 
     if (rc == -1)
         return -2;
