@@ -217,31 +217,30 @@ twc_profile_load(struct t_twc_profile *profile)
                    profile->name);
 
     // create Tox options object
-    Tox_Options *options = malloc(sizeof(Tox_Options));
-    options->proxy_enabled =
+    Tox_Options options;
+    options.proxy_enabled =
         TWC_PROFILE_OPTION_BOOLEAN(profile, TWC_PROFILE_OPTION_PROXY_ENABLED);
 
     const char *proxy_address =
         TWC_PROFILE_OPTION_STRING(profile, TWC_PROFILE_OPTION_PROXY_ADDRESS);
     if (proxy_address)
-        memcpy(options->proxy_address, proxy_address, strlen(proxy_address) + 1);
+        memcpy(options.proxy_address, proxy_address, strlen(proxy_address) + 1);
 
-    options->proxy_port =
+    options.proxy_port =
         TWC_PROFILE_OPTION_INTEGER(profile, TWC_PROFILE_OPTION_PROXY_PORT);
-    options->udp_disabled =
+    options.udp_disabled =
         !TWC_PROFILE_OPTION_BOOLEAN(profile, TWC_PROFILE_OPTION_UDP);
-    options->ipv6enabled =
+    options.ipv6enabled =
         TWC_PROFILE_OPTION_BOOLEAN(profile, TWC_PROFILE_OPTION_IPV6);
 
-    if (options->proxy_enabled)
+    if (options.proxy_enabled)
     {
-        if (!options->proxy_address || !options->proxy_port)
+        if (!options.proxy_address || !options.proxy_port)
         {
             weechat_printf(profile->buffer,
-                           "%sproxy is enabled, but address or port is "
-                           "missing; aborting",
-                           weechat_prefix("error"),
-                           options->proxy_address, options->proxy_port);
+                           "%sproxy is enabled, proxy information is "
+                           "incomplete; aborting",
+                           weechat_prefix("error"));
             return;
         }
         else
@@ -249,12 +248,12 @@ twc_profile_load(struct t_twc_profile *profile)
             weechat_printf(profile->buffer,
                            "%susing proxy %s:%d",
                            weechat_prefix("network"),
-                           options->proxy_address, options->proxy_port);
+                           options.proxy_address, options.proxy_port);
         }
     }
 
     // create Tox
-    profile->tox = tox_new(options);
+    profile->tox = tox_new(&options);
     if (!(profile->tox))
     {
         weechat_printf(profile->buffer,
