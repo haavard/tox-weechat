@@ -166,7 +166,15 @@ twc_config_profile_check_value_callback(void *data,
                                         struct t_config_option *option,
                                         const char *value)
 {
-    return 1; // 1=ok, 0=not ok
+    enum t_twc_profile_option option_index = (intptr_t)data;
+
+    switch (option_index)
+    {
+        case TWC_PROFILE_OPTION_PROXY_ADDRESS:
+            return strlen(value) < 256;
+        default:
+            return 1;
+    }
 }
 
 /**
@@ -214,8 +222,8 @@ twc_config_init_option(int option_index, const char *option_name)
                 twc_profile_option_defaults[option_index],
                 NULL,
                 0,
-                twc_config_profile_check_value_callback, NULL,
-                twc_config_profile_change_callback, NULL,
+                twc_config_profile_check_value_callback, (void *)(intptr_t)option_index,
+                twc_config_profile_change_callback, (void *)(intptr_t)option_index,
                 NULL, NULL);
         case TWC_PROFILE_OPTION_MAX_FRIEND_REQUESTS:
             return weechat_config_new_option(
@@ -227,8 +235,8 @@ twc_config_init_option(int option_index, const char *option_name)
                 twc_profile_option_defaults[option_index],
                 NULL,
                 0,
-                twc_config_profile_check_value_callback, NULL,
-                twc_config_profile_change_callback, NULL,
+                twc_config_profile_check_value_callback, (void *)(intptr_t)option_index,
+                twc_config_profile_change_callback, (void *)(intptr_t)option_index,
                 NULL, NULL);
         case TWC_PROFILE_OPTION_PROXY_ADDRESS:
             return weechat_config_new_option(
@@ -239,8 +247,8 @@ twc_config_init_option(int option_index, const char *option_name)
                 twc_profile_option_defaults[option_index],
                 NULL,
                 1,
-                twc_config_profile_check_value_callback, NULL,
-                twc_config_profile_change_callback, NULL,
+                twc_config_profile_check_value_callback, (void *)(intptr_t)option_index,
+                twc_config_profile_change_callback, (void *)(intptr_t)option_index,
                 NULL, NULL);
         case TWC_PROFILE_OPTION_PROXY_ENABLED:
             return weechat_config_new_option(
@@ -252,8 +260,8 @@ twc_config_init_option(int option_index, const char *option_name)
                 twc_profile_option_defaults[option_index],
                 NULL,
                 0,
-                twc_config_profile_check_value_callback, NULL,
-                twc_config_profile_change_callback, NULL,
+                twc_config_profile_check_value_callback, (void *)(intptr_t)option_index,
+                twc_config_profile_change_callback, (void *)(intptr_t)option_index,
                 NULL, NULL);
         case TWC_PROFILE_OPTION_PROXY_PORT:
             return weechat_config_new_option(
@@ -264,8 +272,8 @@ twc_config_init_option(int option_index, const char *option_name)
                 twc_profile_option_defaults[option_index],
                 NULL,
                 1,
-                twc_config_profile_check_value_callback, NULL,
-                twc_config_profile_change_callback, NULL,
+                twc_config_profile_check_value_callback, (void *)(intptr_t)option_index,
+                twc_config_profile_change_callback, (void *)(intptr_t)option_index,
                 NULL, NULL);
         case TWC_PROFILE_OPTION_SAVEFILE:
             return weechat_config_new_option(
@@ -278,8 +286,8 @@ twc_config_init_option(int option_index, const char *option_name)
                 twc_profile_option_defaults[option_index],
                 NULL,
                 0,
-                twc_config_profile_check_value_callback, NULL,
-                twc_config_profile_change_callback, NULL,
+                twc_config_profile_check_value_callback, (void *)(intptr_t)option_index,
+                twc_config_profile_change_callback, (void *)(intptr_t)option_index,
                 NULL, NULL);
         default:
             return NULL;
