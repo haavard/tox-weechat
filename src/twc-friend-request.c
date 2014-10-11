@@ -40,6 +40,12 @@ twc_friend_request_add(struct t_twc_profile *profile,
                        const uint8_t *client_id,
                        const char *message)
 {
+    int max_request_count =
+        TWC_PROFILE_OPTION_INTEGER(profile, TWC_PROFILE_OPTION_MAX_FRIEND_REQUESTS);
+    int current_request_count = twc_sqlite_friend_request_count(profile);
+    if (current_request_count >= max_request_count)
+        return -1;
+
     // create a new request
     struct t_twc_friend_request *request
         = malloc(sizeof(struct t_twc_friend_request));
