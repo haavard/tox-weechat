@@ -40,8 +40,8 @@ char *twc_profile_option_names[TWC_PROFILE_NUM_OPTIONS] =
     "max_friend_requests",
     "proxy_address",
     "proxy_port",
-    "proxy_enabled",
-    "udp_disabled",
+    "proxy",
+    "udp",
 };
 
 char *twc_profile_option_defaults[TWC_PROFILE_NUM_OPTIONS] =
@@ -52,7 +52,7 @@ char *twc_profile_option_defaults[TWC_PROFILE_NUM_OPTIONS] =
     NULL,
     "0",
     "off",
-    "off",
+    "on",
 };
 
 /**
@@ -250,8 +250,8 @@ twc_config_init_option(int option_index, const char *option_name)
             return weechat_config_new_option(
                 twc_config_file, twc_config_section_profile,
                 option_name, "boolean",
-                "whether or not to proxy this profile; requires reload to "
-                "effect",
+                "use a proxy for communicating with the Tox network; requires "
+                "profile reload to take effect",
                 NULL, 0, 0,
                 twc_profile_option_defaults[option_index], NULL, 1,
                 twc_config_profile_check_value_callback, (void *)(intptr_t)option_index,
@@ -279,11 +279,11 @@ twc_config_init_option(int option_index, const char *option_name)
                 twc_config_profile_check_value_callback, (void *)(intptr_t)option_index,
                 twc_config_profile_change_callback, (void *)(intptr_t)option_index,
                 NULL, NULL);
-        case TWC_PROFILE_OPTION_UDP_DISABLED:
+        case TWC_PROFILE_OPTION_UDP:
             return weechat_config_new_option(
                 twc_config_file, twc_config_section_profile,
                 option_name, "boolean",
-                "disable UDP; may be necessary for certain proxies",
+                "use UDP when communicating with the Tox network",
                 NULL, 0, 0,
                 twc_profile_option_defaults[option_index], NULL, 1,
                 twc_config_profile_check_value_callback, (void *)(intptr_t)option_index,
@@ -314,7 +314,6 @@ twc_config_init_profile(struct t_twc_profile *profile)
                      twc_profile_option_names[i]);
 
             profile->options[i] = twc_config_init_option(i, option_name);
-            weechat_log_printf("Initialized option %s %p", option_name, profile->options[i]);
             free(option_name);
         }
     }

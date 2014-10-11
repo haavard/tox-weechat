@@ -228,7 +228,7 @@ twc_profile_load(struct t_twc_profile *profile)
     options->proxy_port =
         TWC_PROFILE_OPTION_INTEGER(profile, TWC_PROFILE_OPTION_PROXY_PORT);
     options->udp_disabled =
-        TWC_PROFILE_OPTION_BOOLEAN(profile, TWC_PROFILE_OPTION_UDP_DISABLED);
+        !TWC_PROFILE_OPTION_BOOLEAN(profile, TWC_PROFILE_OPTION_UDP);
 
     if (options->proxy_enabled)
     {
