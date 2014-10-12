@@ -152,34 +152,6 @@ twc_config_profile_read_callback(void *data,
 }
 
 /**
- * Called when profile options should be written.
- */
-int
-twc_config_profile_write_callback(void *data,
-                                  struct t_config_file *config_file,
-                                  const char *section_name)
-{
-    if (!weechat_config_write_line (config_file, section_name, NULL))
-        return WEECHAT_CONFIG_WRITE_ERROR;
-
-    size_t index;
-    struct t_twc_list_item *item;
-    twc_list_foreach(twc_profiles, index, item)
-    {
-        for (int i = 0; i < TWC_PROFILE_NUM_OPTIONS; ++i)
-        {
-            if (!weechat_config_write_option(twc_config_file,
-                                             item->profile->options[i]))
-            {
-                return WEECHAT_CONFIG_WRITE_ERROR;
-            }
-        }
-    }
-
-    return WEECHAT_CONFIG_WRITE_OK;
-}
-
-/**
  * Callback for checking an option value being set.
  */
 int
@@ -308,7 +280,7 @@ twc_config_init()
         weechat_config_new_section(twc_config_file, "profile",
                                    0, 0,
                                    twc_config_profile_read_callback, NULL,
-                                   twc_config_profile_write_callback, NULL,
+                                   NULL, NULL,
                                    NULL, NULL,
                                    NULL, NULL,
                                    NULL, NULL);
