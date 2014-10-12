@@ -84,5 +84,10 @@ twc_list_get(struct t_twc_list *list, size_t index);
          item; \
          item = item->next_item, ++index)
 
+#define twc_list_foreach_reverse(list, index, item) \
+    for (item = list->tail, index = list->count - 1; \
+         item; \
+         item = item->prev_item, --index)
+
 #endif // TOX_WEECHAT_LIST_H
 
