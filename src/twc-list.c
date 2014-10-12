@@ -174,11 +174,20 @@ twc_list_get(struct t_twc_list *list, size_t index)
 
     size_t current_index;
     struct t_twc_list_item *item;
-    twc_list_foreach(list, current_index, item)
+    if (list->count - index > index / 2)
     {
-        if (current_index == index)
+        twc_list_foreach(list, current_index, item)
         {
-            return item;
+            if (current_index == index)
+                return item;
+        }
+    }
+    else
+    {
+        twc_list_foreach_reverse(list, current_index, item)
+        {
+            if (current_index == index)
+                return item;
         }
     }
 
