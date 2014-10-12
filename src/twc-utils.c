@@ -23,6 +23,9 @@
 #include <weechat/weechat-plugin.h>
 #include <tox/tox.h>
 
+#include "twc.h"
+#include "twc-config.h"
+
 #include "twc-utils.h"
 
 /**
@@ -140,8 +143,7 @@ twc_get_friend_id_short(Tox *tox, int32_t friend_number)
     uint8_t client_id[TOX_CLIENT_ID_SIZE];
     tox_get_client_id(tox, friend_number, client_id);
 
-    // TODO: config
-    size_t short_id_length = 8;
+    size_t short_id_length = weechat_config_integer(twc_config_short_id_size);
 
     char *hex_address = malloc(short_id_length + 1);
     twc_bin2hex(client_id,

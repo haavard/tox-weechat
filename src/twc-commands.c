@@ -31,6 +31,7 @@
 #include "twc-group-invite.h"
 #include "twc-bootstrap.h"
 #include "twc-sqlite.h"
+#include "twc-config.h"
 #include "twc-utils.h"
 
 #include "twc-commands.h"
@@ -267,8 +268,7 @@ twc_cmd_friend(void *data, struct t_gui_buffer *buffer,
         }
 
         if (!message)
-            // TODO: default message as option
-            message = "Hi! Please add me on Tox!";
+            message = weechat_config_string(twc_config_friend_request_message);
 
         if (strlen(hex_id) != TOX_FRIEND_ADDRESS_SIZE * 2)
         {
@@ -455,10 +455,10 @@ twc_cmd_friend(void *data, struct t_gui_buffer *buffer,
         struct t_twc_list_item *item;
         twc_list_foreach(friend_requests, index, item)
         {
-            // TODO: load short form address length from config
-            char hex_address[12 + 1];
+            size_t short_id_length = weechat_config_integer(twc_config_short_id_size);
+            char hex_address[short_id_length + 1];
             twc_bin2hex(item->friend_request->tox_id,
-                        6,
+                        short_id_length / 2,
                         hex_address);
 
             weechat_printf(profile->buffer,

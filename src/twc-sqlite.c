@@ -34,9 +34,6 @@
 sqlite3 *twc_sqlite_db = NULL;
 struct t_twc_list *twc_sqlite_statements = NULL;
 
-// TODO: move to config
-#define TWC_SQLITE_PATH "%h/tox/data.db"
-
 #define TWC_SQLITE_DEBUG_RC(rc, expected_rc)                                  \
     if (rc != expected_rc)                                                    \
         weechat_printf(NULL,                                                  \
@@ -74,7 +71,7 @@ char *
 twc_sqlite_db_path()
 {
     const char *weechat_dir = weechat_info_get("weechat_dir", NULL);
-    return weechat_string_replace(TWC_SQLITE_PATH, "%h", weechat_dir);
+    return weechat_string_replace("%h/tox/data.db", "%h", weechat_dir);
 }
 
 /**

@@ -20,6 +20,11 @@
 #ifndef TOX_WEECHAT_CONFIG_H
 #define TOX_WEECHAT_CONFIG_H
 
+struct t_twc_profile;
+
+extern struct t_config_option *twc_config_friend_request_message;
+extern struct t_config_option *twc_config_short_id_size;
+
 void
 twc_config_init();
 
