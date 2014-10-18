@@ -366,7 +366,7 @@ twc_group_namelist_change_callback(Tox *tox,
             break;
         case TOX_CHAT_CHANGE_PEER_DEL:
             weechat_printf(chat->buffer, "%s%s just left the group chat",
-                           weechat_prefix("quit"), name);
+                           weechat_prefix("quit"), prev_name);
             break;
     }
 }
