@@ -332,7 +332,7 @@ twc_group_namelist_change_callback(Tox *tox,
                                                     group_number,
                                                     false);
 
-    struct t_gui_nick *nick;
+    struct t_gui_nick *nick = NULL;
     char *name = twc_get_peer_name_nt(profile->tox, group_number, peer_number);
     char *prev_name = NULL;
 
@@ -340,10 +340,13 @@ twc_group_namelist_change_callback(Tox *tox,
         || change_type == TOX_CHAT_CHANGE_PEER_NAME)
     {
         nick = weechat_hashtable_get(chat->nicks, &peer_number);
-        prev_name = strdup(weechat_nicklist_nick_get_string(chat->buffer,
-                                                            nick, "name"));
-        weechat_nicklist_remove_nick(chat->buffer, nick);
-        weechat_hashtable_remove(chat->nicks, &peer_number);
+        if (nick)
+        {
+            prev_name = strdup(weechat_nicklist_nick_get_string(chat->buffer,
+                                                                nick, "name"));
+            weechat_nicklist_remove_nick(chat->buffer, nick);
+            weechat_hashtable_remove(chat->nicks, &peer_number);
+        }
     }
 
     if (change_type == TOX_CHAT_CHANGE_PEER_ADD
@@ -351,22 +354,26 @@ twc_group_namelist_change_callback(Tox *tox,
     {
         nick = weechat_nicklist_add_nick(chat->buffer, chat->nicklist_group,
                                          name, NULL, NULL, NULL, 1);
-        weechat_hashtable_set(chat->nicks, &peer_number, nick);
+        if (nick)
+            weechat_hashtable_set(chat->nicks, &peer_number, nick);
     }
 
     switch (change_type)
     {
         case TOX_CHAT_CHANGE_PEER_NAME:
-            weechat_printf(chat->buffer, "%s%s is now known as %s",
-                           weechat_prefix("network"), prev_name, name);
+            if (prev_name && name)
+                weechat_printf(chat->buffer, "%s%s is now known as %s",
+                               weechat_prefix("network"), prev_name, name);
             break;
         case TOX_CHAT_CHANGE_PEER_ADD:
-            weechat_printf(chat->buffer, "%s%s just joined the group chat",
-                           weechat_prefix("join"), name);
+            if (name)
+                weechat_printf(chat->buffer, "%s%s just joined the group chat",
+                               weechat_prefix("join"), name);
             break;
         case TOX_CHAT_CHANGE_PEER_DEL:
-            weechat_printf(chat->buffer, "%s%s just left the group chat",
-                           weechat_prefix("quit"), prev_name);
+            if (prev_name)
+                weechat_printf(chat->buffer, "%s%s just left the group chat",
+                               weechat_prefix("quit"), prev_name);
             break;
     }
 }
