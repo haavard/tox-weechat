@@ -51,10 +51,8 @@ twc_do_timer_cb(void *data,
 }
 
 void
-twc_handle_friend_message(Tox *tox,
-                          int32_t friend_number,
-                          const uint8_t *message,
-                          uint16_t length,
+twc_handle_friend_message(Tox *tox, int32_t friend_number,
+                          const uint8_t *message, uint16_t length,
                           void *data,
                           enum TWC_MESSAGE_TYPE message_type)
 
@@ -75,10 +73,8 @@ twc_handle_friend_message(Tox *tox,
 }
 
 void
-twc_friend_message_callback(Tox *tox,
-                            int32_t friend_number,
-                            const uint8_t *message,
-                            uint16_t length,
+twc_friend_message_callback(Tox *tox, int32_t friend_number,
+                            const uint8_t *message, uint16_t length,
                             void *data)
 {
     twc_handle_friend_message(tox,
@@ -90,10 +86,8 @@ twc_friend_message_callback(Tox *tox,
 }
 
 void
-twc_friend_action_callback(Tox *tox,
-                           int32_t friend_number,
-                           const uint8_t *message,
-                           uint16_t length,
+twc_friend_action_callback(Tox *tox, int32_t friend_number,
+                           const uint8_t *message, uint16_t length,
                            void *data)
 {
     twc_handle_friend_message(tox,
@@ -106,8 +100,7 @@ twc_friend_action_callback(Tox *tox,
 
 void
 twc_connection_status_callback(Tox *tox,
-                               int32_t friend_number,
-                               uint8_t status,
+                               int32_t friend_number, uint8_t status,
                                void *data)
 {
     struct t_twc_profile *profile = data;
@@ -133,10 +126,8 @@ twc_connection_status_callback(Tox *tox,
 }
 
 void
-twc_name_change_callback(Tox *tox,
-                         int32_t friend_number,
-                         const uint8_t *name,
-                         uint16_t length,
+twc_name_change_callback(Tox *tox, int32_t friend_number,
+                         const uint8_t *name, uint16_t length,
                          void *data)
 {
     struct t_twc_profile *profile = data;
@@ -171,8 +162,7 @@ twc_name_change_callback(Tox *tox,
 
 void
 twc_user_status_callback(Tox *tox,
-                         int32_t friend_number,
-                         uint8_t status,
+                         int32_t friend_number, uint8_t status,
                          void *data)
 {
     struct t_twc_profile *profile = data;
@@ -184,10 +174,8 @@ twc_user_status_callback(Tox *tox,
 }
 
 void
-twc_status_message_callback(Tox *tox,
-                            int32_t friend_number,
-                            const uint8_t *message,
-                            uint16_t length,
+twc_status_message_callback(Tox *tox, int32_t friend_number,
+                            const uint8_t *message, uint16_t length,
                             void *data)
 {
     struct t_twc_profile *profile = data;
@@ -199,10 +187,8 @@ twc_status_message_callback(Tox *tox,
 }
 
 void
-twc_friend_request_callback(Tox *tox,
-                            const uint8_t *public_key,
-                            const uint8_t *message,
-                            uint16_t length,
+twc_friend_request_callback(Tox *tox, const uint8_t *public_key,
+                            const uint8_t *message, uint16_t length,
                             void *data)
 {
     struct t_twc_profile *profile = data;
@@ -241,10 +227,8 @@ twc_friend_request_callback(Tox *tox,
 
 void
 twc_group_invite_callback(Tox *tox,
-                          int32_t friend_number,
-                          uint8_t type,
-                          const uint8_t *invite_data,
-                          uint16_t length,
+                          int32_t friend_number, uint8_t type,
+                          const uint8_t *invite_data, uint16_t length,
                           void *data)
 {
     struct t_twc_profile *profile = data;
@@ -273,10 +257,8 @@ twc_group_invite_callback(Tox *tox,
 
 void
 twc_handle_group_message(Tox *tox,
-                         int32_t group_number,
-                         int32_t peer_number,
-                         const uint8_t *message,
-                         uint16_t length,
+                         int32_t group_number, int32_t peer_number,
+                         const uint8_t *message, uint16_t length,
                          void *data,
                          enum TWC_MESSAGE_TYPE message_type)
 {
@@ -298,10 +280,8 @@ twc_handle_group_message(Tox *tox,
 
 void
 twc_group_message_callback(Tox *tox,
-                           int32_t group_number,
-                           int32_t peer_number,
-                           const uint8_t *message,
-                           uint16_t length,
+                           int32_t group_number, int32_t peer_number,
+                           const uint8_t *message, uint16_t length,
                            void *data)
 {
     twc_handle_group_message(tox,
@@ -315,10 +295,8 @@ twc_group_message_callback(Tox *tox,
 
 void
 twc_group_action_callback(Tox *tox,
-                          int32_t group_number,
-                          int32_t peer_number,
-                          const uint8_t *message,
-                          uint16_t length,
+                          int32_t group_number, int32_t peer_number,
+                          const uint8_t *message, uint16_t length,
                           void *data)
 {
     twc_handle_group_message(tox,
@@ -332,8 +310,7 @@ twc_group_action_callback(Tox *tox,
 
 void
 twc_group_namelist_change_callback(Tox *tox,
-                                   int group_number,
-                                   int peer_number,
+                                   int group_number, int peer_number,
                                    uint8_t change_type,
                                    void *data)
 {
@@ -390,10 +367,8 @@ twc_group_namelist_change_callback(Tox *tox,
 
 void
 twc_group_title_callback(Tox *tox,
-                         int group_number,
-                         int peer_number,
-                         const uint8_t *title,
-                         uint8_t length,
+                         int group_number, int peer_number,
+                         const uint8_t *title, uint8_t length,
                          void *data)
 {
     struct t_twc_profile *profile = data;

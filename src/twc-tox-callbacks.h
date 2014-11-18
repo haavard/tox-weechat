@@ -27,89 +27,68 @@ twc_do_timer_cb(void *data,
                 int remaining_calls);
 
 void
-twc_friend_message_callback(Tox *tox,
-                            int32_t friend_number,
-                            const uint8_t *message,
-                            uint16_t length,
+twc_friend_message_callback(Tox *tox, int32_t friend_number,
+                            const uint8_t *message, uint16_t length,
                             void *data);
 
 void
-twc_friend_action_callback(Tox *tox,
-                           int32_t friend_number,
-                           const uint8_t *message,
-                           uint16_t length,
+twc_friend_action_callback(Tox *tox, int32_t friend_number,
+                           const uint8_t *message, uint16_t length,
                            void *data);
 
 void
 twc_connection_status_callback(Tox *tox,
-                               int32_t friend_number,
-                               uint8_t status,
+                               int32_t friend_number, uint8_t status,
                                void *data);
 
 void
-twc_name_change_callback(Tox *tox,
-                         int32_t friend_number,
-                         const uint8_t *name,
-                         uint16_t length,
+twc_name_change_callback(Tox *tox, int32_t friend_number,
+                         const uint8_t *name, uint16_t length,
                          void *data);
 
 void
 twc_user_status_callback(Tox *tox,
-                         int32_t friend_number,
-                         uint8_t status,
+                         int32_t friend_number, uint8_t status,
                          void *data);
 
 void
-twc_status_message_callback(Tox *tox,
-                            int32_t friend_number,
-                            const uint8_t *message,
-                            uint16_t length,
+twc_status_message_callback(Tox *tox, int32_t friend_number,
+                            const uint8_t *message, uint16_t length,
                             void *data);
 
 void
-twc_friend_request_callback(Tox *tox,
-                            const uint8_t *public_key,
-                            const uint8_t *message,
-                            uint16_t length,
+twc_friend_request_callback(Tox *tox, const uint8_t *public_key,
+                            const uint8_t *message, uint16_t length,
                             void *data);
 
 void
 twc_group_invite_callback(Tox *tox,
-                          int32_t friend_number,
-                          uint8_t type,
-                          const uint8_t *invite_data,
-                          uint16_t length,
+                          int32_t friend_number, uint8_t type,
+                          const uint8_t *invite_data, uint16_t length,
                           void *data);
 
 void
 twc_group_message_callback(Tox *tox,
-                           int32_t group_number,
-                           int32_t peer_number,
-                           const uint8_t *message,
-                           uint16_t length,
+                           int32_t group_number, int32_t peer_number,
+                           const uint8_t *message, uint16_t length,
                            void *data);
 
 void
 twc_group_action_callback(Tox *tox,
-                          int32_t group_number,
-                          int32_t peer_number,
-                          const uint8_t *message,
-                          uint16_t length,
+                          int32_t group_number, int32_t peer_number,
+                          const uint8_t *message, uint16_t length,
                           void *data);
 
 void
 twc_group_namelist_change_callback(Tox *tox,
-                                   int group_number,
-                                   int peer_number,
+                                   int group_number, int peer_number,
                                    uint8_t change_type,
                                    void *data);
 
 void
 twc_group_title_callback(Tox *tox,
-                         int group_number,
-                         int peer_number,
-                         const uint8_t *title,
-                         uint8_t length,
+                         int group_number, int peer_number,
+                         const uint8_t *title, uint8_t length,
                          void *data);
 
 #endif // TOX_WEECHAT_TOX_CALLBACKS_H
