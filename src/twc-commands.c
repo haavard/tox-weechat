@@ -837,6 +837,45 @@ twc_cmd_statusmsg(void *data, struct t_gui_buffer *buffer,
 }
 
 /**
+ * Command /topic callback.
+ */
+int
+twc_cmd_topic(void *data, struct t_gui_buffer *buffer,
+              int argc, char **argv, char **argv_eol)
+{
+    if (argc == 1)
+        return WEECHAT_RC_ERROR;
+
+    struct t_twc_chat *chat = twc_chat_search_buffer(buffer);
+    TWC_CHECK_CHAT(chat);
+    TWC_CHECK_PROFILE_LOADED(chat->profile);
+
+    if (chat->group_number < 0)
+    {
+        weechat_printf(NULL,
+                       "%s%s: command \"%s\" must be executed in a group chat "
+                       "buffer",
+                       weechat_prefix("error"), weechat_plugin->name, argv[0]);
+        return WEECHAT_RC_OK;
+    }
+
+    char *topic = argv_eol[1];
+
+    int result = tox_group_set_title(chat->profile->tox, chat->group_number,
+                                     (uint8_t *)topic, strlen(topic));
+    if (result == -1)
+    {
+        weechat_printf(chat->buffer, "%s%s",
+                       weechat_prefix("error"), "Could not set topic.");
+        return WEECHAT_RC_OK;
+    }
+
+    twc_chat_queue_refresh(chat);
+
+    return WEECHAT_RC_OK;
+}
+
+/**
  * Command /tox callback.
  */
 int
@@ -1058,6 +1097,12 @@ twc_commands_init()
                          "[<message>]",
                          "message: your new status message",
                          NULL, twc_cmd_statusmsg, NULL);
+
+    weechat_hook_command("topic",
+                         "set a group chat topic",
+                         "<topic>",
+                         "topic: new group chat topic",
+                         NULL, twc_cmd_topic, NULL);
 
     weechat_hook_command("tox",
                          "manage Tox profiles",
