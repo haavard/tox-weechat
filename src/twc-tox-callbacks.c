@@ -340,7 +340,7 @@ twc_group_namelist_change_callback(Tox *tox,
     struct t_twc_profile *profile = data;
     struct t_twc_chat *chat = twc_chat_search_group(profile,
                                                     group_number,
-                                                    false);
+                                                    true);
 
     struct t_gui_nick *nick = NULL;
     char *name = twc_get_peer_name_nt(profile->tox, group_number, peer_number);
