@@ -525,6 +525,10 @@ twc_cmd_group(void *data, struct t_gui_buffer *buffer,
             // create a buffer for the new group chat
             if (group_number >= 0)
                 twc_chat_search_group(profile, group_number, true);
+            else
+                weechat_printf(profile->buffer,
+                               "%sCould not join group chat (unknown error)",
+                               weechat_prefix("error"));
         }
         else
         {

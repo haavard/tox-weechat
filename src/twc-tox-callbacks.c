@@ -248,16 +248,25 @@ twc_group_invite_callback(Tox *tox,
                           void *data)
 {
     struct t_twc_profile *profile = data;
-
-    int64_t rc = twc_group_chat_invite_add(profile, friend_number,
-                                           (uint8_t *)invite_data, length);
-
     char *friend_name = twc_get_name_nt(profile->tox, friend_number);
-    weechat_printf(profile->buffer,
-                   "%sReceived a group chat invite from %s; "
-                   "join with \"/group join %d\"",
-                   weechat_prefix("network"),
-                   friend_name, rc);
+
+    if (type == TOX_GROUPCHAT_TYPE_TEXT)
+    {
+        int64_t rc = twc_group_chat_invite_add(profile, friend_number,
+                                               (uint8_t *)invite_data, length);
+
+        weechat_printf(profile->buffer,
+                       "%sReceived a group chat invite from %s; "
+                       "join with \"/group join %d\"",
+                       weechat_prefix("network"), friend_name, rc);
+    }
+    else if (type == TOX_GROUPCHAT_TYPE_AV)
+    {
+        weechat_printf(profile->buffer,
+                       "%sReceived an audio group chat invite from %s; "
+                       "these are currently unsupported and can not be joined",
+                       weechat_prefix("network"), friend_name);
+    }
 
     free(friend_name);
 }
