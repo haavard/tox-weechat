@@ -75,7 +75,7 @@ twc_sqlite_db_path()
 }
 
 /**
- * Initialize profile table. Return 0 on success, -1 on errorh
+ * Initialize profile table. Return 0 on success, -1 on error.
  */
 int
 twc_sqlite_init_profiles()
