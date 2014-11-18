@@ -156,8 +156,10 @@ twc_chat_refresh(struct t_twc_chat *chat)
     weechat_buffer_set(chat->buffer, "short_name", name);
     weechat_buffer_set(chat->buffer, "title", title);
 
-    free(name);
-    free(title);
+    if (name)
+        free(name);
+    if (title && title != name)
+        free(title);
 }
 
 /**
