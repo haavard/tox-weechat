@@ -143,9 +143,14 @@ twc_chat_refresh(struct t_twc_chat *chat)
     }
     else if (chat->group_number >= 0)
     {
-        name = malloc(sizeof(char) * 32);
-        sprintf(name, "Group Chat %d", chat->group_number);
-        title = strdup(name);
+        char group_name[TOX_MAX_NAME_LENGTH + 1] = {0};
+        int len = tox_group_get_title(chat->profile->tox, chat->group_number,
+                                      (uint8_t *)group_name,
+                                      TOX_MAX_NAME_LENGTH);
+        if (len <= 0)
+            sprintf(group_name, "Group Chat %d", chat->group_number);
+
+        name = title = strdup((char *)group_name);
     }
 
     weechat_buffer_set(chat->buffer, "short_name", name);
