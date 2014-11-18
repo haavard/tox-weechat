@@ -493,9 +493,14 @@ twc_cmd_group(void *data, struct t_gui_buffer *buffer,
     // /group create
     if (argc == 2 && weechat_strcasecmp(argv[1], "create") == 0)
     {
-        weechat_printf(profile->buffer,
-                       "%sNot implemented :|",
-                       weechat_prefix("error"));
+        int rc = tox_add_groupchat(profile->tox);
+        if (rc >= 0)
+            twc_chat_search_group(profile, rc, true);
+        else
+            weechat_printf(profile->buffer,
+                           "%sCould not create group chat (unknown error)",
+                           weechat_prefix("error"));
+
         return WEECHAT_RC_OK;
     }
 
