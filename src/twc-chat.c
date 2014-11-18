@@ -110,16 +110,18 @@ twc_chat_new_group(struct t_twc_profile *profile,
 
     struct t_twc_chat *chat = twc_chat_new(profile, buffer_name);
     if (chat)
+    {
         chat->group_number = group_number;
 
-    chat->nicklist_group = weechat_nicklist_add_group(chat->buffer, NULL,
-                                                      NULL, NULL, true);
-    chat->nicks = weechat_hashtable_new(256,
-                                        WEECHAT_HASHTABLE_INTEGER,
-                                        WEECHAT_HASHTABLE_POINTER,
-                                        NULL, NULL);
+        chat->nicklist_group = weechat_nicklist_add_group(chat->buffer, NULL,
+                                                          NULL, NULL, true);
+        chat->nicks = weechat_hashtable_new(256,
+                                            WEECHAT_HASHTABLE_INTEGER,
+                                            WEECHAT_HASHTABLE_POINTER,
+                                            NULL, NULL);
 
-    weechat_buffer_set(chat->buffer, "nicklist", "1");
+        weechat_buffer_set(chat->buffer, "nicklist", "1");
+    }
 
     return chat;
 }
