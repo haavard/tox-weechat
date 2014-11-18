@@ -388,3 +388,28 @@ twc_group_namelist_change_callback(Tox *tox,
     }
 }
 
+void
+twc_group_title_callback(Tox *tox,
+                         int group_number,
+                         int peer_number,
+                         const uint8_t *title,
+                         uint8_t length,
+                         void *data)
+{
+    struct t_twc_profile *profile = data;
+    struct t_twc_chat *chat = twc_chat_search_group(profile,
+                                                    group_number,
+                                                    true);
+    twc_chat_queue_refresh(chat);
+
+    if (peer_number >= 0)
+    {
+        char *name = twc_get_peer_name_nt(profile->tox, group_number, peer_number);
+
+        char *topic = strndup((char *)title, length);
+        weechat_printf(chat->buffer, "%s%s has changed the topic to \"%s\"",
+                       weechat_prefix("network"), name, topic);
+        free(topic);
+    }
+}
+

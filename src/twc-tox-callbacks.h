@@ -104,5 +104,13 @@ twc_group_namelist_change_callback(Tox *tox,
                                    uint8_t change_type,
                                    void *data);
 
+void
+twc_group_title_callback(Tox *tox,
+                         int group_number,
+                         int peer_number,
+                         const uint8_t *title,
+                         uint8_t length,
+                         void *data);
+
 #endif // TOX_WEECHAT_TOX_CALLBACKS_H
 
