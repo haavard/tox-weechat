@@ -242,6 +242,7 @@ twc_friend_request_callback(Tox *tox,
 void
 twc_group_invite_callback(Tox *tox,
                           int32_t friend_number,
+                          uint8_t type,
                           const uint8_t *invite_data,
                           uint16_t length,
                           void *data)
