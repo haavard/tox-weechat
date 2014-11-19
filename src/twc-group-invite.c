@@ -81,6 +81,9 @@ twc_group_chat_invite_join(struct t_twc_group_chat_invite *invite)
                                        invite->data, invite->data_size,
                                        NULL, NULL);
           break;
+       default:
+          rc = -1;
+          break;
     }
 
     twc_group_chat_invite_remove(invite);
