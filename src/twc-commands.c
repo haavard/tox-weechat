@@ -74,6 +74,22 @@ enum TWC_FRIEND_MATCH
     }
 
 /**
+ * Make sure a command is executed in a group chat buffer. If not, warn user
+ * and abort.
+ */
+#define TWC_CHECK_GROUP_CHAT(chat)                                            \
+    if (!chat || chat->group_number < 0)                                      \
+    {                                                                         \
+        weechat_printf(NULL,                                                  \
+                       "%s%s: command \"%s\" must be executed in a group "    \
+                       "chat buffer ",                                        \
+                       weechat_prefix("error"),                               \
+                       weechat_plugin->name,                                  \
+                       argv[0]);                                              \
+        return WEECHAT_RC_OK;                                                 \
+    }
+
+/**
  * Make sure a profile with the given name exists. If not, warn user and
  * abort.
  */
