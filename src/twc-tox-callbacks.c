@@ -77,12 +77,9 @@ twc_friend_message_callback(Tox *tox, int32_t friend_number,
                             const uint8_t *message, uint16_t length,
                             void *data)
 {
-    twc_handle_friend_message(tox,
-                              friend_number,
-                              message,
-                              length,
-                              data,
-                              TWC_MESSAGE_TYPE_MESSAGE);
+    twc_handle_friend_message(tox, friend_number,
+                              message, length,
+                              data, TWC_MESSAGE_TYPE_MESSAGE);
 }
 
 void
@@ -90,12 +87,9 @@ twc_friend_action_callback(Tox *tox, int32_t friend_number,
                            const uint8_t *message, uint16_t length,
                            void *data)
 {
-    twc_handle_friend_message(tox,
-                              friend_number,
-                              message,
-                              length,
-                              data,
-                              TWC_MESSAGE_TYPE_ACTION);
+    twc_handle_friend_message(tox, friend_number,
+                              message, length,
+                              data, TWC_MESSAGE_TYPE_ACTION);
 }
 
 void

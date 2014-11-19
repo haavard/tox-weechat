@@ -23,9 +23,7 @@
 #include <tox/tox.h>
 
 int
-twc_bootstrap_tox(Tox *tox,
-                  const char *address,
-                  uint16_t port,
+twc_bootstrap_tox(Tox *tox, const char *address, uint16_t port,
                   const char *public_key);
 
 void

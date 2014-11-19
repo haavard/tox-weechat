@@ -49,13 +49,11 @@ struct t_twc_chat
 
 struct t_twc_chat *
 twc_chat_search_friend(struct t_twc_profile *profile,
-                       int32_t friend_number,
-                       bool create_new);
+                       int32_t friend_number, bool create_new);
 
 struct t_twc_chat *
 twc_chat_search_group(struct t_twc_profile *profile,
-                      int32_t group_number,
-                      bool create_new);
+                      int32_t group_number, bool create_new);
 
 struct t_twc_chat *
 twc_chat_search_buffer(struct t_gui_buffer *target_buffer);
@@ -68,8 +66,7 @@ twc_chat_print_message(struct t_twc_chat *chat,
                        enum TWC_MESSAGE_TYPE message_type);
 
 void
-twc_chat_send_message(struct t_twc_chat *chat,
-                      const char *message,
+twc_chat_send_message(struct t_twc_chat *chat, const char *message,
                       enum TWC_MESSAGE_TYPE message_type);
 
 void

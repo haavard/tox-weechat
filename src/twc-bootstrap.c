@@ -65,17 +65,13 @@ int twc_bootstrap_count = sizeof(twc_bootstrap_addresses)
  * tox_bootstrap_from_address.
  */
 int
-twc_bootstrap_tox(Tox *tox,
-                  const char *address,
-                  uint16_t port,
+twc_bootstrap_tox(Tox *tox, const char *address, uint16_t port,
                   const char *public_key)
 {
     char binary_key[TOX_FRIEND_ADDRESS_SIZE];
     twc_hex2bin(public_key, TOX_FRIEND_ADDRESS_SIZE, binary_key);
 
-    int result = tox_bootstrap_from_address(tox,
-                                            address,
-                                            port,
+    int result = tox_bootstrap_from_address(tox, address, port,
                                             (uint8_t *)binary_key);
 
     return result;

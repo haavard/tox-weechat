@@ -136,24 +136,19 @@ twc_completion_profile(void *data,
 void
 twc_completion_init()
 {
-    weechat_hook_completion("tox_profiles",
-                            "profile",
+    weechat_hook_completion("tox_profiles", "profile",
                             twc_completion_profile,
                             (void *)(intptr_t)TWC_ALL_PROFILES);
-    weechat_hook_completion("tox_loaded_profiles",
-                            "loaded profile",
+    weechat_hook_completion("tox_loaded_profiles", "loaded profile",
                             twc_completion_profile,
                             (void *)(intptr_t)TWC_LOADED_PROFILES);
-    weechat_hook_completion("tox_unloaded_profiles",
-                            "unloaded profile",
+    weechat_hook_completion("tox_unloaded_profiles", "unloaded profile",
                             twc_completion_profile,
                             (void *)(intptr_t)TWC_UNLOADED_PROFILES);
-    weechat_hook_completion("tox_friend_tox_id",
-                            "friend Tox ID",
+    weechat_hook_completion("tox_friend_tox_id", "friend Tox ID",
                             twc_completion_friend,
                             (void *)(intptr_t)TWC_COMPLETE_FRIEND_ID);
-    weechat_hook_completion("tox_friend_name",
-                            "friend name",
+    weechat_hook_completion("tox_friend_name", "friend name",
                             twc_completion_friend,
                             (void *)(intptr_t)TWC_COMPLETE_FRIEND_NAME);
 }
