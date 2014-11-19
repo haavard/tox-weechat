@@ -44,6 +44,7 @@ add_library(tox MODULE
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -std=gnu99 -Wall -Wextra -Wno-unused-parameter")
 
 target_link_libraries(tox toxcore)
+target_link_libraries(tox toxav)
 target_link_libraries(tox sqlite3)
 
 # remove lib prefix (libtox.so -> tox.so)
