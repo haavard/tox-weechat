@@ -234,22 +234,33 @@ twc_group_invite_callback(Tox *tox,
     struct t_twc_profile *profile = data;
     char *friend_name = twc_get_name_nt(profile->tox, friend_number);
 
-    if (type == TOX_GROUPCHAT_TYPE_TEXT)
-    {
-        int64_t rc = twc_group_chat_invite_add(profile, friend_number,
-                                               (uint8_t *)invite_data, length);
+    int64_t rc = twc_group_chat_invite_add(profile, friend_number, type,
+                                           (uint8_t *)invite_data, length);
 
-        weechat_printf(profile->buffer,
-                       "%sReceived a group chat invite from %s; "
-                       "join with \"/group join %d\"",
-                       weechat_prefix("network"), friend_name, rc);
+    char *type_str;
+    switch (type)
+    {
+        case TOX_GROUPCHAT_TYPE_TEXT:
+            type_str = "a text-only group chat"; break;
+        case TOX_GROUPCHAT_TYPE_AV:
+            type_str = "an audio/video group chat"; break;
+        default:
+            type_str = "a group chat of unknown type"; break;
     }
-    else if (type == TOX_GROUPCHAT_TYPE_AV)
+
+    if (rc >= 0)
     {
         weechat_printf(profile->buffer,
-                       "%sReceived an audio group chat invite from %s; "
-                       "these are currently unsupported and can not be joined",
-                       weechat_prefix("network"), friend_name);
+                       "%sReceived %s invite from %s; "
+                       "join with \"/group join %d\"",
+                       weechat_prefix("network"), type_str, friend_name, rc);
+    }
+    else
+    {
+        weechat_printf(profile->buffer,
+                       "%sReceived a group chat invite from %s, but failed to "
+                       "process it; try again",
+                       weechat_prefix("error"), friend_name, rc);
     }
 
     free(friend_name);

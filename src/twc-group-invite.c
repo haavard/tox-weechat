@@ -21,6 +21,7 @@
 
 #include <weechat/weechat-plugin.h>
 #include <tox/tox.h>
+#include <tox/toxav.h>
 
 #include "twc.h"
 #include "twc-list.h"
@@ -36,9 +37,8 @@
  */
 int
 twc_group_chat_invite_add(struct t_twc_profile *profile,
-                          int32_t friend_number,
-                          uint8_t *data,
-                          size_t size)
+                          int32_t friend_number, uint8_t group_chat_type,
+                          uint8_t *data, size_t size)
 {
     // create a new invite object
     struct t_twc_group_chat_invite *invite
@@ -51,6 +51,7 @@ twc_group_chat_invite_add(struct t_twc_profile *profile,
 
     invite->profile = profile;
     invite->friend_number = friend_number;
+    invite->group_chat_type = group_chat_type;
     invite->data = data_copy;
     invite->data_size = size;
 
@@ -66,10 +67,22 @@ twc_group_chat_invite_add(struct t_twc_profile *profile,
 int
 twc_group_chat_invite_join(struct t_twc_group_chat_invite *invite)
 {
-    int rc = tox_join_groupchat(invite->profile->tox,
-                                invite->friend_number,
-                                invite->data,
-                                invite->data_size);
+    int rc;
+    switch (invite->group_chat_type)
+    {
+       case TOX_GROUPCHAT_TYPE_TEXT:
+          rc = tox_join_groupchat(invite->profile->tox,
+                                  invite->friend_number,
+                                  invite->data, invite->data_size);
+          break;
+       case TOX_GROUPCHAT_TYPE_AV:
+          rc = toxav_join_av_groupchat(invite->profile->tox,
+                                       invite->friend_number,
+                                       invite->data, invite->data_size,
+                                       NULL, NULL);
+          break;
+    }
+
     twc_group_chat_invite_remove(invite);
 
     return rc;
