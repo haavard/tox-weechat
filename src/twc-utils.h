@@ -25,7 +25,7 @@
 #include <tox/tox.h>
 
 void
-twc_hex2bin(const char *hex, size_t size, char *out);
+twc_hex2bin(const char *hex, size_t size, uint8_t *out);
 
 void
 twc_bin2hex(const uint8_t *bin, size_t size, char *out);

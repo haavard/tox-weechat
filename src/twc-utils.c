@@ -32,7 +32,7 @@
  * Convert a hex string to it's binary equivalent of max size bytes.
  */
 void
-twc_hex2bin(const char *hex, size_t size, char *out)
+twc_hex2bin(const char *hex, size_t size, uint8_t *out)
 {
     const char *position = hex;
 
