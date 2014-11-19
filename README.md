@@ -4,6 +4,23 @@ Tox-WeeChat is a [Tox][1] protocol plugin for [WeeChat][2]. It is functional, bu
 
 Current build status: [![Build Status](https://travis-ci.org/haavardp/tox-weechat.svg?branch=master)][3]
 
+Features
+--------
+Below is a list of implemented features, as well as features that will be supported in the future.
+
+ - [x] One-to-one chats
+ - [x] Group chats (text only)
+ - [x] Proxies
+ - [x] Faux offline messaging
+ - [x] NoSpam editing
+ - [x] Multiple profiles
+ - [ ] Tox DNS
+ - [ ] Encrypted save files
+ - [ ] File transfer
+ - [ ] Avatars
+ - [ ] WeeChat `/upgrade`
+ - [ ] Audio/video
+
 Installation
 ------------
 > Tox-WeeChat is available in the [AUR][4] and the [[haavard]][5] pacman repository.
@@ -19,14 +36,9 @@ This installs the plugin binary `tox.so` to the recommended location `~/.weechat
 Usage
 -----
  - If the plugin does not load automatically, load it with `/plugin load tox`. You may have to specify the full path to the plugin binary.
- - Create a new profile with `/tox create <name>`. The data file is stored in `~/.weechat/tox/` by default.
- - Load your profile and connect to the Tox network with `/tox load <name>`.
- - Change your name with `/name <new name>`.
- - Get your Tox ID with `/myid`.
- - To add friends or respond to friend requests, `/help friend` will get you started.
- - Message a friend with `/msg <friend number>`. Get their friend number with `/friend list`.
-
-Run `/help -listfull tox` to get a list of all available commands, and `/set tox.*` for a list of options.
+ - Create a new profile with `/tox create <profile name>`. The data file is stored in `~/.weechat/tox/` by default.
+ - Load your profile and connect to the Tox network with `/tox load <profile name>`.
+ - Run `/help -listfull tox` to get a list of all available commands, and `/set tox.*` for a list of options.
 
 ### Common issues
 
@@ -38,13 +50,6 @@ Tox allows names up to 128 bytes long. To prevent long names from taking all you
 
 #### Tox won't connect through my proxy
 Make sure the address and port is correct, and that UDP is disabled (`/set tox.profile.*.udp`).
-
-TODO
-----
- - Tox DNS
- - Encrypted save files
- - WeeChat's `/upgrade`
- - Audio/video chats
 
 License
 ---------
