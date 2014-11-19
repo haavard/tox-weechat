@@ -584,6 +584,47 @@ twc_cmd_group(void *data, struct t_gui_buffer *buffer,
 
     return WEECHAT_RC_ERROR;
 }
+
+/**
+ * Command /msg callback.
+ */
+int
+twc_cmd_invite(void *data, struct t_gui_buffer *buffer,
+               int argc, char **argv, char **argv_eol)
+{
+    if (argc == 1)
+        return WEECHAT_RC_ERROR;
+
+    struct t_twc_profile *profile = twc_profile_search_buffer(buffer);
+    TWC_CHECK_PROFILE(profile);
+    TWC_CHECK_PROFILE_LOADED(profile);
+
+    struct t_twc_chat *chat = twc_chat_search_buffer(buffer);
+    TWC_CHECK_GROUP_CHAT(chat);
+
+    int32_t friend_number = twc_match_friend(profile, argv_eol[1]);
+    TWC_CHECK_FRIEND_NUMBER(friend_number, argv_eol[1]);
+
+    int rc = tox_invite_friend(chat->profile->tox,
+                               friend_number, chat->group_number);
+
+    if (rc == 0)
+    {
+        char *friend_name = twc_get_name_nt(chat->profile->tox, friend_number);
+        weechat_printf(chat->buffer, "%sInvited %s to the group chat.",
+                       weechat_prefix("network"), friend_name);
+       free(friend_name);
+    }
+    else
+    {
+        weechat_printf(chat->buffer,
+                       "%sFailed to send group chat invite (unknown error)",
+                       weechat_prefix("error"));
+    }
+
+    return WEECHAT_RC_OK;
+}
+
 /**
  * Command /me callback.
  */
@@ -1065,6 +1106,13 @@ twc_commands_init()
                          " || invites"
                          " || join",
                          twc_cmd_group, NULL);
+
+    weechat_hook_command("invite",
+                         "invite someone to a group chat",
+                         "<number>|<name>|<Tox ID>",
+                         "number, name, Tox ID: friend to message\n",
+                         "%(tox_friend_name)|%(tox_friend_tox_id)",
+                         twc_cmd_invite, NULL);
 
     weechat_hook_command("me",
                          "send an action to the current chat",
