@@ -586,7 +586,7 @@ twc_cmd_group(void *data, struct t_gui_buffer *buffer,
 }
 
 /**
- * Command /msg callback.
+ * Command /invite callback.
  */
 int
 twc_cmd_invite(void *data, struct t_gui_buffer *buffer,
