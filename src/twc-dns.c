@@ -60,8 +60,11 @@ twc_dns_fd_callback(void *data, int fd)
     {
         if (size == TOX_FRIEND_ADDRESS_SIZE * 2)
         {
+            uint8_t tox_id[TOX_FRIEND_ADDRESS_SIZE];
+            twc_hex2bin(buffer, TOX_FRIEND_ADDRESS_SIZE, tox_id);
+
             callback_info->callback(callback_info->data,
-                                    TWC_DNS_RC_OK, (uint8_t *)buffer);
+                                    TWC_DNS_RC_OK, tox_id);
         }
         else
         {
