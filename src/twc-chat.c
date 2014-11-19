@@ -330,6 +330,17 @@ twc_chat_buffer_close_callback(void *data,
 {
     struct t_twc_chat *chat = data;
 
+    if (chat->profile->tox && chat->group_number >= 0)
+    {
+        int rc = tox_del_groupchat(chat->profile->tox, chat->group_number);
+        if (rc != 0)
+        {
+            weechat_printf(chat->profile->buffer,
+                           "%swarning: failed to leave group chat",
+                           weechat_prefix("error"));
+        }
+    }
+
     twc_list_remove_with_data(chat->profile->chats, chat);
     twc_chat_free(chat);
 
