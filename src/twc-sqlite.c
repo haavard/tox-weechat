@@ -34,12 +34,16 @@
 sqlite3 *twc_sqlite_db = NULL;
 struct t_twc_list *twc_sqlite_statements = NULL;
 
+#ifdef TWC_DEBUG
 #define TWC_SQLITE_DEBUG_RC(rc, expected_rc)                                  \
     if (rc != expected_rc)                                                    \
         weechat_printf(NULL,                                                  \
                        "%s%s: SQLite error in %s: error code %d",             \
                        weechat_prefix("error"), weechat_plugin->name,         \
-                       __func__, rc);                                         \
+                       __func__, rc);
+#else
+#define TWC_SQLITE_DEBUG_RC(rc, expected_rc) (void)rc;
+#endif // TWC_DEBUG
 
 /**
  * Create or reset an SQLite statement.
