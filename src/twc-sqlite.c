@@ -57,7 +57,7 @@ struct t_twc_list *twc_sqlite_statements = NULL;
         if (rc != SQLITE_OK)                                                  \
             statement = NULL;                                                 \
         else                                                                  \
-            twc_list_item_new_data_add(twc_sqlite_statements, statement);      \
+            twc_list_item_new_data_add(twc_sqlite_statements, statement);     \
     }                                                                         \
     else                                                                      \
     {                                                                         \
