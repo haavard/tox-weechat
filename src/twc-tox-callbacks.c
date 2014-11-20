@@ -368,6 +368,9 @@ twc_group_namelist_change_callback(Tox *tox,
                                weechat_prefix("quit"), prev_name);
             break;
     }
+
+    if (prev_name)
+        free(prev_name);
 }
 
 void
