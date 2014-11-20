@@ -294,7 +294,7 @@ twc_cmd_friend(void *data, struct t_gui_buffer *buffer,
             return WEECHAT_RC_OK;
         }
 
-        char address[TOX_FRIEND_ADDRESS_SIZE];
+        uint8_t address[TOX_FRIEND_ADDRESS_SIZE];
         twc_hex2bin(hex_id, TOX_FRIEND_ADDRESS_SIZE, address);
 
         if (force)
