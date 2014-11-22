@@ -328,26 +328,34 @@ twc_group_namelist_change_callback(Tox *tox,
     char *name = twc_get_peer_name_nt(profile->tox, group_number, peer_number);
     char *prev_name = NULL;
 
-    if (change_type == TOX_CHAT_CHANGE_PEER_DEL
-        || change_type == TOX_CHAT_CHANGE_PEER_NAME)
+    uint8_t pubkey[TOX_CLIENT_ID_SIZE];
+    int pkrc = tox_group_peer_pubkey(profile->tox, group_number,
+                                     peer_number, pubkey);
+    if (pkrc == 0)
     {
-        nick = weechat_hashtable_get(chat->nicks, &peer_number);
-        if (nick)
+        if (change_type == TOX_CHAT_CHANGE_PEER_DEL
+            || change_type == TOX_CHAT_CHANGE_PEER_NAME)
         {
-            prev_name = strdup(weechat_nicklist_nick_get_string(chat->buffer,
-                                                                nick, "name"));
-            weechat_nicklist_remove_nick(chat->buffer, nick);
-            weechat_hashtable_remove(chat->nicks, &peer_number);
+            nick = weechat_hashtable_get(chat->nicks, pubkey);
+            if (nick)
+            {
+                prev_name = strdup(weechat_nicklist_nick_get_string(chat->buffer,
+                                                                    nick, "name"));
+                weechat_nicklist_remove_nick(chat->buffer, nick);
+                weechat_hashtable_remove(chat->nicks, pubkey);
+            }
         }
-    }
 
-    if (change_type == TOX_CHAT_CHANGE_PEER_ADD
-        || change_type == TOX_CHAT_CHANGE_PEER_NAME)
-    {
-        nick = weechat_nicklist_add_nick(chat->buffer, chat->nicklist_group,
-                                         name, NULL, NULL, NULL, 1);
-        if (nick)
-            weechat_hashtable_set(chat->nicks, &peer_number, nick);
+        if (change_type == TOX_CHAT_CHANGE_PEER_ADD
+            || change_type == TOX_CHAT_CHANGE_PEER_NAME)
+        {
+            nick = weechat_nicklist_add_nick(chat->buffer, chat->nicklist_group,
+                                             name, NULL, NULL, NULL, 1);
+            if (nick)
+                weechat_hashtable_set_with_size(chat->nicks,
+                                                pubkey, TOX_CLIENT_ID_SIZE,
+                                                nick, 0);
+        }
     }
 
     switch (change_type)

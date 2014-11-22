@@ -44,6 +44,25 @@ twc_chat_buffer_close_callback(void *data,
                                struct t_gui_buffer *weechat_buffer);
 
 /**
+ * Hash a Tox ID for the nicklist hashtable in group chat objects.
+ */
+unsigned long long
+twc_tox_id_hash_callback(struct t_hashtable *hashtable, const void *key)
+{
+    return twc_hash_tox_id(key);
+}
+
+/**
+ * Compare two Tox IDs for the nicklist hashtable in group chat objects.
+ */
+int
+twc_tox_id_compare_callback(struct t_hashtable *hashtable,
+                            const void *id1, const void *id2)
+{
+    return memcmp(id1, id2, TOX_CLIENT_ID_SIZE);
+}
+
+/**
  * Create a new chat.
  */
 struct t_twc_chat *
@@ -112,10 +131,11 @@ twc_chat_new_group(struct t_twc_profile *profile, int32_t group_number)
 
         chat->nicklist_group = weechat_nicklist_add_group(chat->buffer, NULL,
                                                           NULL, NULL, true);
-        chat->nicks = weechat_hashtable_new(256,
-                                            WEECHAT_HASHTABLE_INTEGER,
+        chat->nicks = weechat_hashtable_new(32,
+                                            WEECHAT_HASHTABLE_BUFFER,
                                             WEECHAT_HASHTABLE_POINTER,
-                                            NULL, NULL);
+                                            twc_tox_id_hash_callback,
+                                            twc_tox_id_compare_callback);
 
         weechat_buffer_set(chat->buffer, "nicklist", "1");
     }
