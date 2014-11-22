@@ -168,3 +168,18 @@ twc_uint32_reverse_bytes(uint32_t num)
 
     return res;
 }
+
+/**
+ * Hash a Tox ID of size TOX_CLIENT_ID_SIZE bytes using a modified djb2 hash.
+ */
+unsigned long long
+twc_hash_tox_id(const uint8_t *tox_id)
+{
+    unsigned long long hash = 5381;
+
+    for (size_t i = 0; i < TOX_CLIENT_ID_SIZE; ++i)
+        hash ^= (hash << 5) + (hash >> 2) + tox_id[i];
+
+    return hash;
+}
+
