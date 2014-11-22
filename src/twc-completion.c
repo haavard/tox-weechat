@@ -71,9 +71,7 @@ twc_completion_friend(void *data,
             tox_get_client_id(profile->tox, friend_numbers[i], tox_id);
             twc_bin2hex(tox_id, TOX_CLIENT_ID_SIZE, hex_id);
 
-            weechat_hook_completion_list_add(completion,
-                                             hex_id,
-                                             0,
+            weechat_hook_completion_list_add(completion, hex_id, 0,
                                              WEECHAT_LIST_POS_SORT);
         }
 
@@ -92,9 +90,7 @@ twc_completion_friend(void *data,
                 name = quoted_name;
             }
 
-            weechat_hook_completion_list_add(completion,
-                                             name,
-                                             0,
+            weechat_hook_completion_list_add(completion, name, 0,
                                              WEECHAT_LIST_POS_SORT);
 
             free(name);
@@ -125,8 +121,7 @@ twc_completion_profile(void *data,
         {
             weechat_hook_completion_list_add(completion,
                                              item->profile->name,
-                                             0,
-                                             WEECHAT_LIST_POS_SORT);
+                                             0, WEECHAT_LIST_POS_SORT);
         }
     }
 

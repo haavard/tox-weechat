@@ -319,8 +319,7 @@ twc_sqlite_friend_requests(struct t_twc_profile *profile)
 }
 
 struct t_twc_friend_request *
-twc_sqlite_friend_request_with_id(struct t_twc_profile *profile,
-                                  int64_t id)
+twc_sqlite_friend_request_with_id(struct t_twc_profile *profile, int64_t id)
 {
     int64_t profile_id;
     if (!twc_sqlite_profile_id(profile, &profile_id))
