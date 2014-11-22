@@ -806,6 +806,43 @@ twc_cmd_nospam(void *data, struct t_gui_buffer *buffer,
     return WEECHAT_RC_OK;
 }
 
+/**
+ * Command /part callback.
+ */
+int
+twc_cmd_part(void *data, struct t_gui_buffer *buffer,
+             int argc, char **argv, char **argv_eol)
+{
+    struct t_twc_chat *chat = twc_chat_search_buffer(buffer);
+    TWC_CHECK_PROFILE_LOADED(chat->profile);
+    TWC_CHECK_GROUP_CHAT(chat);
+
+    int rc = tox_del_groupchat(chat->profile->tox, chat->group_number);
+    if (rc == 0)
+    {
+        weechat_printf(chat->buffer,
+                       "%sYou have left the group chat",
+                       weechat_prefix("network"));
+    }
+    else
+    {
+        weechat_printf(chat->buffer,
+                       "%sFailed to leave group chat",
+                       weechat_prefix("error"));
+    }
+
+    weechat_buffer_set_pointer(chat->buffer, "input_callback", NULL);
+    weechat_buffer_set_pointer(chat->buffer, "close_callback", NULL);
+
+    twc_list_remove_with_data(chat->profile->chats, chat);
+    twc_chat_free(chat);
+
+    return WEECHAT_RC_OK;
+}
+
+/**
+ * Save Tox profile data when /save is executed.
+ */
 int
 twc_cmd_save(void *data, struct t_gui_buffer *buffer, const char *command)
 {
@@ -1144,6 +1181,11 @@ twc_commands_init()
                          "Warning: changing your nospam value will alter your "
                          "Tox ID!",
                          NULL, twc_cmd_nospam, NULL);
+
+    weechat_hook_command("part",
+                         "leave a group chat",
+                         "", "",
+                         NULL, twc_cmd_part, NULL);
 
     weechat_hook_command_run("/save", twc_cmd_save, NULL);
 
