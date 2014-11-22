@@ -139,10 +139,7 @@ twc_sqlite_add_profile(struct t_twc_profile *profile)
     int rc = sqlite3_step(statement);
     TWC_SQLITE_DEBUG_RC(rc, SQLITE_DONE)
     if (rc != SQLITE_DONE)
-    {
-        weechat_printf(NULL, "sqlite error in %s: %d", __func__, rc);
         return -1;
-    }
     else
         return 0;
 }
