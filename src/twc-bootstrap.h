@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014 Håvard Pettersson <haavard.pettersson@gmail.com>
+ * Copyright (c) 2015 Håvard Pettersson <mail@haavard.me>
  *
  * This file is part of Tox-WeeChat.
  *

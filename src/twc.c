@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014 Håvard Pettersson <haavard.pettersson@gmail.com>
+ * Copyright (c) 2015 Håvard Pettersson <mail@haavard.me>
  *
  * This file is part of Tox-WeeChat.
  *
@@ -32,7 +32,7 @@
 
 WEECHAT_PLUGIN_NAME("tox");
 WEECHAT_PLUGIN_DESCRIPTION("Tox protocol");
-WEECHAT_PLUGIN_AUTHOR("Håvard Pettersson <haavard.pettersson@gmail.com>");
+WEECHAT_PLUGIN_AUTHOR("Håvard Pettersson <mail@haavard.me>");
 WEECHAT_PLUGIN_VERSION("0.1");
 WEECHAT_PLUGIN_LICENSE("GPL3");
 
