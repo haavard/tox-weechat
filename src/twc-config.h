@@ -25,6 +25,13 @@ struct t_twc_profile;
 extern struct t_config_option *twc_config_friend_request_message;
 extern struct t_config_option *twc_config_short_id_size;
 
+enum t_twc_proxy
+{
+    TWC_PROXY_NONE = 0,
+    TWC_PROXY_SOCKS5,
+    TWC_PROXY_HTTP
+};
+
 void
 twc_config_init();
 

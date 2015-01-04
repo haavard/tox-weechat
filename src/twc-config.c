@@ -45,7 +45,7 @@ char *twc_profile_option_names[TWC_PROFILE_NUM_OPTIONS] =
     "max_friend_requests",
     "proxy_address",
     "proxy_port",
-    "proxy",
+    "proxy_type",
     "udp",
     "ipv6",
 };
@@ -57,7 +57,7 @@ char *twc_profile_option_defaults[TWC_PROFILE_NUM_OPTIONS] =
     "100",
     NULL,
     NULL,
-    "off",
+    "none",
     "on",
     "on",
 };
@@ -231,15 +231,16 @@ twc_config_init_option(struct t_config_section *section,
             type = "string";
             description = "proxy address";
             break;
-        case TWC_PROFILE_OPTION_PROXY_ENABLED:
-            type = "boolean";
-            description = "use a proxy for communicating with the Tox "
-                          "network; requries profile reload to take effect";
-            break;
         case TWC_PROFILE_OPTION_PROXY_PORT:
             type = "integer";
             description = "proxy port";
             min = 0; max = UINT16_MAX;
+            break;
+        case TWC_PROFILE_OPTION_PROXY_TYPE:
+            type = "integer";
+            description = "proxy type; requires profile reload to take effect";
+            string_values = "none|socks5|http";
+            min = 0; max = 0;
             break;
         case TWC_PROFILE_OPTION_SAVEFILE:
             type = "string";

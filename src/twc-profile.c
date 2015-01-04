@@ -218,8 +218,22 @@ twc_profile_load(struct t_twc_profile *profile)
 
     // create Tox options object
     Tox_Options options;
-    options.proxy_enabled =
-        TWC_PROFILE_OPTION_BOOLEAN(profile, TWC_PROFILE_OPTION_PROXY_ENABLED);
+
+    char *proxy_type;
+    switch (TWC_PROFILE_OPTION_INTEGER(profile, TWC_PROFILE_OPTION_PROXY_TYPE))
+    {
+        case TWC_PROXY_NONE:
+            options.proxy_type = TOX_PROXY_NONE;
+            break;
+        case TWC_PROXY_SOCKS5:
+            options.proxy_type = TOX_PROXY_SOCKS5;
+            proxy_type = "SOCKS5";
+            break;
+        case TWC_PROXY_HTTP:
+            options.proxy_type = TOX_PROXY_HTTP;
+            proxy_type = "HTTP";
+            break;
+    }
 
     const char *proxy_address =
         TWC_PROFILE_OPTION_STRING(profile, TWC_PROFILE_OPTION_PROXY_ADDRESS);
@@ -233,7 +247,7 @@ twc_profile_load(struct t_twc_profile *profile)
     options.ipv6enabled =
         TWC_PROFILE_OPTION_BOOLEAN(profile, TWC_PROFILE_OPTION_IPV6);
 
-    if (options.proxy_enabled)
+    if (options.proxy_type != TOX_PROXY_NONE)
     {
         if (!options.proxy_address || !options.proxy_port)
         {
@@ -246,8 +260,9 @@ twc_profile_load(struct t_twc_profile *profile)
         else
         {
             weechat_printf(profile->buffer,
-                           "%susing proxy %s:%d",
+                           "%susing %s proxy %s:%d",
                            weechat_prefix("network"),
+                           proxy_type,
                            options.proxy_address, options.proxy_port);
         }
     }
