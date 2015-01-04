@@ -252,7 +252,7 @@ twc_profile_load(struct t_twc_profile *profile)
         if (!options.proxy_address || !options.proxy_port)
         {
             weechat_printf(profile->buffer,
-                           "%sproxy is enabled, proxy information is "
+                           "%sproxy is enabled, but proxy information is "
                            "incomplete; aborting",
                            weechat_prefix("error"));
             return;
@@ -272,7 +272,7 @@ twc_profile_load(struct t_twc_profile *profile)
     if (!(profile->tox))
     {
         weechat_printf(profile->buffer,
-                       "%sCould not create Tox instance!",
+                       "%scould not create Tox instance",
                        weechat_prefix("error"));
         return;
     }
