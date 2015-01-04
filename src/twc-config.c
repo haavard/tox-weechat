@@ -50,30 +50,6 @@ char *twc_profile_option_names[TWC_PROFILE_NUM_OPTIONS] =
     "ipv6",
 };
 
-char *twc_profile_option_defaults[TWC_PROFILE_NUM_OPTIONS] =
-{
-    "%h/tox/%p",
-    "off",
-    "100",
-    NULL,
-    NULL,
-    "none",
-    "on",
-    "on",
-};
-
-bool twc_profile_option_null_allowed[TWC_PROFILE_NUM_OPTIONS] =
-{
-    false,
-    false,
-    false,
-    true, // we allow proxy information to be null
-    true, // -------------------------------------
-    false,
-    false,
-    false,
-};
-
 /**
  * Get the index of a profile option name.
  */
@@ -208,6 +184,10 @@ twc_config_init_option(struct t_config_section *section,
     char *description;
     char *string_values = NULL;
     int min = 0, max = 0;
+    char *value;
+    char *default_value = NULL;
+    bool null_allowed = false;
+
 
     switch (option_index)
     {
@@ -215,50 +195,56 @@ twc_config_init_option(struct t_config_section *section,
             type = "boolean";
             description = "automatically load profile and connect to the Tox "
                           "network when WeeChat starts";
+            default_value = "off";
             break;
         case TWC_PROFILE_OPTION_IPV6:
             type = "boolean";
             description = "use IPv6 as well as IPv4 to connect to the Tox "
                           "network";
+            default_value = "on";
             break;
         case TWC_PROFILE_OPTION_MAX_FRIEND_REQUESTS:
             type = "integer";
             description = "maximum amount of friend requests to retain before "
                           "ignoring new ones";
             min = 0; max = INT_MAX;
+            default_value = "100";
             break;
         case TWC_PROFILE_OPTION_PROXY_ADDRESS:
             type = "string";
             description = "proxy address";
+            null_allowed = true;
             break;
         case TWC_PROFILE_OPTION_PROXY_PORT:
             type = "integer";
             description = "proxy port";
             min = 0; max = UINT16_MAX;
+            null_allowed = true;
             break;
         case TWC_PROFILE_OPTION_PROXY_TYPE:
             type = "integer";
             description = "proxy type; requires profile reload to take effect";
             string_values = "none|socks5|http";
             min = 0; max = 0;
+            default_value = "none";
             break;
         case TWC_PROFILE_OPTION_SAVEFILE:
             type = "string";
             description = "path to Tox data file (\"%h\" will be replaced by "
                           "WeeChat home folder and \"%p\" by profile name";
+            default_value = "%h/tox/%p";
             break;
         case TWC_PROFILE_OPTION_UDP:
             type = "boolean";
             description = "use UDP when communicating with the Tox network";
+            default_value = "on";
             break;
         default:
             return NULL;
     }
 
-    char *default_value = twc_profile_option_defaults[option_index];
-    char *value = is_default_profile ? default_value : NULL;
-    bool null_allowed = !is_default_profile
-                        || twc_profile_option_null_allowed[option_index];
+    null_allowed = null_allowed || !is_default_profile;
+    value = is_default_profile ? default_value : NULL;
 
     return weechat_config_new_option(
         twc_config_file, section,
