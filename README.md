@@ -1,18 +1,18 @@
 Tox-WeeChat
 ===========
-Tox-WeeChat is a [Tox][1] protocol plugin for [WeeChat][2]. It is functional, but lacks certain features like Tox DNS.
+Tox-WeeChat is a [Tox][1] protocol plugin for [WeeChat][2]. It is functional,
+but lacks certain features like Tox DNS.
 
 Current build status: [![Build Status](https://travis-ci.org/haavardp/tox-weechat.svg?branch=master)][3]
 
 Features
 --------
-Below is a list of implemented features, as well as features that will be supported in the future.
+Below is a list of implemented features, as well as a rough roadmap for the
+future.
 
  - [x] One-to-one chats
  - [x] Group chats (text only)
- - [x] Proxies
- - [x] Faux offline messaging
- - [x] NoSpam editing
+ - [x] Proxy support
  - [x] Multiple profiles
  - [ ] Tox DNS
  - [ ] Encrypted save files
@@ -23,33 +23,43 @@ Below is a list of implemented features, as well as features that will be suppor
 
 Installation
 ------------
-> Tox-WeeChat is available in the [AUR][4] and the [[haavard]][5] pacman repository.
+> Tox-WeeChat is available in the [AUR][4] and the [[haavard]][5] pacman
+repository.
 
-Tox-WeeChat requires [WeeChat][2] >= 1.0.1, [SQLite][6] >= 3.6.19 and the latest-ish [libtoxcore][7]. It also requires CMake to be built. Installation is fairly simple; after getting the source, compile and install using CMake:
+Tox-WeeChat requires [WeeChat][2] >= 1.0.1, [SQLite][6] >= 3.6.19 and the
+latest-ish [libtoxcore][7]. It also requires CMake to be built. Installation
+is fairly simple; after getting the source, compile and install using CMake:
 
     $ mkdir build && cd build
     $ cmake -DPLUGIN_PATH=~/.weechat/plugins ..
     $ make install
 
-This installs the plugin binary `tox.so` to the recommended location `~/.weechat/plugins`. The default location is `/usr/local/lib/weechat/plugins`.
+This installs the plugin binary `tox.so` to the recommended location
+`~/.weechat/plugins`. The default location is `/usr/local/lib/weechat/plugins`.
 
 Usage
 -----
- - If the plugin does not load automatically, load it with `/plugin load tox`. You may have to specify the full path to the plugin binary.
- - Create a new profile with `/tox create <profile name>`. The data file is stored in `~/.weechat/tox/` by default.
- - Load your profile and connect to the Tox network with `/tox load <profile name>`.
- - Run `/help -listfull tox` to get a list of all available commands, and `/set tox.*` for a list of options.
+ - If the plugin does not load automatically, load it with `/plugin load tox`.
+   You may have to specify the full path to the plugin binary.
+ - Create a new profile with `/tox create <profile name>`. The data file is
+   stored in `~/.weechat/tox/` by default.
+ - Load your profile and connect to the Tox network with
+   `/tox load <profile name>`.
+ - Run `/help -listfull tox` to get a list of all available commands, and
+   `/set tox.*` for a list of options.
 
 ### Common issues
 
 #### Long Tox names messing up WeeChat layout
-Tox allows names up to 128 bytes long. To prevent long names from taking all your screen space, you can set the following options in WeeChat:
+Tox allows names up to 128 bytes long. To prevent long names from taking all
+your screen space, you can set the following options in WeeChat:
  - `weechat.bar.nicklist.size_max`
  - `weechat.look.prefix_align_max`
  - `buffers.look.name_size_max` (if using buffers.pl)
 
 #### Tox won't connect through my proxy
-Make sure the address and port is correct, and that UDP is disabled (`/set tox.profile.*.udp`).
+Make sure the proxy type, address and port is correct, and that UDP is
+disabled (`/set tox.profile.*.udp`).
 
 License
 ---------
