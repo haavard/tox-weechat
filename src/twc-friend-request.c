@@ -25,25 +25,24 @@
 #include "twc.h"
 #include "twc-list.h"
 #include "twc-profile.h"
-#include "twc-sqlite.h"
 #include "twc-utils.h"
 
 #include "twc-friend-request.h"
 
 /**
- * Add a new friend request to a profile. Return it's index for accepting.
+ * Add a new friend request to a profile.
  *
- * Returns ID on success, -1 on a full friend request list, -2 on other error.
+ * Returns index on success, -1 on a full friend request list and -2 for any
+ * other error.
  */
 int
 twc_friend_request_add(struct t_twc_profile *profile,
                        const uint8_t *client_id,
                        const char *message)
 {
-    int max_request_count =
+    size_t max_request_count =
         TWC_PROFILE_OPTION_INTEGER(profile, TWC_PROFILE_OPTION_MAX_FRIEND_REQUESTS);
-    int current_request_count = twc_sqlite_friend_request_count(profile);
-    if (current_request_count >= max_request_count)
+    if (profile->friend_requests->count >= max_request_count)
         return -1;
 
     // create a new request
@@ -56,12 +55,10 @@ twc_friend_request_add(struct t_twc_profile *profile,
     request->message = strdup(message);
     memcpy(request->tox_id, client_id, TOX_CLIENT_ID_SIZE);
 
-    int rc = twc_sqlite_add_friend_request(profile, request);
-
-    if (rc == -1)
+    if (!twc_list_item_new_data_add(profile->friend_requests, request))
         return -2;
 
-    return rc;
+    return profile->friend_requests->count - 1;
 }
 
 /**
@@ -80,8 +77,7 @@ twc_friend_request_accept(struct t_twc_friend_request *request)
 void
 twc_friend_request_remove(struct t_twc_friend_request *request)
 {
-    twc_sqlite_delete_friend_request_with_id(request->profile,
-                                             request->request_id);
+    twc_list_remove_with_data(request->profile->friend_requests, request);
 }
 
 /**
@@ -90,7 +86,7 @@ twc_friend_request_remove(struct t_twc_friend_request *request)
 struct t_twc_friend_request *
 twc_friend_request_with_index(struct t_twc_profile *profile, int64_t index)
 {
-    return twc_sqlite_friend_request_with_id(profile, index);
+    return twc_list_get(profile->friend_requests, index)->friend_request;
 }
 
 /**

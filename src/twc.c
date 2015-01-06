@@ -26,7 +26,6 @@
 #include "twc-gui.h"
 #include "twc-config.h"
 #include "twc-completion.h"
-#include "twc-sqlite.h"
 
 #include "twc.h"
 
@@ -42,14 +41,6 @@ int
 weechat_plugin_init(struct t_weechat_plugin *plugin, int argc, char *argv[])
 {
     weechat_plugin = plugin;
-
-    if (twc_sqlite_init() != 0)
-    {
-        weechat_printf(NULL,
-                       "%s%s: failed to initialize persistent storage, some "
-                       "data will not be saved",
-                       weechat_prefix("error"), weechat_plugin->name);
-    }
 
     twc_profile_init();
     twc_commands_init();
@@ -80,8 +71,6 @@ weechat_plugin_end(struct t_weechat_plugin *plugin)
     twc_config_write();
 
     twc_profile_free_all();
-
-    twc_sqlite_end();
 
     return WEECHAT_RC_OK;
 }

@@ -26,9 +26,9 @@ Installation
 > Tox-WeeChat is available in the [AUR][4] and the [[haavard]][5] pacman
 repository.
 
-Tox-WeeChat requires [WeeChat][2] >= 1.0.1, [SQLite][6] >= 3.6.19 and the
-latest-ish [libtoxcore][7]. It also requires CMake to be built. Installation
-is fairly simple; after getting the source, compile and install using CMake:
+Tox-WeeChat requires [WeeChat][2] >= 1.0.1 and the latest-ish [libtoxcore][6].
+It also requires CMake to be built. Installation is fairly simple; after
+getting the source, compile and install using CMake:
 
     $ mkdir build && cd build
     $ cmake -DPLUGIN_PATH=~/.weechat/plugins ..
@@ -85,6 +85,5 @@ along with Tox-WeeChat.  If not, see <http://www.gnu.org/licenses/>.
 [3]: https://travis-ci.org/haavardp/tox-weechat
 [4]: https://aur.archlinux.org/packages/tox-weechat-git
 [5]: https://haavard.me/archlinux
-[6]: http://www.sqlite.org
-[7]: https://github.com/irungentoo/toxcore
+[6]: https://github.com/irungentoo/toxcore
 

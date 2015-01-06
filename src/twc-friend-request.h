@@ -31,7 +31,6 @@ struct t_twc_friend_request
 {
     struct t_twc_profile *profile;
 
-    int request_id;
     uint8_t tox_id[TOX_CLIENT_ID_SIZE];
     char *message;
 };

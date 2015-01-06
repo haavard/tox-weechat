@@ -34,7 +34,6 @@
 #include "twc-message-queue.h"
 #include "twc-chat.h"
 #include "twc-tox-callbacks.h"
-#include "twc-sqlite.h"
 #include "twc-utils.h"
 
 #include "twc-profile.h"
@@ -179,6 +178,7 @@ twc_profile_new(const char *name)
     profile->tox_online = false;
 
     profile->chats = twc_list_new();
+    profile->friend_requests = twc_list_new();
     profile->group_chat_invites = twc_list_new();
     profile->message_queues = weechat_hashtable_new(32,
                                                     WEECHAT_HASHTABLE_INTEGER,
@@ -291,18 +291,6 @@ twc_profile_load(struct t_twc_profile *profile)
 
         tox_set_name(profile->tox,
                      (uint8_t *)name, strlen(name));
-    }
-
-    // register with sqlite
-    twc_sqlite_add_profile(profile);
-
-    int friend_request_count = twc_sqlite_friend_request_count(profile);
-    if (friend_request_count > 0)
-    {
-        weechat_printf(profile->buffer,
-                       "%sYou have %d pending friend requests.",
-                       weechat_prefix("network"),
-                       friend_request_count);
     }
 
     // bootstrap DHT
@@ -467,7 +455,6 @@ twc_profile_delete(struct t_twc_profile *profile,
 {
     char *data_path = twc_profile_expanded_data_path(profile);
 
-    twc_sqlite_delete_profile(profile);
     twc_profile_free(profile);
 
     if (delete_data)
@@ -492,6 +479,7 @@ twc_profile_free(struct t_twc_profile *profile)
 
     // free things
     twc_chat_free_list(profile->chats);
+    twc_friend_request_free_list(profile->friend_requests);
     twc_group_chat_invite_free_list(profile->group_chat_invites);
     twc_message_queue_free_profile(profile);
     free(profile->name);

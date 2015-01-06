@@ -30,7 +30,6 @@
 #include "twc-friend-request.h"
 #include "twc-group-invite.h"
 #include "twc-bootstrap.h"
-#include "twc-sqlite.h"
 #include "twc-config.h"
 #include "twc-utils.h"
 
@@ -404,10 +403,9 @@ twc_cmd_friend(void *data, struct t_gui_buffer *buffer,
         struct t_twc_friend_request *request;
         if (weechat_strcasecmp(argv[2], "all") == 0)
         {
-            struct t_twc_list *requests = twc_sqlite_friend_requests(profile);
             size_t index;
             struct t_twc_list_item *item;
-            twc_list_foreach(requests, index, item)
+            twc_list_foreach(profile->friend_requests, index, item)
             {
                 if (accept)
                     twc_friend_request_accept(item->friend_request);
@@ -464,11 +462,9 @@ twc_cmd_friend(void *data, struct t_gui_buffer *buffer,
                        "%sPending friend requests:",
                        weechat_prefix("network"));
 
-        struct t_twc_list *friend_requests = twc_sqlite_friend_requests(profile);
-
         size_t index;
         struct t_twc_list_item *item;
-        twc_list_foreach(friend_requests, index, item)
+        twc_list_foreach(profile->friend_requests, index, item)
         {
             size_t short_id_length = weechat_config_integer(twc_config_short_id_size);
             char hex_address[short_id_length + 1];
@@ -480,13 +476,9 @@ twc_cmd_friend(void *data, struct t_gui_buffer *buffer,
                            "%s[%d] Address: %s\n"
                            "[%d] Message: %s",
                            weechat_prefix("network"),
-                           item->friend_request->request_id,
-                           hex_address,
-                           item->friend_request->request_id,
-                           item->friend_request->message);
+                           index, hex_address,
+                           index, item->friend_request->message);
         }
-
-        twc_friend_request_free_list(friend_requests);
 
         return WEECHAT_RC_OK;
     }
