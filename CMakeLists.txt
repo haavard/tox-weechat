@@ -21,6 +21,10 @@ cmake_minimum_required(VERSION 2.8.7)
 
 project(tox-weechat C)
 
+set(CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake ${CMAKE_MODULE_PATH})
+find_package(WeeChat)
+find_package(Tox)
+
 set(PLUGIN_PATH "lib/weechat/plugins" CACHE PATH
     "Path to install the plugin binary to.")
 
@@ -44,8 +48,11 @@ add_library(tox MODULE
 set(CMAKE_C_FLAGS_DEBUG "-DTWC_DEBUG")
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -std=gnu99 -Wall -Wextra -Wno-unused-parameter")
 
-target_link_libraries(tox toxcore)
-target_link_libraries(tox toxav)
+include_directories(${TOX_INCLUDE_DIR})
+include_directories(${WEECHAT_INCLUDE_DIR})
+
+target_link_libraries(tox ${TOX_LIBRARY})
+target_link_libraries(tox ${TOXAV_LIBRARY})
 
 # remove lib prefix (libtox.so -> tox.so)
 set_target_properties(tox PROPERTIES PREFIX "")

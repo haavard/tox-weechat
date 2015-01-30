@@ -1,0 +1,4 @@
+find_path(WEECHAT_INCLUDE_DIR weechat/weechat-plugin.h)
+
+include(FindPackageHandleStandardArgs)
+find_package_handle_standard_args(WeeChat DEFAULT_MSG WEECHAT_INCLUDE_DIR)
