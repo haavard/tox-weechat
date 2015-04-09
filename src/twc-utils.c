@@ -177,7 +177,7 @@ twc_hash_tox_id(const uint8_t *tox_id)
 {
     unsigned long long hash = 5381;
 
-    for (size_t i = 0; i < TOX_CLIENT_ID_SIZE; ++i)
+    for (size_t i = 0; i < TOX_PUBLIC_KEY_SIZE; ++i)
         hash ^= (hash << 5) + (hash >> 2) + tox_id[i];
 
     return hash;
