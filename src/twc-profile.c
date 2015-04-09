@@ -217,39 +217,40 @@ twc_profile_load(struct t_twc_profile *profile)
                    profile->name);
 
     // create Tox options object
-    Tox_Options options;
+    struct Tox_Options options;
+    tox_options_default(&options);
 
     char *proxy_type;
     switch (TWC_PROFILE_OPTION_INTEGER(profile, TWC_PROFILE_OPTION_PROXY_TYPE))
     {
         case TWC_PROXY_NONE:
-            options.proxy_type = TOX_PROXY_NONE;
+            options.proxy_type = TOX_PROXY_TYPE_NONE;
             break;
         case TWC_PROXY_SOCKS5:
-            options.proxy_type = TOX_PROXY_SOCKS5;
+            options.proxy_type = TOX_PROXY_TYPE_SOCKS5;
             proxy_type = "SOCKS5";
             break;
         case TWC_PROXY_HTTP:
-            options.proxy_type = TOX_PROXY_HTTP;
+            options.proxy_type = TOX_PROXY_TYPE_HTTP;
             proxy_type = "HTTP";
             break;
     }
 
-    const char *proxy_address =
+    const char *proxy_host =
         TWC_PROFILE_OPTION_STRING(profile, TWC_PROFILE_OPTION_PROXY_ADDRESS);
-    if (proxy_address)
-        memcpy(options.proxy_address, proxy_address, strlen(proxy_address) + 1);
+    if (proxy_host)
+        options.proxy_host = proxy_host;
 
     options.proxy_port =
         TWC_PROFILE_OPTION_INTEGER(profile, TWC_PROFILE_OPTION_PROXY_PORT);
-    options.udp_disabled =
-        !TWC_PROFILE_OPTION_BOOLEAN(profile, TWC_PROFILE_OPTION_UDP);
-    options.ipv6enabled =
+    options.udp_enabled =
+        TWC_PROFILE_OPTION_BOOLEAN(profile, TWC_PROFILE_OPTION_UDP);
+    options.ipv6_enabled =
         TWC_PROFILE_OPTION_BOOLEAN(profile, TWC_PROFILE_OPTION_IPV6);
 
-    if (options.proxy_type != TOX_PROXY_NONE)
+    if (options.proxy_type != TOX_PROXY_TYPE_NONE)
     {
-        if (!options.proxy_address || !options.proxy_port)
+        if (!options.proxy_host || !options.proxy_port)
         {
             weechat_printf(profile->buffer,
                            "%sproxy is enabled, but proxy information is "
@@ -263,7 +264,7 @@ twc_profile_load(struct t_twc_profile *profile)
                            "%susing %s proxy %s:%d",
                            weechat_prefix("network"),
                            proxy_type,
-                           options.proxy_address, options.proxy_port);
+                           options.proxy_host, options.proxy_port);
         }
     }
 
