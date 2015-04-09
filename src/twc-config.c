@@ -309,7 +309,7 @@ twc_config_init()
         twc_config_file, twc_config_section_look,
         "short_id_size", "integer",
         "length of Tox IDs shown in short format; must be a multiple of two",
-        NULL, 2, TOX_CLIENT_ID_SIZE * 2,
+        NULL, 2, TOX_PUBLIC_KEY_SIZE * 2,
         "8", NULL, 0,
         twc_config_check_value_callback, NULL,
         NULL, NULL, NULL, NULL);

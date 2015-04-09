@@ -157,13 +157,13 @@ twc_match_friend(struct t_twc_profile *profile, const char *search_string)
     size_t search_size = strlen(search_string);
     for (uint32_t i = 0; i < friend_count; ++i)
     {
-        if (search_size == TOX_CLIENT_ID_SIZE * 2)
+        if (search_size == TOX_PUBLIC_KEY_SIZE * 2)
         {
-            uint8_t tox_id[TOX_CLIENT_ID_SIZE];
-            char hex_id[TOX_CLIENT_ID_SIZE * 2 + 1];
+            uint8_t tox_id[TOX_PUBLIC_KEY_SIZE];
+            char hex_id[TOX_PUBLIC_KEY_SIZE * 2 + 1];
 
             tox_get_client_id(profile->tox, friend_numbers[i], tox_id);
-            twc_bin2hex(tox_id, TOX_CLIENT_ID_SIZE, hex_id);
+            twc_bin2hex(tox_id, TOX_PUBLIC_KEY_SIZE, hex_id);
 
             if (weechat_strcasecmp(hex_id, search_string) == 0)
                 return friend_numbers[i];
@@ -284,7 +284,7 @@ twc_cmd_friend(void *data, struct t_gui_buffer *buffer,
         if (!message)
             message = weechat_config_string(twc_config_friend_request_message);
 
-        if (strlen(hex_id) != TOX_FRIEND_ADDRESS_SIZE * 2)
+        if (strlen(hex_id) != TOX_ADDRESS_SIZE * 2)
         {
             weechat_printf(profile->buffer,
                            "%sTox ID length invalid. Please try again.",
@@ -293,13 +293,13 @@ twc_cmd_friend(void *data, struct t_gui_buffer *buffer,
             return WEECHAT_RC_OK;
         }
 
-        uint8_t address[TOX_FRIEND_ADDRESS_SIZE];
-        twc_hex2bin(hex_id, TOX_FRIEND_ADDRESS_SIZE, address);
+        uint8_t address[TOX_ADDRESS_SIZE];
+        twc_hex2bin(hex_id, TOX_ADDRESS_SIZE, address);
 
         if (force)
         {
             bool fail = false;
-            char *hex_key = strndup(hex_id, TOX_CLIENT_ID_SIZE * 2);
+            char *hex_key = strndup(hex_id, TOX_PUBLIC_KEY_SIZE * 2);
             int32_t friend_number = twc_match_friend(profile, hex_key);
             free(hex_key);
 
@@ -318,50 +318,52 @@ twc_cmd_friend(void *data, struct t_gui_buffer *buffer,
             }
         }
 
-        int32_t result = tox_add_friend(profile->tox,
-                                        (uint8_t *)address,
-                                        (uint8_t *)message,
-                                        strlen(message));
+        TOX_ERR_FRIEND_ADD result = tox_add_friend(profile->tox,
+                                                   (uint8_t *)address,
+                                                   (uint8_t *)message,
+                                                   strlen(message));
 
         switch (result)
         {
-            case TOX_FAERR_TOOLONG:
+            case TOX_ERR_FRIEND_ADD_OK:
+                weechat_printf(profile->buffer,
+                               "%sFriend request sent!",
+                               weechat_prefix("network"));
+                break;
+            case TOX_ERR_FRIEND_ADD_TOO_LONG:
                 weechat_printf(profile->buffer,
                                "%sFriend request message too long! Try again.",
                                weechat_prefix("error"));
                 break;
-            case TOX_FAERR_ALREADYSENT:
+            case TOX_ERR_FRIEND_ADD_ALREADY_SENT:
+            case TOX_ERR_FRIEND_ADD_SET_NEW_NOSPAM:
                 weechat_printf(profile->buffer,
                                "%sYou have already sent a friend request to "
                                "that address (use -force to circumvent)",
                                weechat_prefix("error"));
                 break;
-            case TOX_FAERR_OWNKEY:
+            case TOX_ERR_FRIEND_ADD_OWN_KEY:
                 weechat_printf(profile->buffer,
                                "%sYou can't add yourself as a friend.",
                                weechat_prefix("error"));
                 break;
-            case TOX_FAERR_BADCHECKSUM:
+            case TOX_ERR_FRIEND_ADD_BAD_CHECKSUM:
                 weechat_printf(profile->buffer,
                                "%sInvalid friend address - try again.",
                                weechat_prefix("error"));
                 break;
-            case TOX_FAERR_NOMEM:
+            case TOX_ERR_FRIEND_ADD_MALLOC:
                 weechat_printf(profile->buffer,
                                "%sCould not add friend (out of memory).",
                                weechat_prefix("error"));
                 break;
-            case TOX_FAERR_UNKNOWN:
-            case TOX_FAERR_SETNEWNOSPAM:
-            case TOX_FAERR_NOMESSAGE:
-                weechat_printf(profile->buffer,
-                               "%sCould not add friend (unknown error).",
-                               weechat_prefix("error"));
-                break;
+            case TOX_ERR_FRIEND_ADD_NULL:
+            case TOX_ERR_FRIEND_ADD_NO_MESSAGE: /* this should not happen as we
+                                                   validate the message */
             default:
                 weechat_printf(profile->buffer,
-                               "%sFriend request sent!",
-                               weechat_prefix("network"));
+                               "%sCould not add friend (unknown error %d).",
+                               weechat_prefix("error"), result);
                 break;
         }
 
@@ -433,9 +435,9 @@ twc_cmd_friend(void *data, struct t_gui_buffer *buffer,
                 return WEECHAT_RC_OK;
             }
 
-            char hex_address[TOX_CLIENT_ID_SIZE * 2 + 1];
+            char hex_address[TOX_PUBLIC_KEY_SIZE * 2 + 1];
             twc_bin2hex(request->tox_id,
-                                 TOX_CLIENT_ID_SIZE,
+                                 TOX_PUBLIC_KEY_SIZE,
                                  hex_address);
 
             if (accept)
@@ -690,11 +692,11 @@ twc_cmd_myid(void *data, struct t_gui_buffer *buffer,
     TWC_CHECK_PROFILE(profile);
     TWC_CHECK_PROFILE_LOADED(profile);
 
-    uint8_t address[TOX_FRIEND_ADDRESS_SIZE];
+    uint8_t address[TOX_ADDRESS_SIZE];
     tox_get_address(profile->tox, address);
 
-    char address_str[TOX_FRIEND_ADDRESS_SIZE * 2 + 1];
-    twc_bin2hex(address, TOX_FRIEND_ADDRESS_SIZE, address_str);
+    char address_str[TOX_ADDRESS_SIZE * 2 + 1];
+    twc_bin2hex(address, TOX_ADDRESS_SIZE, address_str);
 
     weechat_printf(profile->buffer,
                    "%sYour Tox address: %s",
@@ -875,15 +877,14 @@ twc_cmd_status(void *data, struct t_gui_buffer *buffer,
     TWC_CHECK_PROFILE(profile);
     TWC_CHECK_PROFILE_LOADED(profile);
 
-    TOX_USERSTATUS status = TOX_USERSTATUS_INVALID;
+    TOX_USER_STATUS status;
     if (weechat_strcasecmp(argv[1], "online") == 0)
-        status = TOX_USERSTATUS_NONE;
+        status = TOX_USER_STATUS_NONE;
     else if (weechat_strcasecmp(argv[1], "busy") == 0)
-        status = TOX_USERSTATUS_BUSY;
+        status = TOX_USER_STATUS_BUSY;
     else if (weechat_strcasecmp(argv[1], "away") == 0)
-        status = TOX_USERSTATUS_AWAY;
-
-    if (status == TOX_USERSTATUS_INVALID)
+        status = TOX_USER_STATUS_AWAY;
+    else
         return WEECHAT_RC_ERROR;
 
     tox_set_user_status(profile->tox, status);

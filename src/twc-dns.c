@@ -52,16 +52,16 @@ twc_dns_fd_callback(void *data, int fd)
 {
     struct t_twc_dns_callback_info *callback_info = data;
 
-    char buffer[TOX_FRIEND_ADDRESS_SIZE * 2 + 1];
+    char buffer[TOX_ADDRESS_SIZE * 2 + 1];
     ssize_t size = read(fd, buffer, sizeof(buffer) - 1);
     buffer[size] = '\0';
 
     if (size > 0)
     {
-        if (size == TOX_FRIEND_ADDRESS_SIZE * 2)
+        if (size == TOX_ADDRESS_SIZE * 2)
         {
-            uint8_t tox_id[TOX_FRIEND_ADDRESS_SIZE];
-            twc_hex2bin(buffer, TOX_FRIEND_ADDRESS_SIZE, tox_id);
+            uint8_t tox_id[TOX_ADDRESS_SIZE];
+            twc_hex2bin(buffer, TOX_ADDRESS_SIZE, tox_id);
 
             callback_info->callback(callback_info->data,
                                     TWC_DNS_RC_OK, tox_id);

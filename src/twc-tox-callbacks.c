@@ -198,8 +198,8 @@ twc_friend_request_callback(Tox *tox, const uint8_t *public_key,
     }
     else
     {
-        char hex_address[TOX_CLIENT_ID_SIZE * 2 + 1];
-        twc_bin2hex(public_key, TOX_CLIENT_ID_SIZE, hex_address);
+        char hex_address[TOX_PUBLIC_KEY_SIZE * 2 + 1];
+        twc_bin2hex(public_key, TOX_PUBLIC_KEY_SIZE, hex_address);
 
         weechat_printf(profile->buffer,
                        "%sReceived a friend request from %s with message \"%s\"; "
@@ -328,7 +328,7 @@ twc_group_namelist_change_callback(Tox *tox,
     char *name = twc_get_peer_name_nt(profile->tox, group_number, peer_number);
     char *prev_name = NULL;
 
-    uint8_t pubkey[TOX_CLIENT_ID_SIZE];
+    uint8_t pubkey[TOX_PUBLIC_KEY_SIZE];
     int pkrc = tox_group_peer_pubkey(profile->tox, group_number,
                                      peer_number, pubkey);
     if (pkrc == 0)
@@ -353,7 +353,7 @@ twc_group_namelist_change_callback(Tox *tox,
                                              name, NULL, NULL, NULL, 1);
             if (nick)
                 weechat_hashtable_set_with_size(chat->nicks,
-                                                pubkey, TOX_CLIENT_ID_SIZE,
+                                                pubkey, TOX_PUBLIC_KEY_SIZE,
                                                 nick, 0);
         }
     }

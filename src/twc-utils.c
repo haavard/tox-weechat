@@ -140,7 +140,7 @@ twc_get_self_name_nt(Tox *tox)
 char *
 twc_get_friend_id_short(Tox *tox, int32_t friend_number)
 {
-    uint8_t client_id[TOX_CLIENT_ID_SIZE];
+    uint8_t client_id[TOX_PUBLIC_KEY_SIZE];
     tox_get_client_id(tox, friend_number, client_id);
 
     size_t short_id_length = weechat_config_integer(twc_config_short_id_size);
@@ -170,7 +170,7 @@ twc_uint32_reverse_bytes(uint32_t num)
 }
 
 /**
- * Hash a Tox ID of size TOX_CLIENT_ID_SIZE bytes using a modified djb2 hash.
+ * Hash a Tox ID of size TOX_PUBLIC_KEY_SIZE bytes using a modified djb2 hash.
  */
 unsigned long long
 twc_hash_tox_id(const uint8_t *tox_id)

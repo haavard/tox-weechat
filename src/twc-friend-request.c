@@ -53,7 +53,7 @@ twc_friend_request_add(struct t_twc_profile *profile,
 
     request->profile = profile;
     request->message = strdup(message);
-    memcpy(request->tox_id, client_id, TOX_CLIENT_ID_SIZE);
+    memcpy(request->tox_id, client_id, TOX_PUBLIC_KEY_SIZE);
 
     if (!twc_list_item_new_data_add(profile->friend_requests, request))
         return -2;

@@ -59,7 +59,7 @@ int
 twc_tox_id_compare_callback(struct t_hashtable *hashtable,
                             const void *id1, const void *id2)
 {
-    return memcmp(id1, id2, TOX_CLIENT_ID_SIZE);
+    return memcmp(id1, id2, TOX_PUBLIC_KEY_SIZE);
 }
 
 /**
@@ -102,11 +102,11 @@ twc_chat_new(struct t_twc_profile *profile, const char *name)
 struct t_twc_chat *
 twc_chat_new_friend(struct t_twc_profile *profile, int32_t friend_number)
 {
-    uint8_t client_id[TOX_CLIENT_ID_SIZE];
+    uint8_t client_id[TOX_PUBLIC_KEY_SIZE];
     tox_get_client_id(profile->tox, friend_number, client_id);
 
-    char buffer_name[TOX_CLIENT_ID_SIZE * 2 + 1];
-    twc_bin2hex(client_id, TOX_CLIENT_ID_SIZE, buffer_name);
+    char buffer_name[TOX_PUBLIC_KEY_SIZE * 2 + 1];
+    twc_bin2hex(client_id, TOX_PUBLIC_KEY_SIZE, buffer_name);
 
     struct t_twc_chat *chat = twc_chat_new(profile, buffer_name);
     if (chat)

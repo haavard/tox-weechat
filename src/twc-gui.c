@@ -43,10 +43,10 @@ twc_bar_item_away(void *data,
     char *status = NULL;;
     switch (tox_get_self_user_status(profile->tox))
     {
-        case TOX_USERSTATUS_BUSY:
+        case TOX_USER_STATUS_BUSY:
             status = strdup("busy");
             break;
-        case TOX_USERSTATUS_AWAY:
+        case TOX_USER_STATUS_AWAY:
             status = strdup("away");
             break;
     }
