@@ -27,38 +27,32 @@ twc_do_timer_cb(void *data,
                 int remaining_calls);
 
 void
-twc_friend_message_callback(Tox *tox, int32_t friend_number,
-                            const uint8_t *message, uint16_t length,
+twc_friend_message_callback(Tox *tox, uint32_t friend_number,
+                            TOX_MESSAGE_TYPE type,
+                            const uint8_t *message, size_t length,
                             void *data);
 
 void
-twc_friend_action_callback(Tox *tox, int32_t friend_number,
-                           const uint8_t *message, uint16_t length,
-                           void *data);
+twc_connection_status_callback(Tox *tox, uint32_t friend_number,
+                               TOX_CONNECTION status, void *data);
 
 void
-twc_connection_status_callback(Tox *tox,
-                               int32_t friend_number, uint8_t status,
-                               void *data);
-
-void
-twc_name_change_callback(Tox *tox, int32_t friend_number,
-                         const uint8_t *name, uint16_t length,
+twc_name_change_callback(Tox *tox, uint32_t friend_number,
+                         const uint8_t *name, size_t length,
                          void *data);
 
 void
-twc_user_status_callback(Tox *tox,
-                         int32_t friend_number, uint8_t status,
-                         void *data);
+twc_user_status_callback(Tox *tox, uint32_t friend_number,
+                         TOX_USER_STATUS status, void *data);
 
 void
-twc_status_message_callback(Tox *tox, int32_t friend_number,
-                            const uint8_t *message, uint16_t length,
+twc_status_message_callback(Tox *tox, uint32_t friend_number,
+                            const uint8_t *message, size_t length,
                             void *data);
 
 void
 twc_friend_request_callback(Tox *tox, const uint8_t *public_key,
-                            const uint8_t *message, uint16_t length,
+                            const uint8_t *message, size_t length,
                             void *data);
 
 void

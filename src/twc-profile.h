@@ -93,7 +93,7 @@ twc_profile_init();
 struct t_twc_profile *
 twc_profile_new(const char *name);
 
-void
+enum t_twc_rc
 twc_profile_load(struct t_twc_profile *profile);
 
 void
