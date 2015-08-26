@@ -57,9 +57,9 @@ twc_completion_friend(void *data,
     if (!profile)
         return WEECHAT_RC_OK;
 
-    uint32_t friend_count = tox_count_friendlist(profile->tox);
-    int32_t *friend_numbers = malloc(sizeof(int32_t) * friend_count);
-    tox_get_friendlist(profile->tox, friend_numbers, friend_count);
+    uint32_t friend_count = tox_self_get_friend_list_size(profile->tox);
+    uint32_t *friend_numbers = malloc(sizeof(uint32_t) * friend_count);
+    tox_self_get_friend_list(profile->tox, friend_numbers);
 
     for (uint32_t i = 0; i < friend_count; ++i)
     {
@@ -68,11 +68,15 @@ twc_completion_friend(void *data,
             uint8_t tox_id[TOX_PUBLIC_KEY_SIZE];
             char hex_id[TOX_PUBLIC_KEY_SIZE * 2 + 1];
 
-            tox_get_client_id(profile->tox, friend_numbers[i], tox_id);
-            twc_bin2hex(tox_id, TOX_PUBLIC_KEY_SIZE, hex_id);
+            TOX_ERR_FRIEND_GET_PUBLIC_KEY err;
+            tox_friend_get_public_key(profile->tox, friend_numbers[i], tox_id, &err);
+            if (err == TOX_ERR_FRIEND_GET_PUBLIC_KEY_OK)
+            {
+                twc_bin2hex(tox_id, TOX_PUBLIC_KEY_SIZE, hex_id);
 
-            weechat_hook_completion_list_add(completion, hex_id, 0,
-                                             WEECHAT_LIST_POS_SORT);
+                weechat_hook_completion_list_add(completion, hex_id, 0,
+                                                 WEECHAT_LIST_POS_SORT);
+            }
         }
 
         if (flags & TWC_COMPLETE_FRIEND_NAME)

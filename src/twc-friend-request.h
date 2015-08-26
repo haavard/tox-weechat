@@ -40,7 +40,7 @@ twc_friend_request_add(struct t_twc_profile *profile,
                        const uint8_t *client_id,
                        const char *message);
 
-void
+bool
 twc_friend_request_accept(struct t_twc_friend_request *request);
 
 void

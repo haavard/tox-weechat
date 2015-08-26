@@ -70,9 +70,10 @@ twc_bootstrap_tox(Tox *tox, const char *address, uint16_t port,
 {
     uint8_t binary_key[TOX_ADDRESS_SIZE];
     twc_hex2bin(public_key, TOX_ADDRESS_SIZE, binary_key);
+    TOX_ERR_BOOTSTRAP err;
 
-    int result = tox_bootstrap_from_address(tox, address, port,
-                                            binary_key);
+    int result = tox_bootstrap(tox, address, port,
+                               binary_key, &err);
 
     return result;
 }

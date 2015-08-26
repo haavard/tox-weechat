@@ -142,14 +142,14 @@ enum TWC_FRIEND_MATCH
 enum TWC_FRIEND_MATCH
 twc_match_friend(struct t_twc_profile *profile, const char *search_string)
 {
-    uint32_t friend_count = tox_count_friendlist(profile->tox);
-    int32_t *friend_numbers = malloc(sizeof(int32_t) * friend_count);
-    tox_get_friendlist(profile->tox, friend_numbers, friend_count);
+    uint32_t friend_count = tox_self_get_friend_list_size(profile->tox);
+    uint32_t *friend_numbers = malloc(sizeof(uint32_t) * friend_count);
+    tox_self_get_friend_list(profile->tox, friend_numbers);
 
     int32_t match = TWC_FRIEND_MATCH_NOMATCH;
 
     char *endptr;
-    unsigned long friend_number = strtoul(search_string, &endptr, 10);
+    uint32_t friend_number = (uint32_t)strtoul(search_string, &endptr, 10);
     if (endptr == search_string + strlen(search_string)
         && tox_friend_exists(profile->tox, friend_number))
         return friend_number;
@@ -162,11 +162,13 @@ twc_match_friend(struct t_twc_profile *profile, const char *search_string)
             uint8_t tox_id[TOX_PUBLIC_KEY_SIZE];
             char hex_id[TOX_PUBLIC_KEY_SIZE * 2 + 1];
 
-            tox_get_client_id(profile->tox, friend_numbers[i], tox_id);
-            twc_bin2hex(tox_id, TOX_PUBLIC_KEY_SIZE, hex_id);
+            if (tox_friend_get_public_key(profile->tox, friend_numbers[i], tox_id, NULL))
+            {
+                twc_bin2hex(tox_id, TOX_PUBLIC_KEY_SIZE, hex_id);
 
-            if (weechat_strcasecmp(hex_id, search_string) == 0)
-                return friend_numbers[i];
+                if (weechat_strcasecmp(hex_id, search_string) == 0)
+                    return friend_numbers[i];
+            }
         }
 
         char *name = twc_get_name_nt(profile->tox, friend_numbers[i]);
@@ -227,9 +229,9 @@ twc_cmd_friend(void *data, struct t_gui_buffer *buffer,
     // /friend or /friend list
     if (argc == 1 || (argc == 2 && weechat_strcasecmp(argv[1], "list") == 0))
     {
-        size_t friend_count = tox_count_friendlist(profile->tox);
-        int32_t friend_numbers[friend_count];
-        tox_get_friendlist(profile->tox, friend_numbers, friend_count);
+        size_t friend_count = tox_self_get_friend_list_size(profile->tox);
+        uint32_t friend_numbers[friend_count];
+        tox_self_get_friend_list(profile->tox, friend_numbers);
 
         if (friend_count == 0)
         {
@@ -245,7 +247,7 @@ twc_cmd_friend(void *data, struct t_gui_buffer *buffer,
 
         for (size_t i = 0; i < friend_count; ++i)
         {
-            int32_t friend_number = friend_numbers[i];
+            uint32_t friend_number = friend_numbers[i];
             char *name = twc_get_name_nt(profile->tox, friend_number);
             char *hex_address = twc_get_friend_id_short(profile->tox,
                                                         friend_number);
@@ -306,7 +308,7 @@ twc_cmd_friend(void *data, struct t_gui_buffer *buffer,
             if (friend_number == TWC_FRIEND_MATCH_AMBIGUOUS)
                 fail = true;
             else if (friend_number != TWC_FRIEND_MATCH_NOMATCH)
-                fail = tox_del_friend(profile->tox, friend_number) != 0;
+                fail = !tox_friend_delete(profile->tox, friend_number, NULL);
 
             if (fail)
             {
@@ -318,12 +320,13 @@ twc_cmd_friend(void *data, struct t_gui_buffer *buffer,
             }
         }
 
-        TOX_ERR_FRIEND_ADD result = tox_add_friend(profile->tox,
-                                                   (uint8_t *)address,
-                                                   (uint8_t *)message,
-                                                   strlen(message));
+        TOX_ERR_FRIEND_ADD err;
+        (void)tox_friend_add(profile->tox,
+                                         (uint8_t *)address,
+                                         (uint8_t *)message,
+                                         strlen(message), &err);
 
-        switch (result)
+        switch (err)
         {
             case TOX_ERR_FRIEND_ADD_OK:
                 weechat_printf(profile->buffer,
@@ -363,7 +366,7 @@ twc_cmd_friend(void *data, struct t_gui_buffer *buffer,
             default:
                 weechat_printf(profile->buffer,
                                "%sCould not add friend (unknown error %d).",
-                               weechat_prefix("error"), result);
+                               weechat_prefix("error"), err);
                 break;
         }
 
@@ -377,7 +380,7 @@ twc_cmd_friend(void *data, struct t_gui_buffer *buffer,
         TWC_CHECK_FRIEND_NUMBER(profile, friend_number, argv[2]);
 
         char *name = twc_get_name_nt(profile->tox, friend_number);
-        if (tox_del_friend(profile->tox, friend_number) == 0)
+        if (tox_friend_delete(profile->tox, friend_number, NULL) == 0)
         {
             weechat_printf(profile->buffer,
                            "%sRemoved %s from friend list.",
@@ -406,20 +409,39 @@ twc_cmd_friend(void *data, struct t_gui_buffer *buffer,
         if (weechat_strcasecmp(argv[2], "all") == 0)
         {
             size_t index;
+            size_t count = 0;
             struct t_twc_list_item *item;
             twc_list_foreach(profile->friend_requests, index, item)
             {
                 if (accept)
-                    twc_friend_request_accept(item->friend_request);
+                {
+                    if (twc_friend_request_accept(item->friend_request))
+                    {
+                        ++count;
+                    }
+                    else
+                    {
+                        char hex_address[TOX_PUBLIC_KEY_SIZE * 2 + 1];
+                        twc_bin2hex(item->friend_request->tox_id,
+                                    TOX_PUBLIC_KEY_SIZE,
+                                    hex_address);
+                        weechat_printf(profile->buffer,
+                                       "%sCould not accept friend request from %s",
+                                       weechat_prefix("error"), hex_address);
+                    }
+                }
                 else
+                {
                     twc_friend_request_remove(item->friend_request);
+                    ++count;
+                }
             }
 
             weechat_printf(profile->buffer,
                            "%s%s %d friend requests.",
                            weechat_prefix("network"),
                            accept ? "Accepted" : "Declined",
-                           index);
+                           count);
 
             return WEECHAT_RC_OK;
         }
@@ -441,17 +463,29 @@ twc_cmd_friend(void *data, struct t_gui_buffer *buffer,
                                  hex_address);
 
             if (accept)
-                twc_friend_request_accept(request);
+            {
+                if (twc_friend_request_accept(request))
+                {
+                    weechat_printf(profile->buffer,
+                                   "%sCould not accept friend request from %s",
+                                   weechat_prefix("error"), hex_address);
+                }
+                else
+                {
+                    weechat_printf(profile->buffer,
+                                   "%sAccepted friend request from %s.",
+                                   weechat_prefix("network"), hex_address);
+                }
+            }
             else
+            {
                 twc_friend_request_remove(request);
+                weechat_printf(profile->buffer,
+                               "%sDeclined friend request from %s.",
+                               weechat_prefix("network"), hex_address);
+            }
 
             twc_friend_request_free(request);
-
-            weechat_printf(profile->buffer,
-                           "%s%s friend request from %s.",
-                           weechat_prefix("network"),
-                           accept ? "Accepted" : "Declined",
-                           hex_address);
 
             return WEECHAT_RC_OK;
         }
@@ -693,7 +727,7 @@ twc_cmd_myid(void *data, struct t_gui_buffer *buffer,
     TWC_CHECK_PROFILE_LOADED(profile);
 
     uint8_t address[TOX_ADDRESS_SIZE];
-    tox_get_address(profile->tox, address);
+    tox_self_get_address(profile->tox, address);
 
     char address_str[TOX_ADDRESS_SIZE * 2 + 1];
     twc_bin2hex(address, TOX_ADDRESS_SIZE, address_str);
@@ -720,15 +754,29 @@ twc_cmd_name(void *data, struct t_gui_buffer *buffer,
     TWC_CHECK_PROFILE(profile);
     TWC_CHECK_PROFILE_LOADED(profile);
 
-    char *name = argv_eol[1];
+    const char *name = argv_eol[1];
 
-    int result = tox_set_name(profile->tox, (uint8_t *)name, strlen(name));
-    if (result == -1)
+    TOX_ERR_SET_INFO err;
+    tox_self_set_name(profile->tox, (uint8_t *)name, strlen(name), &err);
+    if (err != TOX_ERR_SET_INFO_OK)
     {
+        char *err_msg;
+        switch (err)
+        {
+            case TOX_ERR_SET_INFO_NULL:
+                err_msg = "no name given";
+                break;
+            case TOX_ERR_SET_INFO_TOO_LONG:
+                err_msg = "name too long";
+                break;
+            default:
+                err_msg = "unknown error";
+                break;
+        }
         weechat_printf(profile->buffer,
-                       "%s%s",
+                       "%s%s%s",
                        weechat_prefix("error"),
-                       "Could not change name.");
+                       "Could not change name: ", err_msg);
         return WEECHAT_RC_OK;
     }
 
@@ -789,8 +837,8 @@ twc_cmd_nospam(void *data, struct t_gui_buffer *buffer,
         new_nospam = random();
     }
 
-    uint32_t old_nospam = tox_get_nospam(profile->tox);
-    tox_set_nospam(profile->tox, new_nospam);
+    uint32_t old_nospam = tox_self_get_nospam(profile->tox);
+    tox_self_set_nospam(profile->tox, new_nospam);
 
     weechat_printf(profile->buffer,
                    "%snew nospam has been set; this changes your Tox ID! To "
@@ -887,7 +935,7 @@ twc_cmd_status(void *data, struct t_gui_buffer *buffer,
     else
         return WEECHAT_RC_ERROR;
 
-    tox_set_user_status(profile->tox, status);
+    tox_self_set_status(profile->tox, status);
     weechat_bar_item_update("away");
 
     return WEECHAT_RC_OK;
@@ -906,15 +954,29 @@ twc_cmd_statusmsg(void *data, struct t_gui_buffer *buffer,
 
     char *message = argc > 1 ? argv_eol[1] : " ";
 
-    int result = tox_set_status_message(profile->tox,
-                                        (uint8_t *)message,
-                                        strlen(message));
-    if (result == -1)
+    TOX_ERR_SET_INFO err;
+    tox_self_set_status_message(profile->tox,
+                                (uint8_t *)message,
+                                strlen(message), &err);
+    if (err != TOX_ERR_SET_INFO_OK)
     {
+        char *err_msg;
+        switch (err)
+        {
+            case TOX_ERR_SET_INFO_NULL:
+                err_msg = "no status given";
+                break;
+            case TOX_ERR_SET_INFO_TOO_LONG:
+                err_msg = "status too long";
+                break;
+            default:
+                err_msg = "unknown error";
+                break;
+        }
         weechat_printf(profile->buffer,
-                       "%s%s",
+                       "%s%s%s",
                        weechat_prefix("error"),
-                       "Could not set status message.");
+                       "Could not set status message: ", err_msg);
     }
 
     return WEECHAT_RC_OK;

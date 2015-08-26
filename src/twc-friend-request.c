@@ -64,11 +64,14 @@ twc_friend_request_add(struct t_twc_profile *profile,
 /**
  * Accept a friend request. Remove and free the request.
  */
-void
+bool
 twc_friend_request_accept(struct t_twc_friend_request *request)
 {
-    tox_add_friend_norequest(request->profile->tox, request->tox_id);
+    TOX_ERR_FRIEND_ADD err;
+    tox_friend_add_norequest(request->profile->tox, request->tox_id, &err);
     twc_friend_request_remove(request);
+
+    return err == TOX_ERR_FRIEND_ADD_OK;
 }
 
 /**

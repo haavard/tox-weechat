@@ -40,9 +40,12 @@ twc_bar_item_away(void *data,
     if (!profile || !(profile->tox))
         return NULL;
 
-    char *status = NULL;;
-    switch (tox_get_self_user_status(profile->tox))
+    char *status;
+    switch (tox_self_get_status(profile->tox))
     {
+        case TOX_USER_STATUS_NONE:
+            status = NULL;
+            break;
         case TOX_USER_STATUS_BUSY:
             status = strdup("busy");
             break;

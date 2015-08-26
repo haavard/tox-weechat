@@ -81,14 +81,16 @@ twc_null_terminate(const uint8_t *str, size_t length)
 char *
 twc_get_name_nt(Tox *tox, int32_t friend_number)
 {
-    size_t length = tox_get_name_size(tox, friend_number);
+    TOX_ERR_FRIEND_QUERY err;
+    size_t length = tox_friend_get_name_size(tox, friend_number, &err);
+
+    if ((err != TOX_ERR_FRIEND_QUERY_OK) ||
+        (length == 0))
+      return twc_get_friend_id_short(tox, friend_number);
+
     uint8_t name[length];
 
-    // if no name, return client ID instead
-    if (!length)
-        return twc_get_friend_id_short(tox, friend_number);
-
-    tox_get_name(tox, friend_number, name);
+    tox_friend_get_name(tox, friend_number, name, &err);
     return twc_null_terminate(name, length);
 }
 
@@ -98,9 +100,18 @@ twc_get_name_nt(Tox *tox, int32_t friend_number)
 char *
 twc_get_status_message_nt(Tox *tox, int32_t friend_number)
 {
-    size_t length = tox_get_status_message_size(tox, friend_number);
+    TOX_ERR_FRIEND_QUERY err;
+    size_t length = tox_friend_get_status_message_size(tox, friend_number, &err);
+
+    if ((err != TOX_ERR_FRIEND_QUERY_OK) ||
+        (length == SIZE_MAX)) {
+      char *msg = malloc(1);
+      *msg = 0;
+      return msg;
+    }
+
     uint8_t message[length];
-    tox_get_status_message(tox, friend_number, message, length);
+    tox_friend_get_status_message(tox, friend_number, message, &err);
 
     return twc_null_terminate(message, length);
 }
@@ -127,9 +138,9 @@ twc_get_peer_name_nt(Tox *tox, int32_t group_number, int32_t peer_number)
 char *
 twc_get_self_name_nt(Tox *tox)
 {
-    size_t length = tox_get_self_name_size(tox);
+    size_t length = tox_self_get_name_size(tox);
     uint8_t name[length];
-    tox_get_self_name(tox, name);
+    tox_self_get_name(tox, name);
 
     return twc_null_terminate(name, length);
 }
@@ -141,11 +152,16 @@ char *
 twc_get_friend_id_short(Tox *tox, int32_t friend_number)
 {
     uint8_t client_id[TOX_PUBLIC_KEY_SIZE];
-    tox_get_client_id(tox, friend_number, client_id);
-
+    TOX_ERR_FRIEND_GET_PUBLIC_KEY err;
     size_t short_id_length = weechat_config_integer(twc_config_short_id_size);
-
     char *hex_address = malloc(short_id_length + 1);
+
+    tox_friend_get_public_key(tox, friend_number, client_id, &err);
+
+    // return a zero public key on failure
+    if (err != TOX_ERR_FRIEND_GET_PUBLIC_KEY_OK)
+      memset(client_id, 0, TOX_PUBLIC_KEY_SIZE);
+
     twc_bin2hex(client_id,
                 short_id_length / 2,
                 hex_address);
@@ -182,37 +198,3 @@ twc_hash_tox_id(const uint8_t *tox_id)
 
     return hash;
 }
-
-/**
- * Read an entire file into memory.
- *
- * @return TWC_RC_OK on success, TWC_RC_ERROR if file can not be opened, and
- *         TWC_RC_ERROR_MALLOC if an appropriate buffer can not be allocated.
- */
-enum t_twc_rc
-twc_read_file(const char *path, uint8_t **data, size_t *size)
-{
-    FILE *file;
-    if (file = fopen(path, "r"))
-    {
-        // get file size
-        fseek(file, 0, SEEK_END);
-        *size = ftell(file);
-        rewind(file);
-
-        if (data = malloc(sizeof(*data) * *size))
-        {
-            fread(data, sizeof(uint8_t), *size, file);
-            fclose(file);
-            return TWC_RC_OK;
-        }
-        else
-        {
-            fclose(file);
-            return TWC_RC_ERROR_MALLOC;
-        }
-    }
-
-    return TWC_RC_ERROR;
-}
-

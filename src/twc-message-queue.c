@@ -75,7 +75,7 @@ twc_message_queue_add_friend_message(struct t_twc_profile *profile,
 
     // flush if friend is online
     if (profile->tox
-        && tox_get_friend_connection_status(profile->tox, friend_number) == 1)
+        && (tox_friend_get_connection_status(profile->tox, friend_number, NULL) != TOX_CONNECTION_NONE))
         twc_message_queue_flush_friend(profile, friend_number);
 }
 
@@ -96,24 +96,17 @@ twc_message_queue_flush_friend(struct t_twc_profile *profile,
         struct t_twc_queued_message *queued_message = item->queued_message;
 
         // TODO: store and deal with message IDs
-        uint32_t rc = 0;
-        switch(queued_message->message_type)
-        {
-            case TWC_MESSAGE_TYPE_MESSAGE:
-                rc = tox_send_message(profile->tox,
+        TOX_ERR_FRIEND_SEND_MESSAGE err;
+        (void)tox_friend_send_message(profile->tox,
                                       friend_number,
+                                      queued_message->message_type == TWC_MESSAGE_TYPE_MESSAGE?
+                                        TOX_MESSAGE_TYPE_NORMAL:
+                                        TOX_MESSAGE_TYPE_ACTION,
                                       (uint8_t *)queued_message->message,
-                                      strlen(queued_message->message));
-                break;
-            case TWC_MESSAGE_TYPE_ACTION:
-                rc = tox_send_action(profile->tox,
-                                     friend_number,
-                                     (uint8_t *)queued_message->message,
-                                     strlen(queued_message->message));
-                break;
-        }
+                                      strlen(queued_message->message),
+                                      &err);
 
-        if (rc == 0)
+        if (err != TOX_ERR_FRIEND_SEND_MESSAGE_OK)
         {
             // break if message send failed
             break;
