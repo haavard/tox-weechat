@@ -103,7 +103,10 @@ struct t_twc_chat *
 twc_chat_new_friend(struct t_twc_profile *profile, int32_t friend_number)
 {
     uint8_t client_id[TOX_PUBLIC_KEY_SIZE];
-    tox_get_client_id(profile->tox, friend_number, client_id);
+    TOX_ERR_FRIEND_GET_PUBLIC_KEY err;
+    tox_friend_get_public_key(profile->tox, friend_number, client_id, &err);
+    if (err != TOX_ERR_FRIEND_GET_PUBLIC_KEY_OK)
+      return NULL;
 
     char buffer_name[TOX_PUBLIC_KEY_SIZE * 2 + 1];
     twc_bin2hex(client_id, TOX_PUBLIC_KEY_SIZE, buffer_name);
