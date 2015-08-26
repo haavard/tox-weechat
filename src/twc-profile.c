@@ -268,7 +268,7 @@ twc_profile_load(struct t_twc_profile *profile)
         }
 
     weechat_printf(profile->buffer,
-                   "%s profile %s connecting",
+                   "%sprofile %s connecting",
                    weechat_prefix("network"), profile->name);
 
     // create Tox options object
