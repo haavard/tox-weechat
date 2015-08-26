@@ -198,37 +198,3 @@ twc_hash_tox_id(const uint8_t *tox_id)
 
     return hash;
 }
-
-/**
- * Read an entire file into memory.
- *
- * @return TWC_RC_OK on success, TWC_RC_ERROR if file can not be opened, and
- *         TWC_RC_ERROR_MALLOC if an appropriate buffer can not be allocated.
- */
-enum t_twc_rc
-twc_read_file(const char *path, uint8_t **data, size_t *size)
-{
-    FILE *file;
-    if ((file = fopen(path, "r")))
-    {
-        // get file size
-        fseek(file, 0, SEEK_END);
-        *size = ftell(file);
-        rewind(file);
-
-        if ((data = malloc(sizeof(**data) * *size)))
-        {
-            size_t rs = fread(data, sizeof(uint8_t), *size, file);
-            fclose(file);
-            return rs == *size ? TWC_RC_OK : TWC_RC_ERROR;
-        }
-        else
-        {
-            fclose(file);
-            return TWC_RC_ERROR_MALLOC;
-        }
-    }
-
-    return TWC_RC_ERROR;
-}
-

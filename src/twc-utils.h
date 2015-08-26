@@ -54,8 +54,5 @@ twc_uint32_reverse_bytes(uint32_t num);
 unsigned long long
 twc_hash_tox_id(const uint8_t *tox_id);
 
-enum t_twc_rc
-twc_read_file(const char *path, uint8_t **data, size_t *size);
-
 #endif // TOX_WEECHAT_UTILS_H
 
