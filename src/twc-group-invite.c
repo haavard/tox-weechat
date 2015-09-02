@@ -21,7 +21,10 @@
 
 #include <weechat/weechat-plugin.h>
 #include <tox/tox.h>
-#include <tox/toxav.h>
+
+#ifdef TOXAV_FOUND
+    #include <tox/toxav.h>
+#endif // TOXAV_FOUND
 
 #include "twc.h"
 #include "twc-list.h"
@@ -70,20 +73,22 @@ twc_group_chat_invite_join(struct t_twc_group_chat_invite *invite)
     int rc;
     switch (invite->group_chat_type)
     {
-       case TOX_GROUPCHAT_TYPE_TEXT:
-          rc = tox_join_groupchat(invite->profile->tox,
-                                  invite->friend_number,
-                                  invite->data, invite->data_size);
-          break;
-       case TOX_GROUPCHAT_TYPE_AV:
-          rc = toxav_join_av_groupchat(invite->profile->tox,
-                                       invite->friend_number,
-                                       invite->data, invite->data_size,
-                                       NULL, NULL);
-          break;
-       default:
-          rc = -1;
-          break;
+        case TOX_GROUPCHAT_TYPE_TEXT:
+            rc = tox_join_groupchat(invite->profile->tox,
+                                    invite->friend_number,
+                                    invite->data, invite->data_size);
+            break;
+#ifdef TOXAV_ENABLED
+        case TOX_GROUPCHAT_TYPE_AV:
+            rc = toxav_join_av_groupchat(invite->profile->tox,
+                                         invite->friend_number,
+                                         invite->data, invite->data_size,
+                                         NULL, NULL);
+            break;
+#endif
+        default:
+            rc = -1;
+            break;
     }
 
     twc_group_chat_invite_remove(invite);
