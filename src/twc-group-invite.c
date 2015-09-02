@@ -22,7 +22,7 @@
 #include <weechat/weechat-plugin.h>
 #include <tox/tox.h>
 
-#ifdef TOXAV_FOUND
+#ifdef TOXAV_ENABLED
     #include <tox/toxav.h>
 #endif // TOXAV_FOUND
 
