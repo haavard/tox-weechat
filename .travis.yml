@@ -16,7 +16,7 @@ install:
   - pushd libsodium
   - git checkout tags/${_libsodium_version}
   - ./autogen.sh
-  - ./configure --prefix=/usr
+  - ./configure
   - make -j3
   - sudo make install
   - popd
@@ -25,7 +25,7 @@ install:
   - git clone git://github.com/irungentoo/toxcore
   - pushd toxcore
   - autoreconf -i
-  - ./configure --prefix=/usr --disable-testing --disable-ntox
+  - ./configure --disable-testing --disable-ntox
   - make -j3
   - sudo make install
   - popd
@@ -35,7 +35,7 @@ install:
   - pushd weechat
   - git checkout tags/${_weechat_version}
   - mkdir build && cd build
-  - cmake .. -DPREFIX=/usr
+  - cmake ..
   - make -j3
   - sudo make install
   - popd
