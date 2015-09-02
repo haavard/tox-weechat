@@ -38,4 +38,4 @@ if(Tox_DNS_INCLUDE_DIR AND Tox_DNS_LIBRARY)
 endif()
 
 include(FindPackageHandleStandardArgs)
-find_package_handle_standard_args(Tox HANDLE_COMPONENTS REQUIRED_VARS Tox_INCLUDE_DIRS Tox_LIBRARIES)
+find_package_handle_standard_args(Tox FOUND_VAR Tox_FOUND REQUIRED_VARS Tox_INCLUDE_DIRS Tox_LIBRARIES HANDLE_COMPONENTS)
