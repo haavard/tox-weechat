@@ -48,6 +48,7 @@ char *twc_profile_option_names[TWC_PROFILE_NUM_OPTIONS] =
     "proxy_type",
     "udp",
     "ipv6",
+    "passphrase",
 };
 
 /**
@@ -209,6 +210,11 @@ twc_config_init_option(struct t_config_section *section,
                           "ignoring new ones";
             min = 0; max = INT_MAX;
             default_value = "100";
+            break;
+        case TWC_PROFILE_OPTION_PASSPHRASE:
+            type = "string";
+            description = "passphrase for encrypted profile";
+            null_allowed = true;
             break;
         case TWC_PROFILE_OPTION_PROXY_ADDRESS:
             type = "string";
