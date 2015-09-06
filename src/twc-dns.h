@@ -22,10 +22,19 @@
 
 #include <stdint.h>
 
+#ifdef LDNS_ENABLED
+#include <tox/toxdns.h>
+
+#define TWC_DNS_ID_MAXLEN TOXDNS_MAX_RECOMMENDED_NAME_LENGTH
+
+#endif // LDNS_ENABLED
+
 enum t_twc_dns_rc
 {
     TWC_DNS_RC_OK = 0,
     TWC_DNS_RC_ERROR = -1,
+    TWC_DNS_RC_EINVAL = -2,
+    TWC_DNS_RC_VERSION = -4,
 };
 
 enum t_twc_dns_rc

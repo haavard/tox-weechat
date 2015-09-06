@@ -26,10 +26,15 @@ set(CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake ${CMAKE_MODULE_PATH})
 find_package(WeeChat REQUIRED)
 find_package(Tox REQUIRED
     COMPONENTS CORE
-    OPTIONAL_COMPONENTS AV ENCRYPTSAVE)
+    OPTIONAL_COMPONENTS AV ENCRYPTSAVE DNS)
+find_package(Ldns)
 
 set(PLUGIN_PATH "lib/weechat/plugins" CACHE PATH
     "Path to install the plugin binary to.")
+
+if(Ldns_FOUND AND Tox_DNS_FOUND)
+    list(APPEND DNS_SRCS src/twc-dns.c)
+endif()
 
 add_library(tox MODULE
     src/twc.c
@@ -38,6 +43,7 @@ add_library(tox MODULE
     src/twc-commands.c
     src/twc-completion.c
     src/twc-config.c
+    ${DNS_SRCS}
     src/twc-friend-request.c
     src/twc-gui.c
     src/twc-group-invite.c
@@ -53,8 +59,9 @@ set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -std=gnu99 -Wall -Wextra -Wno-unused-paramet
 
 include_directories(${Tox_INCLUDE_DIRS})
 include_directories(${WeeChat_INCLUDE_DIRS})
+include_directories(${Ldns_INCLUDE_DIRS})
 
-target_link_libraries(tox ${Tox_LIBRARIES})
+target_link_libraries(tox ${Tox_LIBRARIES} ${Ldns_LIBRARIES})
 
 if(Tox_AV_FOUND)
     add_definitions(-DTOXAV_ENABLED)
@@ -64,8 +71,11 @@ if(Tox_ENCRYPTSAVE_FOUND)
     add_definitions(-DTOXENCRYPTSAVE_ENABLED)
 endif()
 
+if(Ldns_FOUND AND Tox_DNS_FOUND)
+    add_definitions(-DLDNS_ENABLED)
+endif()
+
 # remove lib prefix (libtox.so -> tox.so)
 set_target_properties(tox PROPERTIES PREFIX "")
 
 install(TARGETS tox DESTINATION "${PLUGIN_PATH}")
-
