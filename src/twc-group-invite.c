@@ -24,7 +24,7 @@
 
 #ifdef TOXAV_ENABLED
     #include <tox/toxav.h>
-#endif // TOXAV_FOUND
+#endif // TOXAV_ENABLED
 
 #include "twc.h"
 #include "twc-list.h"
