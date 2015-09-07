@@ -26,7 +26,7 @@ set(CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake ${CMAKE_MODULE_PATH})
 find_package(WeeChat REQUIRED)
 find_package(Tox REQUIRED
     COMPONENTS CORE
-    OPTIONAL_COMPONENTS AV)
+    OPTIONAL_COMPONENTS AV ENCRYPTSAVE)
 
 set(PLUGIN_PATH "lib/weechat/plugins" CACHE PATH
     "Path to install the plugin binary to.")
@@ -58,6 +58,10 @@ target_link_libraries(tox ${Tox_LIBRARIES})
 
 if(Tox_AV_FOUND)
     add_definitions(-DTOXAV_ENABLED)
+endif()
+
+if(Tox_ENCRYPTSAVE_FOUND)
+    add_definitions(-DTOXENCRYPTSAVE_ENABLED)
 endif()
 
 # remove lib prefix (libtox.so -> tox.so)
