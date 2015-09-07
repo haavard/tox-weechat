@@ -1,6 +1,6 @@
 # Tox-WeeChat
 Tox-WeeChat is a [Tox][1] protocol plugin for [WeeChat][2]. It is functional,
-but lacks certain features like Tox DNS.
+but lacks certain features.
 
 Current build status: [![Build Status](https://travis-ci.org/haavardp/tox-weechat.svg?branch=master)][3]
 
@@ -12,10 +12,9 @@ future.
  - [x] Group chats (text only)
  - [x] Proxy support
  - [x] Multiple profiles
+ - [x] Encrypted save files
  - [ ] Tox DNS
- - [ ] Encrypted save files
  - [ ] File transfer
- - [ ] Avatars
  - [ ] WeeChat `/upgrade`
  - [ ] Audio/video
 
