@@ -27,6 +27,7 @@
 #include "twc-list.h"
 #include "twc-profile.h"
 #include "twc-chat.h"
+#include "twc-dns.h"
 #include "twc-friend-request.h"
 #include "twc-group-invite.h"
 #include "twc-bootstrap.h"
@@ -40,6 +41,15 @@ enum TWC_FRIEND_MATCH
     TWC_FRIEND_MATCH_AMBIGUOUS = -1,
     TWC_FRIEND_MATCH_NOMATCH = -2,
 };
+
+
+typedef struct
+{
+    const bool force;
+    struct t_twc_profile *profile;
+    char *dns_name;
+    const char *message;
+} t_twc_friend_add_data;
 
 /**
  * Make sure a command is executed on a Tox profile buffer. If not, warn user
@@ -215,6 +225,167 @@ twc_cmd_bootstrap(void *data, struct t_gui_buffer *buffer,
     return WEECHAT_RC_ERROR;
 }
 
+#ifdef LDNS_ENABLED
+void
+twc_cmd_dns_cb(void *data, enum t_twc_dns_rc rc, const uint8_t *tox_id)
+{
+    if (!rc == TWC_DNS_RC_OK)
+    {
+	weechat_printf(weechat_current_buffer(), "%s Error resolving Tox DNS ID (%d).",
+		       weechat_prefix("error"), rc);
+	return;
+    }
+    char toxid[TOX_ADDRESS_SIZE * 2 + 1];
+    twc_bin2hex(tox_id, TOX_ADDRESS_SIZE, toxid);
+    toxid[TOX_ADDRESS_SIZE * 2] = 0;
+    weechat_printf(weechat_current_buffer(), "Resolved Tox DNS ID to %s", toxid);
+}
+
+/**
+ * Command /dns callback.
+ */
+int
+twc_cmd_dns(void *data, struct t_gui_buffer *buffer,
+	    int argc, char **argv, char**argv_eol)
+{
+    if (argc == 1)
+	return WEECHAT_RC_ERROR;
+
+    struct t_twc_profile *profile = twc_profile_search_buffer(buffer);
+    TWC_CHECK_PROFILE(profile);
+    TWC_CHECK_PROFILE_LOADED(profile);
+
+    char dns_id[TWC_DNS_ID_MAXLEN + 1];
+    snprintf(dns_id, TWC_DNS_ID_MAXLEN, "%s", argv_eol[1]);
+    enum t_twc_dns_rc dns_rc;
+    dns_rc = twc_dns_query(dns_id, &twc_cmd_dns_cb, NULL);
+    if (dns_rc)
+    {
+	weechat_printf(buffer, "%sResolving TOX-DNS ID. Error code %d",
+		       weechat_prefix("error"), dns_rc);
+	return WEECHAT_RC_ERROR;
+    }
+    return WEECHAT_RC_OK;
+}
+#endif // LDNS_ENABLED
+
+/**
+ * Sub-command '/friend add' callback.
+ */
+static void
+twc_cmd_friend_add_cb(void *data, enum t_twc_dns_rc rc, const uint8_t *tox_id)
+{
+    const t_twc_friend_add_data *d = data;
+    const bool force = d->force;
+    char *name = d->dns_name;
+    struct t_twc_profile *profile = d->profile;
+    const char *message = d->message;
+    char toxid[TOX_ADDRESS_SIZE * 2 + 1];
+
+    switch (rc)
+    {
+        case TWC_DNS_RC_OK:
+            break;
+        case TWC_DNS_RC_VERSION:
+            weechat_printf(profile->buffer,
+                           "%sUnsupported Tox DNS version in reply.",
+                           weechat_prefix("error"));
+            goto err;
+        case TWC_DNS_RC_ERROR:
+            weechat_printf(profile->buffer, "%sCould not resolve Tox ID.",
+                           weechat_prefix("error"));
+            goto err;
+        case TWC_DNS_RC_EINVAL:
+            weechat_printf(profile->buffer, "%sInvalid Tox DNS ID.",
+                           weechat_prefix("error"));
+            goto err;
+        default:
+            weechat_printf(profile->buffer,
+                           "%sUnknown error resolving Tox ID (%d).",
+                           weechat_prefix("error"), rc);
+            goto err;
+    }
+    twc_bin2hex(tox_id, TOX_ADDRESS_SIZE, toxid);
+    toxid[TOX_ADDRESS_SIZE * 2] = 0;
+    weechat_printf(profile->buffer, "Resolved tox dns id '%s' to %s", name,  toxid);
+
+    /* -force to delete friend before sending a new friend request */
+    if (force)
+    {
+	bool fail = false;
+	char *hex_key = strndup(toxid, TOX_PUBLIC_KEY_SIZE * 2);
+	int32_t friend_number = twc_match_friend(profile, hex_key);
+	free(hex_key);
+
+	if (friend_number == TWC_FRIEND_MATCH_AMBIGUOUS)
+	    fail = true;
+	else if (friend_number != TWC_FRIEND_MATCH_NOMATCH)
+	    fail = !tox_friend_delete(profile->tox, friend_number, NULL);
+
+	if (fail)
+	{
+	    weechat_printf(profile->buffer,
+			   "%scould not remove friend; please remove "
+			   "manually before resending friend request",
+			   weechat_prefix("error"));
+	    goto err;
+	}
+    }
+
+    TOX_ERR_FRIEND_ADD err;
+    (void)tox_friend_add(profile->tox,
+                         (uint8_t *)tox_id,
+                         (uint8_t *)message,
+                         strlen(message), &err);
+
+    switch (err)
+    {
+        case TOX_ERR_FRIEND_ADD_OK:
+            weechat_printf(profile->buffer,
+                           "%sFriend request sent!",
+                           weechat_prefix("network"));
+            break;
+        case TOX_ERR_FRIEND_ADD_TOO_LONG:
+            weechat_printf(profile->buffer,
+                           "%sFriend request message too long! Try again.",
+                           weechat_prefix("error"));
+            break;
+        case TOX_ERR_FRIEND_ADD_ALREADY_SENT:
+        case TOX_ERR_FRIEND_ADD_SET_NEW_NOSPAM:
+            weechat_printf(profile->buffer,
+                           "%sYou have already sent a friend request to "
+                           "that address (use -force to circumvent)",
+                           weechat_prefix("error"));
+            break;
+        case TOX_ERR_FRIEND_ADD_OWN_KEY:
+            weechat_printf(profile->buffer,
+                           "%sYou can't add yourself as a friend.",
+                           weechat_prefix("error"));
+            break;
+        case TOX_ERR_FRIEND_ADD_BAD_CHECKSUM:
+            weechat_printf(profile->buffer,
+                           "%sInvalid friend address - try again.",
+                           weechat_prefix("error"));
+            break;
+        case TOX_ERR_FRIEND_ADD_MALLOC:
+            weechat_printf(profile->buffer,
+                           "%sCould not add friend (out of memory).",
+                           weechat_prefix("error"));
+            break;
+        case TOX_ERR_FRIEND_ADD_NULL:
+        case TOX_ERR_FRIEND_ADD_NO_MESSAGE: /* this should not happen as we
+                                               validate the message */
+        default:
+            weechat_printf(profile->buffer,
+                           "%sCould not add friend (unknown error %d).",
+                           weechat_prefix("error"), err);
+            break;
+    }
+  err:
+    free(name);
+    free(message);
+}
+
 /**
  * Command /friend callback.
  */
@@ -286,89 +457,53 @@ twc_cmd_friend(void *data, struct t_gui_buffer *buffer,
         if (!message)
             message = weechat_config_string(twc_config_friend_request_message);
 
-        if (strlen(hex_id) != TOX_ADDRESS_SIZE * 2)
+	/* strip "tox:" URI prefix */
+	char *l = weechat_strcasestr(hex_id, "tox:");
+	if (l && (l == hex_id))
+	    hex_id = &hex_id[4];
+
+        char *dns_name = strdup(hex_id);
+	char *msg = strdup(message);
+        if (!dns_name || !msg)
         {
             weechat_printf(profile->buffer,
-                           "%sTox ID length invalid. Please try again.",
+                           "%sMemory allocation error.",
                            weechat_prefix("error"));
+	    if (msg)
+		free(msg);
+	    if (dns_name)
+		free(dns_name);
+            return WEECHAT_RC_OK;
+        }
+        t_twc_friend_add_data data = { force, profile, dns_name, msg };
+        uint8_t address[TOX_ADDRESS_SIZE];
 
+        if (strlen(hex_id) != TOX_ADDRESS_SIZE * 2)
+        {
+#ifdef LDNS_ENABLED
+            /* resolve toxid */
+	    enum t_twc_dns_rc dns_rc;
+	    dns_rc = twc_dns_query(hex_id, &twc_cmd_friend_add_cb, &data);
+	    if (dns_rc)
+	    {
+		weechat_printf(profile->buffer,
+			       "%sError calling Tox DNS resolver (%d).",
+			       weechat_prefix("error"), dns_rc);
+	    }
+#else
+            /* immediately fail */
+            weechat_printf(profile->buffer,
+                           "%sTox ID length invalid and Tox DNS resolution not implemented."
+                           " Please try again.",
+                           weechat_prefix("error"));
+#endif // LDNS_ENABLED
             return WEECHAT_RC_OK;
         }
 
-        uint8_t address[TOX_ADDRESS_SIZE];
         twc_hex2bin(hex_id, TOX_ADDRESS_SIZE, address);
+        /* call the callback by hand and finish the /friend add command */
+        twc_cmd_friend_add_cb(&data, TWC_DNS_RC_OK, address);
 
-        if (force)
-        {
-            bool fail = false;
-            char *hex_key = strndup(hex_id, TOX_PUBLIC_KEY_SIZE * 2);
-            int32_t friend_number = twc_match_friend(profile, hex_key);
-            free(hex_key);
-
-            if (friend_number == TWC_FRIEND_MATCH_AMBIGUOUS)
-                fail = true;
-            else if (friend_number != TWC_FRIEND_MATCH_NOMATCH)
-                fail = !tox_friend_delete(profile->tox, friend_number, NULL);
-
-            if (fail)
-            {
-                weechat_printf(profile->buffer,
-                               "%scould not remove friend; please remove "
-                               "manually before resending friend request",
-                               weechat_prefix("error"));
-                return WEECHAT_RC_OK;
-            }
-        }
-
-        TOX_ERR_FRIEND_ADD err;
-        (void)tox_friend_add(profile->tox,
-                                         (uint8_t *)address,
-                                         (uint8_t *)message,
-                                         strlen(message), &err);
-
-        switch (err)
-        {
-            case TOX_ERR_FRIEND_ADD_OK:
-                weechat_printf(profile->buffer,
-                               "%sFriend request sent!",
-                               weechat_prefix("network"));
-                break;
-            case TOX_ERR_FRIEND_ADD_TOO_LONG:
-                weechat_printf(profile->buffer,
-                               "%sFriend request message too long! Try again.",
-                               weechat_prefix("error"));
-                break;
-            case TOX_ERR_FRIEND_ADD_ALREADY_SENT:
-            case TOX_ERR_FRIEND_ADD_SET_NEW_NOSPAM:
-                weechat_printf(profile->buffer,
-                               "%sYou have already sent a friend request to "
-                               "that address (use -force to circumvent)",
-                               weechat_prefix("error"));
-                break;
-            case TOX_ERR_FRIEND_ADD_OWN_KEY:
-                weechat_printf(profile->buffer,
-                               "%sYou can't add yourself as a friend.",
-                               weechat_prefix("error"));
-                break;
-            case TOX_ERR_FRIEND_ADD_BAD_CHECKSUM:
-                weechat_printf(profile->buffer,
-                               "%sInvalid friend address - try again.",
-                               weechat_prefix("error"));
-                break;
-            case TOX_ERR_FRIEND_ADD_MALLOC:
-                weechat_printf(profile->buffer,
-                               "%sCould not add friend (out of memory).",
-                               weechat_prefix("error"));
-                break;
-            case TOX_ERR_FRIEND_ADD_NULL:
-            case TOX_ERR_FRIEND_ADD_NO_MESSAGE: /* this should not happen as we
-                                                   validate the message */
-            default:
-                weechat_printf(profile->buffer,
-                               "%sCould not add friend (unknown error %d).",
-                               weechat_prefix("error"), err);
-                break;
-        }
 
         return WEECHAT_RC_OK;
     }
@@ -668,6 +803,7 @@ twc_cmd_me(void *data, struct t_gui_buffer *buffer,
 
     return WEECHAT_RC_OK;
 }
+
 /**
  * Command /msg callback.
  */
@@ -1208,6 +1344,13 @@ twc_commands_init()
                          "<message>",
                          "message: message to send",
                          NULL, twc_cmd_me, NULL);
+#ifdef LDNS_ENABLED
+    weechat_hook_command("dns",
+			 "test toxdns",
+			 "<toxdnsid>",
+			 "[tox:]<name>[@|._tox.]<domain>\n",
+			 NULL, twc_cmd_dns, NULL);
+#endif // LDNS_ENABLED
 
     weechat_hook_command("msg",
                          "send a message to a Tox friend",
