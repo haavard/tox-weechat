@@ -294,7 +294,7 @@ twc_chat_print_message(struct t_twc_chat *chat,
             break;
         case TWC_MESSAGE_TYPE_ACTION:
             weechat_printf_tags(chat->buffer, tags,
-                                "%s%s %s",
+                                "%s%s%s%s %s",
                                 weechat_prefix("action"),
                                 color, sender,
                                 weechat_color("reset"), message);
