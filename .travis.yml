@@ -10,7 +10,7 @@ before_install:
 
 install:
   - _libsodium_version=1.0.0
-  - _weechat_version=v1.0
+  - _weechat_version=v1.5
 
     # install libsodium (libtoxcore dependency)
   - git clone git://github.com/jedisct1/libsodium.git
