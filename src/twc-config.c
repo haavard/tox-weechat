@@ -70,7 +70,7 @@ twc_config_profile_option_search(const char *option_name)
  * Called when a profile option is read.
  */
 int
-twc_config_profile_read_callback(void *data,
+twc_config_profile_read_callback(const void *pointer, void *data,
                                  struct t_config_file *config_file,
                                  struct t_config_section *section,
                                  const char *option_name,
@@ -132,7 +132,7 @@ twc_config_profile_read_callback(void *data,
  * Callback for checking an option value being set.
  */
 int
-twc_config_check_value_callback(void *data,
+twc_config_check_value_callback(const void *pointer, void *data,
                                 struct t_config_option *option,
                                 const char *value)
 {
@@ -149,11 +149,11 @@ twc_config_check_value_callback(void *data,
  * Callback for checking an option value being set for a profile.
  */
 int
-twc_config_profile_check_value_callback(void *data,
+twc_config_profile_check_value_callback(const void *pointer, void *data,
                                         struct t_config_option *option,
                                         const char *value)
 {
-    enum t_twc_profile_option option_index = (intptr_t)data;
+    enum t_twc_profile_option option_index = (intptr_t)pointer;
 
     switch (option_index)
     {
@@ -168,7 +168,7 @@ twc_config_profile_check_value_callback(void *data,
  * Callback for option being changed for a profile.
  */
 void
-twc_config_profile_change_callback(void *data,
+twc_config_profile_change_callback(const void *pointer, void *data,
                                    struct t_config_option *option)
 {
 }
@@ -256,9 +256,11 @@ twc_config_init_option(struct t_config_section *section,
         twc_config_file, section,
         option_name, type, description, string_values, min, max,
         default_value, value, null_allowed,
-        twc_config_profile_check_value_callback, (void *)(intptr_t)option_index,
-        twc_config_profile_change_callback, (void *)(intptr_t)option_index,
-        NULL, NULL);
+        twc_config_profile_check_value_callback,
+        (void *)(intptr_t)option_index, NULL,
+        twc_config_profile_change_callback,
+        (void *)(intptr_t)option_index, NULL,
+        NULL, NULL, NULL);
 }
 
 /**
@@ -267,25 +269,26 @@ twc_config_init_option(struct t_config_section *section,
 void
 twc_config_init()
 {
-    twc_config_file = weechat_config_new("tox", NULL, NULL);
+    twc_config_file = weechat_config_new("tox", NULL, NULL, NULL);
 
     twc_config_section_profile =
         weechat_config_new_section(twc_config_file, "profile",
                                    0, 0,
-                                   twc_config_profile_read_callback, NULL,
+                                   twc_config_profile_read_callback,
                                    NULL, NULL,
-                                   NULL, NULL,
-                                   NULL, NULL,
-                                   NULL, NULL);
+                                   NULL, NULL, NULL,
+                                   NULL, NULL, NULL,
+                                   NULL, NULL, NULL,
+                                   NULL, NULL, NULL);
 
     twc_config_section_profile_default =
         weechat_config_new_section(twc_config_file, "profile_default",
                                    0, 0,
-                                   NULL, NULL,
-                                   NULL, NULL,
-                                   NULL, NULL,
-                                   NULL, NULL,
-                                   NULL, NULL);
+                                   NULL, NULL, NULL,
+                                   NULL, NULL, NULL,
+                                   NULL, NULL, NULL,
+                                   NULL, NULL, NULL,
+                                   NULL, NULL, NULL);
 
     for (int i = 0; i < TWC_PROFILE_NUM_OPTIONS; ++i)
     {
@@ -297,11 +300,11 @@ twc_config_init()
     twc_config_section_look =
         weechat_config_new_section(twc_config_file, "look",
                                    0, 0,
-                                   NULL, NULL,
-                                   NULL, NULL,
-                                   NULL, NULL,
-                                   NULL, NULL,
-                                   NULL, NULL);
+                                   NULL, NULL, NULL,
+                                   NULL, NULL, NULL,
+                                   NULL, NULL, NULL,
+                                   NULL, NULL, NULL,
+                                   NULL, NULL, NULL);
 
     twc_config_friend_request_message = weechat_config_new_option(
         twc_config_file, twc_config_section_look,
@@ -309,16 +312,16 @@ twc_config_init()
         "message sent with friend requests if no other message is specified",
         NULL, 0, 0,
         "Hi! Please add me on Tox!", NULL, 0,
-        twc_config_check_value_callback, NULL,
-        NULL, NULL, NULL, NULL);
+        twc_config_check_value_callback, NULL, NULL,
+        NULL, NULL, NULL, NULL, NULL, NULL);
     twc_config_short_id_size = weechat_config_new_option(
         twc_config_file, twc_config_section_look,
         "short_id_size", "integer",
         "length of Tox IDs shown in short format; must be a multiple of two",
         NULL, 2, TOX_PUBLIC_KEY_SIZE * 2,
         "8", NULL, 0,
-        twc_config_check_value_callback, NULL,
-        NULL, NULL, NULL, NULL);
+        twc_config_check_value_callback, NULL, NULL,
+        NULL, NULL, NULL, NULL, NULL, NULL);
 }
 
 /**

@@ -188,7 +188,7 @@ twc_match_friend(struct t_twc_profile *profile, const char *search_string)
  * Command /bootstrap callback.
  */
 int
-twc_cmd_bootstrap(void *data, struct t_gui_buffer *buffer,
+twc_cmd_bootstrap(const void *pointer, void *data, struct t_gui_buffer *buffer,
                   int argc, char **argv, char **argv_eol)
 {
     struct t_twc_profile *profile = twc_profile_search_buffer(buffer);
@@ -219,7 +219,7 @@ twc_cmd_bootstrap(void *data, struct t_gui_buffer *buffer,
  * Command /friend callback.
  */
 int
-twc_cmd_friend(void *data, struct t_gui_buffer *buffer,
+twc_cmd_friend(const void *pointer, void *data, struct t_gui_buffer *buffer,
                int argc, char **argv, char **argv_eol)
 {
     struct t_twc_profile *profile = twc_profile_search_buffer(buffer);
@@ -526,7 +526,7 @@ twc_cmd_friend(void *data, struct t_gui_buffer *buffer,
  * Command /group callback.
  */
 int
-twc_cmd_group(void *data, struct t_gui_buffer *buffer,
+twc_cmd_group(const void *pointer, void *data, struct t_gui_buffer *buffer,
               int argc, char **argv, char **argv_eol)
 {
     struct t_twc_profile *profile = twc_profile_search_buffer(buffer);
@@ -616,7 +616,7 @@ twc_cmd_group(void *data, struct t_gui_buffer *buffer,
  * Command /invite callback.
  */
 int
-twc_cmd_invite(void *data, struct t_gui_buffer *buffer,
+twc_cmd_invite(const void *pointer, void *data, struct t_gui_buffer *buffer,
                int argc, char **argv, char **argv_eol)
 {
     if (argc == 1)
@@ -654,7 +654,7 @@ twc_cmd_invite(void *data, struct t_gui_buffer *buffer,
  * Command /me callback.
  */
 int
-twc_cmd_me(void *data, struct t_gui_buffer *buffer,
+twc_cmd_me(const void *pointer, void *data, struct t_gui_buffer *buffer,
            int argc, char **argv, char **argv_eol)
 {
     if (argc == 1)
@@ -672,7 +672,7 @@ twc_cmd_me(void *data, struct t_gui_buffer *buffer,
  * Command /msg callback.
  */
 int
-twc_cmd_msg(void *data, struct t_gui_buffer *buffer,
+twc_cmd_msg(const void *pointer, void *data, struct t_gui_buffer *buffer,
             int argc, char **argv, char **argv_eol)
 {
     if (argc == 1)
@@ -719,7 +719,7 @@ twc_cmd_msg(void *data, struct t_gui_buffer *buffer,
  * Command /myid callback.
  */
 int
-twc_cmd_myid(void *data, struct t_gui_buffer *buffer,
+twc_cmd_myid(const void *pointer, void *data, struct t_gui_buffer *buffer,
              int argc, char **argv, char **argv_eol)
 {
     struct t_twc_profile *profile = twc_profile_search_buffer(buffer);
@@ -744,7 +744,7 @@ twc_cmd_myid(void *data, struct t_gui_buffer *buffer,
  * Command /name callback.
  */
 int
-twc_cmd_name(void *data, struct t_gui_buffer *buffer,
+twc_cmd_name(const void *pointer, void *data, struct t_gui_buffer *buffer,
              int argc, char **argv, char **argv_eol)
 {
     if (argc == 1)
@@ -804,7 +804,7 @@ twc_cmd_name(void *data, struct t_gui_buffer *buffer,
  * Command /nospam callback.
  */
 int
-twc_cmd_nospam(void *data, struct t_gui_buffer *buffer,
+twc_cmd_nospam(const void *pointer, void *data, struct t_gui_buffer *buffer,
                int argc, char **argv, char **argv_eol)
 {
     if (argc > 2)
@@ -852,7 +852,7 @@ twc_cmd_nospam(void *data, struct t_gui_buffer *buffer,
  * Command /part callback.
  */
 int
-twc_cmd_part(void *data, struct t_gui_buffer *buffer,
+twc_cmd_part(const void *pointer, void *data, struct t_gui_buffer *buffer,
              int argc, char **argv, char **argv_eol)
 {
     struct t_twc_chat *chat = twc_chat_search_buffer(buffer);
@@ -886,7 +886,7 @@ twc_cmd_part(void *data, struct t_gui_buffer *buffer,
  * Save Tox profile data when /save is executed.
  */
 int
-twc_cmd_save(void *data, struct t_gui_buffer *buffer, const char *command)
+twc_cmd_save(const void *pointer, void *data, struct t_gui_buffer *buffer, const char *command)
 {
     size_t index;
     struct t_twc_list_item *item;
@@ -915,7 +915,7 @@ twc_cmd_save(void *data, struct t_gui_buffer *buffer, const char *command)
  * Command /status callback.
  */
 int
-twc_cmd_status(void *data, struct t_gui_buffer *buffer,
+twc_cmd_status(const void *pointer, void *data, struct t_gui_buffer *buffer,
                int argc, char **argv, char **argv_eol)
 {
     if (argc != 2)
@@ -945,7 +945,7 @@ twc_cmd_status(void *data, struct t_gui_buffer *buffer,
  * Command /statusmsg callback.
  */
 int
-twc_cmd_statusmsg(void *data, struct t_gui_buffer *buffer,
+twc_cmd_statusmsg(const void *pointer, void *data, struct t_gui_buffer *buffer,
                   int argc, char **argv, char **argv_eol)
 {
     struct t_twc_profile *profile = twc_profile_search_buffer(buffer);
@@ -986,7 +986,7 @@ twc_cmd_statusmsg(void *data, struct t_gui_buffer *buffer,
  * Command /topic callback.
  */
 int
-twc_cmd_topic(void *data, struct t_gui_buffer *buffer,
+twc_cmd_topic(const void *pointer, void *data, struct t_gui_buffer *buffer,
               int argc, char **argv, char **argv_eol)
 {
     if (argc == 1)
@@ -1025,7 +1025,7 @@ twc_cmd_topic(void *data, struct t_gui_buffer *buffer,
  * Command /tox callback.
  */
 int
-twc_cmd_tox(void *data, struct t_gui_buffer *buffer,
+twc_cmd_tox(const void *pointer, void *data, struct t_gui_buffer *buffer,
                     int argc, char **argv, char **argv_eol)
 {
     // /tox [list]
@@ -1158,7 +1158,7 @@ twc_commands_init()
                          "address: internet address of node to bootstrap with\n"
                          "   port: port of the node\n"
                          " Tox ID: Tox ID of the node",
-                         "connect", twc_cmd_bootstrap, NULL);
+                         "connect", twc_cmd_bootstrap, NULL, NULL);
 
     weechat_hook_command("friend",
                          "manage friends",
@@ -1179,7 +1179,7 @@ twc_commands_init()
                          " || requests"
                          " || accept"
                          " || decline",
-                         twc_cmd_friend, NULL);
+                         twc_cmd_friend, NULL, NULL);
 
     weechat_hook_command("group",
                          "manage group chats",
@@ -1194,20 +1194,20 @@ twc_commands_init()
                          "create"
                          " || invites"
                          " || join",
-                         twc_cmd_group, NULL);
+                         twc_cmd_group, NULL, NULL);
 
     weechat_hook_command("invite",
                          "invite someone to a group chat",
                          "<number>|<name>|<Tox ID>",
                          "number, name, Tox ID: friend to message\n",
                          "%(tox_friend_name)|%(tox_friend_tox_id)",
-                         twc_cmd_invite, NULL);
+                         twc_cmd_invite, NULL, NULL);
 
     weechat_hook_command("me",
                          "send an action to the current chat",
                          "<message>",
                          "message: message to send",
-                         NULL, twc_cmd_me, NULL);
+                         NULL, twc_cmd_me, NULL, NULL);
 
     weechat_hook_command("msg",
                          "send a message to a Tox friend",
@@ -1215,18 +1215,18 @@ twc_commands_init()
                          "number, name, Tox ID: friend to message\n"
                          "message: message to send",
                          "%(tox_friend_name)|%(tox_friend_tox_id)",
-                         twc_cmd_msg, NULL);
+                         twc_cmd_msg, NULL, NULL);
 
     weechat_hook_command("myid",
                          "get your Tox ID to give to friends",
                          "", "",
-                         NULL, twc_cmd_myid, NULL);
+                         NULL, twc_cmd_myid, NULL, NULL);
 
     weechat_hook_command("name",
                          "change your Tox name",
                          "<name>",
                          "name: your new name",
-                         NULL, twc_cmd_name, NULL);
+                         NULL, twc_cmd_name, NULL, NULL);
 
     weechat_hook_command("nospam",
                          "change nospam value",
@@ -1235,32 +1235,32 @@ twc_commands_init()
                          "new value is used\n\n"
                          "Warning: changing your nospam value will alter your "
                          "Tox ID!",
-                         NULL, twc_cmd_nospam, NULL);
+                         NULL, twc_cmd_nospam, NULL, NULL);
 
     weechat_hook_command("part",
                          "leave a group chat",
                          "", "",
-                         NULL, twc_cmd_part, NULL);
+                         NULL, twc_cmd_part, NULL, NULL);
 
-    weechat_hook_command_run("/save", twc_cmd_save, NULL);
+    weechat_hook_command_run("/save", twc_cmd_save, NULL, NULL);
 
     weechat_hook_command("status",
                          "change your Tox status",
                          "online|busy|away",
                          "",
-                         NULL, twc_cmd_status, NULL);
+                         NULL, twc_cmd_status, NULL, NULL);
 
     weechat_hook_command("statusmsg",
                          "change your Tox status message",
                          "[<message>]",
                          "message: your new status message",
-                         NULL, twc_cmd_statusmsg, NULL);
+                         NULL, twc_cmd_statusmsg, NULL, NULL);
 
     weechat_hook_command("topic",
                          "set a group chat topic",
                          "<topic>",
                          "topic: new group chat topic",
-                         NULL, twc_cmd_topic, NULL);
+                         NULL, twc_cmd_topic, NULL, NULL);
 
     weechat_hook_command("tox",
                          "manage Tox profiles",
@@ -1284,6 +1284,6 @@ twc_commands_init()
                          " || load %(tox_unloaded_profiles)|%*"
                          " || unload %(tox_loaded_profiles)|%*"
                          " || reload %(tox_loaded_profiles)|%*",
-                         twc_cmd_tox, NULL);
+                         twc_cmd_tox, NULL, NULL);
 }
 

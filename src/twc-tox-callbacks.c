@@ -33,14 +33,15 @@
 #include "twc-tox-callbacks.h"
 
 int
-twc_do_timer_cb(void *data,
+twc_do_timer_cb(const void *pointer, void *data,
                 int remaining_calls)
 {
-    struct t_twc_profile *profile = data;
+    /* TODO: don't strip the const */
+    struct t_twc_profile *profile = (void *)pointer;
 
     tox_iterate(profile->tox);
     struct t_hook *hook = weechat_hook_timer(tox_iteration_interval(profile->tox),
-                                             0, 1, twc_do_timer_cb, profile);
+                                             0, 1, twc_do_timer_cb, profile, NULL);
     profile->tox_do_timer = hook;
 
     // check connection status

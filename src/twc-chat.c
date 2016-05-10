@@ -36,11 +36,13 @@ const char *twc_tag_sent_message = "tox_sent";
 const char *twc_tag_received_message = "tox_received";
 
 int
-twc_chat_buffer_input_callback(void *data,
+twc_chat_buffer_input_callback(const void *pointer,
+                               void *data,
                                struct t_gui_buffer *weechat_buffer,
                                const char *input_data);
 int
-twc_chat_buffer_close_callback(void *data,
+twc_chat_buffer_close_callback(const void *pointer,
+                               void *data,
                                struct t_gui_buffer *weechat_buffer);
 
 /**
@@ -80,8 +82,8 @@ twc_chat_new(struct t_twc_profile *profile, const char *name)
     char *full_name = malloc(full_name_size);
     snprintf(full_name, full_name_size, "%s/%s", profile->name, name);
     chat->buffer = weechat_buffer_new(full_name,
-                                      twc_chat_buffer_input_callback, chat,
-                                      twc_chat_buffer_close_callback, chat);
+                                      twc_chat_buffer_input_callback, chat, NULL,
+                                      twc_chat_buffer_close_callback, chat, NULL);
     free(full_name);
 
     if (!(chat->buffer))
@@ -150,7 +152,7 @@ twc_chat_new_group(struct t_twc_profile *profile, int32_t group_number)
  * Refresh a chat. Updates buffer short_name and title.
  */
 void
-twc_chat_refresh(struct t_twc_chat *chat)
+twc_chat_refresh(const struct t_twc_chat *chat)
 {
     char *name = NULL;
     char *title = NULL;
@@ -186,9 +188,9 @@ twc_chat_refresh(struct t_twc_chat *chat)
  * Callback for twc_chat_queue_refresh. Simply calls twc_chat_refresh.
  */
 int
-twc_chat_refresh_timer_callback(void *data, int remaining)
+twc_chat_refresh_timer_callback(const void *pointer, void *data, int remaining)
 {
-    twc_chat_refresh(data);
+    twc_chat_refresh(pointer);
 
     return WEECHAT_RC_OK;
 }
@@ -201,7 +203,7 @@ void
 twc_chat_queue_refresh(struct t_twc_chat *chat)
 {
     weechat_hook_timer(1, 0, 1,
-                       twc_chat_refresh_timer_callback, chat);
+                       twc_chat_refresh_timer_callback, chat, NULL);
 }
 
 /**
@@ -328,10 +330,12 @@ twc_chat_send_message(struct t_twc_chat *chat, const char *message,
  * Callback for a buffer receiving user input.
  */
 int
-twc_chat_buffer_input_callback(void *data, struct t_gui_buffer *weechat_buffer,
+twc_chat_buffer_input_callback(const void *pointer, void *data,
+                               struct t_gui_buffer *weechat_buffer,
                                const char *input_data)
 {
-    struct t_twc_chat *chat = data;
+    /* TODO: don't strip the const */
+    struct t_twc_chat *chat = (void *)pointer;
     twc_chat_send_message(chat, input_data, TWC_MESSAGE_TYPE_MESSAGE);
 
     return WEECHAT_RC_OK;
@@ -341,9 +345,11 @@ twc_chat_buffer_input_callback(void *data, struct t_gui_buffer *weechat_buffer,
  * Callback for a buffer being closed.
  */
 int
-twc_chat_buffer_close_callback(void *data, struct t_gui_buffer *weechat_buffer)
+twc_chat_buffer_close_callback(const void *pointer, void *data,
+                               struct t_gui_buffer *weechat_buffer)
 {
-    struct t_twc_chat *chat = data;
+    /* TODO: don't strip the const */
+    struct t_twc_chat *chat = (void *)pointer;
 
     if (chat->profile->tox && chat->group_number >= 0)
     {

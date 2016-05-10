@@ -19,9 +19,9 @@ future.
  - [ ] Audio/video
 
 ## Installation
-Tox-WeeChat requires [WeeChat][2] >= 1.0.1 and the latest-ish [toxcore][4].
-It also requires CMake to be built. Installation is fairly simple; after
-getting the source, compile and install using CMake:
+Tox-WeeChat requires [WeeChat][2] >= 1.5 and the latest-ish [toxcore][4]. It
+also requires CMake to be built. Installation is fairly simple; after getting
+the source, compile and install using CMake:
 
     $ mkdir build && cd build
     $ cmake -DPLUGIN_PATH=~/.weechat/plugins ..

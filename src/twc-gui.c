@@ -29,7 +29,7 @@
 #include "twc-gui.h"
 
 char *
-twc_bar_item_away(void *data,
+twc_bar_item_away(const void *pointer, void *data,
                   struct t_gui_bar_item *item,
                   struct t_gui_window *window,
                   struct t_gui_buffer *buffer,
@@ -58,7 +58,7 @@ twc_bar_item_away(void *data,
 }
 
 char *
-twc_bar_item_input_prompt(void *data,
+twc_bar_item_input_prompt(const void *pointer, void *data,
                           struct t_gui_bar_item *item,
                           struct t_gui_window *window,
                           struct t_gui_buffer *buffer,
@@ -73,7 +73,8 @@ twc_bar_item_input_prompt(void *data,
 }
 
 char *
-twc_bar_item_buffer_plugin(void *data, struct t_gui_bar_item *item,
+twc_bar_item_buffer_plugin(const void *pointer, void *data,
+                           struct t_gui_bar_item *item,
                            struct t_gui_window *window,
                            struct t_gui_buffer *buffer,
                            struct t_hashtable *extra_info)
@@ -104,8 +105,8 @@ twc_bar_item_buffer_plugin(void *data, struct t_gui_bar_item *item,
 
 void twc_gui_init()
 {
-    weechat_bar_item_new("away", twc_bar_item_away, NULL);
-    weechat_bar_item_new("input_prompt", twc_bar_item_input_prompt, NULL);
-    weechat_bar_item_new("buffer_plugin", twc_bar_item_buffer_plugin, NULL);
+    weechat_bar_item_new("away", twc_bar_item_away, NULL, NULL);
+    weechat_bar_item_new("input_prompt", twc_bar_item_input_prompt, NULL, NULL);
+    weechat_bar_item_new("buffer_plugin", twc_bar_item_buffer_plugin, NULL, NULL);
 }
 

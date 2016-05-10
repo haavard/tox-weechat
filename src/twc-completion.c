@@ -46,12 +46,12 @@ enum
  * Complete a friends name and/or Tox ID.
  */
 int
-twc_completion_friend(void *data,
+twc_completion_friend(const void *pointer, void *data,
                       const char *completion_item,
                       struct t_gui_buffer *buffer,
                       struct t_gui_completion *completion)
 {
-    int flags = (int)(intptr_t)data;
+    int flags = (int)(intptr_t)pointer;
     struct t_twc_profile *profile = twc_profile_search_buffer(buffer);
 
     if (!profile)
@@ -108,12 +108,12 @@ twc_completion_friend(void *data,
  * Complete a profile name, possibly filtering by loaded/unloaded profiles.
  */
 int
-twc_completion_profile(void *data,
+twc_completion_profile(const void *pointer, void *data,
                        const char *completion_item,
                        struct t_gui_buffer *buffer,
                        struct t_gui_completion *completion)
 {
-    int flag = (int)(intptr_t)data;
+    int flag = (int)(intptr_t)pointer;
 
     size_t index;
     struct t_twc_list_item *item;
@@ -137,18 +137,18 @@ twc_completion_init()
 {
     weechat_hook_completion("tox_profiles", "profile",
                             twc_completion_profile,
-                            (void *)(intptr_t)TWC_ALL_PROFILES);
+                            (void *)(intptr_t)TWC_ALL_PROFILES, NULL);
     weechat_hook_completion("tox_loaded_profiles", "loaded profile",
                             twc_completion_profile,
-                            (void *)(intptr_t)TWC_LOADED_PROFILES);
+                            (void *)(intptr_t)TWC_LOADED_PROFILES, NULL);
     weechat_hook_completion("tox_unloaded_profiles", "unloaded profile",
                             twc_completion_profile,
-                            (void *)(intptr_t)TWC_UNLOADED_PROFILES);
+                            (void *)(intptr_t)TWC_UNLOADED_PROFILES, NULL);
     weechat_hook_completion("tox_friend_tox_id", "friend Tox ID",
                             twc_completion_friend,
-                            (void *)(intptr_t)TWC_COMPLETE_FRIEND_ID);
+                            (void *)(intptr_t)TWC_COMPLETE_FRIEND_ID, NULL);
     weechat_hook_completion("tox_friend_name", "friend name",
                             twc_completion_friend,
-                            (void *)(intptr_t)TWC_COMPLETE_FRIEND_NAME);
+                            (void *)(intptr_t)TWC_COMPLETE_FRIEND_NAME, NULL);
 }
 

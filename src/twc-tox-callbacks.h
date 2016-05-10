@@ -23,7 +23,7 @@
 #include <tox/tox.h>
 
 int
-twc_do_timer_cb(void *data,
+twc_do_timer_cb(const void *pointer, void *data,
                 int remaining_calls);
 
 void

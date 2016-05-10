@@ -90,18 +90,17 @@ twc_profile_save_data_file(struct t_twc_profile *profile)
 
 #ifdef TOXENCRYPTSAVE_ENABLED
     uint8_t enc_data[size + TOX_PASS_ENCRYPTION_EXTRA_LENGTH];
-    char *pw = weechat_config_string(profile->options[TWC_PROFILE_OPTION_PASSPHRASE]);
+    const char *pw
+        = weechat_config_string(profile->options[TWC_PROFILE_OPTION_PASSPHRASE]);
 
     if (pw)
     {
         pw = weechat_string_eval_expression(pw, NULL, NULL, NULL);
         if (!tox_pass_encrypt(data, size, (uint8_t *)pw, strlen(pw), enc_data, NULL))
         {
-            free(pw);
             weechat_printf(profile->buffer, "error encrypting data");
             return -1;
         }
-        free(pw);
         d = enc_data;
         size += TOX_PASS_ENCRYPTION_EXTRA_LENGTH;
     }
@@ -124,7 +123,7 @@ twc_profile_save_data_file(struct t_twc_profile *profile)
  * Callback when a profile's main buffer is closed. Unloads the profile.
  */
 int
-twc_profile_buffer_close_callback(void *data,
+twc_profile_buffer_close_callback(const void *pointer, void *data,
                                   struct t_gui_buffer *buffer)
 {
     struct t_twc_profile *profile = data;
@@ -281,8 +280,9 @@ twc_profile_load(struct t_twc_profile *profile)
     {
         // create main buffer
         profile->buffer = weechat_buffer_new(profile->name,
-                                             NULL, NULL,
-                                             twc_profile_buffer_close_callback, profile);
+                                             NULL, NULL, NULL,
+                                             twc_profile_buffer_close_callback,
+                                             profile, NULL);
         if (!(profile->buffer))
             return TWC_RC_ERROR;
     }
@@ -344,23 +344,18 @@ twc_profile_load(struct t_twc_profile *profile)
 
     if (data_size && tox_is_data_encrypted(data))
     {
-        char *pw = weechat_config_string(profile->options[TWC_PROFILE_OPTION_PASSPHRASE]);
+        const char *pw = weechat_config_string(profile->options[TWC_PROFILE_OPTION_PASSPHRASE]);
+
         if (pw)
         {
             // evaluate password option and duplicate as tox_*_decrypt wipes it
             pw = weechat_string_eval_expression(pw, NULL, NULL, NULL);
-        }
-
-        if (pw)
-        {
             if (!tox_pass_decrypt(data, data_size, (uint8_t *)pw, strlen(pw), dec_data, NULL))
             {
-                free(pw);
                 weechat_printf(profile->buffer, "%scould not decrypt Tox data file, aborting",
                                weechat_prefix("error"));
                 return TWC_RC_ERROR;
             }
-            free(pw);
             data_size -= TOX_PASS_ENCRYPTION_EXTRA_LENGTH;
         }
         options.savedata_data = dec_data;
@@ -414,7 +409,7 @@ twc_profile_load(struct t_twc_profile *profile)
         twc_bootstrap_random_node(profile->tox);
 
     // start tox_iterate loop
-    twc_do_timer_cb(profile, 0);
+    twc_do_timer_cb(profile, NULL, 0);
 
     // register Tox callbacks
     tox_callback_friend_message(profile->tox, twc_friend_message_callback, profile);
