@@ -126,7 +126,7 @@ int
 twc_profile_buffer_close_callback(const void *pointer, void *data,
                                   struct t_gui_buffer *buffer)
 {
-    struct t_twc_profile *profile = data;
+    struct t_twc_profile *profile = (void *)pointer;
 
     profile->buffer = NULL;
     twc_profile_unload(profile);
