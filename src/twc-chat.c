@@ -279,6 +279,7 @@ twc_chat_search_buffer(struct t_gui_buffer *buffer)
 void
 twc_chat_print_message(struct t_twc_chat *chat,
                        const char *tags,
+                       const char *color,
                        const char *sender,
                        const char *message,
                        enum TWC_MESSAGE_TYPE message_type)
@@ -287,14 +288,16 @@ twc_chat_print_message(struct t_twc_chat *chat,
     {
         case TWC_MESSAGE_TYPE_MESSAGE:
             weechat_printf_tags(chat->buffer, tags,
-                                "%s\t%s",
-                                sender, message);
+                                "%s%s%s\t%s",
+                                color, sender,
+                                weechat_color("reset"), message);
             break;
         case TWC_MESSAGE_TYPE_ACTION:
             weechat_printf_tags(chat->buffer, tags,
                                 "%s%s %s",
                                 weechat_prefix("action"),
-                                sender, message);
+                                color, sender,
+                                weechat_color("reset"), message);
             break;
     }
 }
@@ -312,7 +315,9 @@ twc_chat_send_message(struct t_twc_chat *chat, const char *message,
                                              chat->friend_number,
                                              message, message_type);
         char *name = twc_get_self_name_nt(chat->profile->tox);
-        twc_chat_print_message(chat, "", name, message, message_type);
+        twc_chat_print_message(chat, "",
+                               weechat_color("chat_nick_self"), name,
+                               message, message_type);
         free(name);
     }
     else if (chat->group_number >= 0)

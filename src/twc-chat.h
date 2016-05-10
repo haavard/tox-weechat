@@ -61,6 +61,7 @@ twc_chat_search_buffer(struct t_gui_buffer *target_buffer);
 void
 twc_chat_print_message(struct t_twc_chat *chat,
                        const char *tags,
+                       const char *color,
                        const char *sender,
                        const char *message,
                        enum TWC_MESSAGE_TYPE message_type);

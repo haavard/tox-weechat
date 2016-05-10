@@ -67,7 +67,7 @@ twc_friend_message_callback(Tox *tox, uint32_t friend_number,
     char *name = twc_get_name_nt(profile->tox, friend_number);
     char *message_nt = twc_null_terminate(message, length);
 
-    twc_chat_print_message(chat, "", name,
+    twc_chat_print_message(chat, "", weechat_color("chat_nick_other"), name,
                            message_nt, type);
 
     free(name);
@@ -256,7 +256,13 @@ twc_handle_group_message(Tox *tox,
     char *name = twc_get_peer_name_nt(profile->tox, group_number, peer_number);
     char *message_nt = twc_null_terminate(message, length);
 
-    twc_chat_print_message(chat, "", name,
+    const char *nick_color;
+    if (tox_group_peernumber_is_ours(tox, group_number, peer_number))
+        nick_color = weechat_color("chat_nick_self");
+    else
+        nick_color = weechat_info_get("nick_color", name);
+
+    twc_chat_print_message(chat, "", nick_color, name,
                            message_nt, message_type);
 
     free(name);
