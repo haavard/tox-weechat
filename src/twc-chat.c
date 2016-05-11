@@ -229,7 +229,7 @@ twc_chat_search_friend(struct t_twc_profile *profile,
 }
 
 /**
- * Find an existing chat object for a friend, and if not found, optionally
+ * Find an existing chat object for a group, and if not found, optionally
  * create a new one.
  */
 struct t_twc_chat *
