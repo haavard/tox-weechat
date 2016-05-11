@@ -25,11 +25,11 @@ extern struct t_weechat_plugin *weechat_plugin;
 /// Return codes used throughout Tox-WeeChat.
 enum t_twc_rc
 {
-    TWC_RC_OK,
+    TWC_RC_OK = 0,
     /// Generic error return code.
-    TWC_RC_ERROR,
+    TWC_RC_ERROR = -1,
     /// Malloc error return code.
-    TWC_RC_ERROR_MALLOC,
+    TWC_RC_ERROR_MALLOC = -2,
 };
 
 #endif // TOX_WEECHAT_H
