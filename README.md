@@ -13,7 +13,6 @@ future.
  - [x] Proxy support
  - [x] Multiple profiles
  - [x] Encrypted save files
- - [ ] Tox DNS
  - [ ] File transfer
  - [ ] WeeChat `/upgrade`
  - [ ] Audio/video
