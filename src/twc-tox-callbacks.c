@@ -22,6 +22,10 @@
 #include <weechat/weechat-plugin.h>
 #include <tox/tox.h>
 
+#ifdef TOXAV_ENABLED
+    #include <tox/toxav.h>
+#endif // TOXAV_ENABLED
+
 #include "twc.h"
 #include "twc-profile.h"
 #include "twc-chat.h"
@@ -209,9 +213,7 @@ twc_group_invite_callback(Tox *tox,
     char *friend_name = twc_get_name_nt(profile->tox, friend_number);
     struct t_twc_chat *friend_chat
         = twc_chat_search_friend(profile, friend_number, true);
-
-    int64_t rc = twc_group_chat_invite_add(profile, friend_number, type,
-                                           (uint8_t *)invite_data, length);
+    int64_t rc;
 
     char *type_str;
     switch (type)
@@ -224,25 +226,68 @@ twc_group_invite_callback(Tox *tox,
             type_str = "a group chat"; break;
     }
 
-    if (rc >= 0)
+    if (TWC_PROFILE_OPTION_BOOLEAN(profile, TWC_PROFILE_OPTION_AUTOJOIN))
     {
-        weechat_printf(friend_chat->buffer,
-                       "%s%s%s%s invites you to join %s. Type "
-                       "\"/group join %d\" to accept.",
-                       weechat_prefix("network"),
-                       weechat_color("chat_nick_other"), friend_name,
-                       weechat_color("reset"), type_str, rc);
+        switch (type)
+        {
+            case TOX_GROUPCHAT_TYPE_TEXT:
+                rc = tox_join_groupchat(tox, friend_number,
+                                        invite_data, length);
+                break;
+#ifdef TOXAV_ENABLED
+            case TOX_GROUPCHAT_TYPE_AV:
+                rc = toxav_join_av_groupchat(tox, friend_number,
+                                             invite_data, length,
+                                             NULL, NULL);
+                break;
+#endif
+            default:
+                rc = -1;
+                break;
+        }
+
+        if (rc >= 0)
+        {
+            weechat_printf(friend_chat->buffer,
+                           "%sWe joined the %s%s%s's invite to %s.",
+                           weechat_prefix("network"),
+                           weechat_color("chat_nick_other"), friend_name,
+                           weechat_color("reset"), type_str, rc);
+        }
+        else
+        {
+            weechat_printf(friend_chat->buffer,
+                           "%s%s%s%s invites you to join %s, but we failed to "
+                           "process the invite. Please try again.",
+                           weechat_prefix("network"),
+                           weechat_color("chat_nick_other"), friend_name,
+                           weechat_color("reset"), rc);
+        }
     }
     else
     {
-        weechat_printf(friend_chat->buffer,
-                       "%s%s%s%s invites you to join %s, but we failed to "
-                       "process the invite. Please try again.",
-                       weechat_prefix("network"),
-                       weechat_color("chat_nick_other"), friend_name,
-                       weechat_color("reset"), rc);
-    }
+        rc = twc_group_chat_invite_add(profile, friend_number, type,
+                                       (uint8_t *)invite_data, length);
 
+        if (rc >= 0)
+        {
+            weechat_printf(friend_chat->buffer,
+                           "%s%s%s%s invites you to join %s. Type "
+                           "\"/group join %d\" to accept.",
+                           weechat_prefix("network"),
+                           weechat_color("chat_nick_other"), friend_name,
+                           weechat_color("reset"), type_str, rc);
+        }
+        else
+        {
+            weechat_printf(friend_chat->buffer,
+                           "%s%s%s%s invites you to join %s, but we failed to "
+                           "process the invite. Please try again.",
+                           weechat_prefix("network"),
+                           weechat_color("chat_nick_other"), friend_name,
+                           weechat_color("reset"), rc);
+        }
+    }
     free(friend_name);
 }
 
