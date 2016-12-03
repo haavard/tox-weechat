@@ -287,13 +287,13 @@ twc_chat_print_message(struct t_twc_chat *chat,
     switch (message_type)
     {
         case TWC_MESSAGE_TYPE_MESSAGE:
-            weechat_printf_tags(chat->buffer, tags,
+            weechat_printf_date_tags(chat->buffer, 0, tags,
                                 "%s%s%s\t%s",
                                 color, sender,
                                 weechat_color("reset"), message);
             break;
         case TWC_MESSAGE_TYPE_ACTION:
-            weechat_printf_tags(chat->buffer, tags,
+            weechat_printf_date_tags(chat->buffer, 0, tags,
                                 "%s%s%s%s %s",
                                 weechat_prefix("action"),
                                 color, sender,
