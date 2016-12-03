@@ -54,5 +54,8 @@ twc_uint32_reverse_bytes(uint32_t num);
 unsigned long long
 twc_hash_tox_id(const uint8_t *tox_id);
 
+int
+twc_fit_utf8(const char *str, int max);
+
 #endif // TOX_WEECHAT_UTILS_H
 

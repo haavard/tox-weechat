@@ -58,21 +58,30 @@ twc_message_queue_add_friend_message(struct t_twc_profile *profile,
                                      const char *message,
                                      enum TWC_MESSAGE_TYPE message_type)
 {
-    struct t_twc_queued_message *queued_message
-        = malloc(sizeof(struct t_twc_queued_message));
+    int len = strlen(message);
+    while (len > 0)
+    {
+        int fit_len = twc_fit_utf8(message, TWC_MAX_FRIEND_MESSAGE_LENGTH);
 
-    time_t rawtime = time(NULL);
-    queued_message->time = malloc(sizeof(struct tm));
-    memcpy(queued_message->time, gmtime(&rawtime), sizeof(struct tm));
+        struct t_twc_queued_message *queued_message
+            = malloc(sizeof(struct t_twc_queued_message));
 
-    queued_message->message = strdup(message);
-    queued_message->message_type = message_type;
+        time_t rawtime = time(NULL);
+        queued_message->time = malloc(sizeof(struct tm));
+        memcpy(queued_message->time, gmtime(&rawtime), sizeof(struct tm));
 
-    // create a queue if needed and add message
-    struct t_twc_list *message_queue
-        = twc_message_queue_get_or_create(profile, friend_number);
-    twc_list_item_new_data_add(message_queue, queued_message);
+        queued_message->message = strndup(message, fit_len);
+        queued_message->message_type = message_type;
 
+        message += fit_len;
+        len -= fit_len;
+
+        // create a queue if needed and add message
+        struct t_twc_list *message_queue
+            = twc_message_queue_get_or_create(profile, friend_number);
+        twc_list_item_new_data_add(message_queue, queued_message);
+    }
+    
     // flush if friend is online
     if (profile->tox
         && (tox_friend_get_connection_status(profile->tox, friend_number, NULL) != TOX_CONNECTION_NONE))
@@ -88,6 +97,8 @@ twc_message_queue_flush_friend(struct t_twc_profile *profile,
 {
     struct t_twc_list *message_queue
         = twc_message_queue_get_or_create(profile, friend_number);
+    struct t_twc_chat *friend_chat
+        = twc_chat_search_friend(profile, friend_number, true);
 
     size_t index;
     struct t_twc_list_item *item;
@@ -106,14 +117,47 @@ twc_message_queue_flush_friend(struct t_twc_profile *profile,
                                       strlen(queued_message->message),
                                       &err);
 
-        if (err != TOX_ERR_FRIEND_SEND_MESSAGE_OK)
+        if (err == TOX_ERR_FRIEND_SEND_MESSAGE_FRIEND_NOT_CONNECTED)
         {
             // break if message send failed
             break;
         }
         else
         {
-            // message was sent, free it
+            char *err_str;
+            // check if error occured
+            switch (err)
+            {
+                case TOX_ERR_FRIEND_SEND_MESSAGE_TOO_LONG:
+                    err_str = "message too long";
+                    break;
+                case TOX_ERR_FRIEND_SEND_MESSAGE_NULL:
+                    err_str = "NULL fields for tox_friend_send_message";
+                    break;
+                case TOX_ERR_FRIEND_SEND_MESSAGE_FRIEND_NOT_FOUND:
+                    err_str = "friend not found";
+                    break;
+                case TOX_ERR_FRIEND_SEND_MESSAGE_SENDQ:
+                    err_str = "queue allocation error";
+                    break;
+                case TOX_ERR_FRIEND_SEND_MESSAGE_EMPTY:
+                    err_str = "tried to send empty message";
+                    break;
+                case TOX_ERR_FRIEND_SEND_MESSAGE_OK:
+                    err_str = "no error";
+                    break;
+                default:
+                    err_str = "unknown error";
+            }
+            if (err != TOX_ERR_FRIEND_SEND_MESSAGE_OK)
+            {
+                weechat_printf(friend_chat->buffer,
+                               "%s%sFailed to send message: %s%s",
+                               weechat_prefix("error"),
+                               weechat_color("highlight"),
+                               err_str,
+                               weechat_color("reset"));
+            }
             twc_message_queue_free_message(queued_message);
             item->queued_message = NULL;
         }

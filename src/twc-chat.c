@@ -309,6 +309,7 @@ void
 twc_chat_send_message(struct t_twc_chat *chat, const char *message,
                       enum TWC_MESSAGE_TYPE message_type)
 {
+    int64_t rc = 0;
     if (chat->friend_number >= 0)
     {
         twc_message_queue_add_friend_message(chat->profile,
@@ -323,11 +324,30 @@ twc_chat_send_message(struct t_twc_chat *chat, const char *message,
     else if (chat->group_number >= 0)
     {
         if (message_type == TWC_MESSAGE_TYPE_MESSAGE)
-            tox_group_message_send(chat->profile->tox, chat->group_number,
-                                   (uint8_t *)message, strlen(message));
+        {
+            int len = strlen(message);
+            while (len > 0)
+            {
+                int fit_len = twc_fit_utf8(message, TWC_MAX_GROUP_MESSAGE_LENGTH);
+                rc = tox_group_message_send(chat->profile->tox, chat->group_number,
+                                            (uint8_t *)message, fit_len);
+                if (rc < 0)
+                    break;
+                message += fit_len;
+                len -= fit_len;
+            }
+        }
         else if (message_type == TWC_MESSAGE_TYPE_ACTION)
-            tox_group_action_send(chat->profile->tox, chat->group_number,
-                                  (uint8_t *)message, strlen(message));
+            rc = tox_group_action_send(chat->profile->tox, chat->group_number,
+                                      (uint8_t *)message, strlen(message));
+        if (rc < 0)
+        {
+            weechat_printf(chat->buffer,
+                           "%s%sFailed to send message%s",
+                           weechat_prefix("error"),
+                           weechat_color("chat_highlight"),
+                           weechat_color("reset"));
+        }
     }
 }
 

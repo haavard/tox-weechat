@@ -198,3 +198,12 @@ twc_hash_tox_id(const uint8_t *tox_id)
 
     return hash;
 }
+
+/**
+ * Fit correct unicode string into max chars. Return number of bytes
+ */
+int
+twc_fit_utf8(const char *str, int max)
+{
+    return weechat_utf8_real_pos(str, weechat_utf8_strnlen(str, max));
+}
