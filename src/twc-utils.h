@@ -51,9 +51,6 @@ twc_get_friend_id_short(Tox *tox, int32_t friend_number);
 uint32_t
 twc_uint32_reverse_bytes(uint32_t num);
 
-unsigned long long
-twc_hash_tox_id(const uint8_t *tox_id);
-
 int
 twc_fit_utf8(const char *str, int max);
 

@@ -84,6 +84,9 @@ twc_connection_status_callback(Tox *tox, uint32_t friend_number,
 {
     struct t_twc_profile *profile = data;
     char *name = twc_get_name_nt(profile->tox, friend_number);
+    struct t_twc_chat *chat = twc_chat_search_friend(profile,
+                                                     friend_number,
+                                                     false);
 
     // TODO: print in friend's buffer if it exists
     if (status == 0)
@@ -92,6 +95,13 @@ twc_connection_status_callback(Tox *tox, uint32_t friend_number,
                        "%s%s just went offline.",
                        weechat_prefix("network"),
                        name);
+        if (chat)
+        {
+            weechat_printf(chat->buffer,
+                           "%s%s just went offline.",
+                           weechat_prefix("network"),
+                           name);
+        }
     }
     else if (status == 1)
     {
@@ -99,6 +109,13 @@ twc_connection_status_callback(Tox *tox, uint32_t friend_number,
                        "%s%s just came online.",
                        weechat_prefix("network"),
                        name);
+        if (chat)
+        {
+            weechat_printf(chat->buffer,
+                           "%s%s just came online.",
+                           weechat_prefix("network"),
+                           name);
+        }
         twc_message_queue_flush_friend(profile, friend_number);
     }
     free(name);
@@ -365,34 +382,26 @@ twc_group_namelist_change_callback(Tox *tox,
     char *name = twc_get_peer_name_nt(profile->tox, group_number, peer_number);
     char *prev_name = NULL;
 
-    uint8_t pubkey[TOX_PUBLIC_KEY_SIZE];
-    int pkrc = tox_group_peer_pubkey(profile->tox, group_number,
-                                     peer_number, pubkey);
-    if (pkrc == 0)
+    if (change_type == TOX_CHAT_CHANGE_PEER_DEL
+        || change_type == TOX_CHAT_CHANGE_PEER_NAME)
     {
-        if (change_type == TOX_CHAT_CHANGE_PEER_DEL
-            || change_type == TOX_CHAT_CHANGE_PEER_NAME)
+        nick = weechat_hashtable_get(chat->nicks, &peer_number);
+        if (nick)
         {
-            nick = weechat_hashtable_get(chat->nicks, pubkey);
-            if (nick)
-            {
-                prev_name = strdup(weechat_nicklist_nick_get_string(chat->buffer,
-                                                                    nick, "name"));
-                weechat_nicklist_remove_nick(chat->buffer, nick);
-                weechat_hashtable_remove(chat->nicks, pubkey);
-            }
+            prev_name = strdup(weechat_nicklist_nick_get_string(chat->buffer,
+                                                                nick, "name"));
+            weechat_nicklist_remove_nick(chat->buffer, nick);
+            weechat_hashtable_remove(chat->nicks, &peer_number);
         }
+    }
 
-        if (change_type == TOX_CHAT_CHANGE_PEER_ADD
-            || change_type == TOX_CHAT_CHANGE_PEER_NAME)
-        {
-            nick = weechat_nicklist_add_nick(chat->buffer, chat->nicklist_group,
-                                             name, NULL, NULL, NULL, 1);
-            if (nick)
-                weechat_hashtable_set_with_size(chat->nicks,
-                                                pubkey, TOX_PUBLIC_KEY_SIZE,
-                                                nick, 0);
-        }
+    if (change_type == TOX_CHAT_CHANGE_PEER_ADD
+        || change_type == TOX_CHAT_CHANGE_PEER_NAME)
+    {
+        nick = weechat_nicklist_add_nick(chat->buffer, chat->nicklist_group,
+                                         name, NULL, NULL, NULL, 1);
+        if (nick)
+            weechat_hashtable_set(chat->nicks, &peer_number, nick);
     }
 
     switch (change_type)

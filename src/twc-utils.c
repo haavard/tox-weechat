@@ -123,7 +123,7 @@ twc_get_status_message_nt(Tox *tox, int32_t friend_number)
 char *
 twc_get_peer_name_nt(Tox *tox, int32_t group_number, int32_t peer_number)
 {
-    uint8_t name[TOX_MAX_NAME_LENGTH] = {0};
+    uint8_t name[TOX_MAX_NAME_LENGTH+1] = {0};
 
     int length = tox_group_peername(tox, group_number, peer_number, name);
     if (length >= 0)
@@ -183,20 +183,6 @@ twc_uint32_reverse_bytes(uint32_t num)
     res += num & 0xFF;
 
     return res;
-}
-
-/**
- * Hash a Tox ID of size TOX_PUBLIC_KEY_SIZE bytes using a modified djb2 hash.
- */
-unsigned long long
-twc_hash_tox_id(const uint8_t *tox_id)
-{
-    unsigned long long hash = 5381;
-
-    for (size_t i = 0; i < TOX_PUBLIC_KEY_SIZE; ++i)
-        hash ^= (hash << 5) + (hash >> 2) + tox_id[i];
-
-    return hash;
 }
 
 /**
