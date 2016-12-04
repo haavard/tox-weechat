@@ -154,7 +154,7 @@ twc_message_queue_flush_friend(struct t_twc_profile *profile,
                 weechat_printf(friend_chat->buffer,
                                "%s%sFailed to send message: %s%s",
                                weechat_prefix("error"),
-                               weechat_color("highlight"),
+                               weechat_color("chat_highlight"),
                                err_str,
                                weechat_color("reset"));
             }

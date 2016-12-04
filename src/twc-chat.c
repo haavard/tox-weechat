@@ -297,7 +297,7 @@ twc_chat_send_message(struct t_twc_chat *chat, const char *message,
                                              chat->friend_number,
                                              message, message_type);
         char *name = twc_get_self_name_nt(chat->profile->tox);
-        twc_chat_print_message(chat, "",
+        twc_chat_print_message(chat, "notify_message",
                                weechat_color("chat_nick_self"), name,
                                message, message_type);
         free(name);

@@ -71,7 +71,7 @@ twc_friend_message_callback(Tox *tox, uint32_t friend_number,
     char *name = twc_get_name_nt(profile->tox, friend_number);
     char *message_nt = twc_null_terminate(message, length);
 
-    twc_chat_print_message(chat, "", weechat_color("chat_nick_other"), name,
+    twc_chat_print_message(chat, "notify_private", weechat_color("chat_nick_other"), name,
                            message_nt, type);
 
     free(name);
@@ -321,7 +321,9 @@ twc_handle_group_message(Tox *tox,
                                                     group_number,
                                                     true);
 
+    char myname[TOX_MAX_NAME_LENGTH];
     char *name = twc_get_peer_name_nt(profile->tox, group_number, peer_number);
+    char *tags = "notify_message";
     char *message_nt = twc_null_terminate(message, length);
 
     const char *nick_color;
@@ -330,7 +332,12 @@ twc_handle_group_message(Tox *tox,
     else
         nick_color = weechat_info_get("nick_color", name);
 
-    twc_chat_print_message(chat, "", nick_color, name,
+    tox_self_get_name(tox, (uint8_t *)myname);
+    myname[tox_self_get_name_size(tox)] = '\0';
+
+    if ((myname[0] != '\0') && weechat_string_has_highlight(message_nt, myname))
+        tags = "notify_highlight";
+    twc_chat_print_message(chat, tags, nick_color, name,
                            message_nt, message_type);
 
     free(name);
