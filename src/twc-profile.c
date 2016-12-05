@@ -285,6 +285,10 @@ twc_profile_load(struct t_twc_profile *profile)
                                              profile, NULL);
         if (!(profile->buffer))
             return TWC_RC_ERROR;
+
+        profile->nicklist_group = weechat_nicklist_add_group(profile->buffer, NULL,
+                                                             NULL, NULL, true);
+        weechat_buffer_set(profile->buffer, "nicklist", "1");
     }
 
     weechat_printf(profile->buffer,

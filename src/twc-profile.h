@@ -51,6 +51,7 @@ struct t_twc_profile
     int tox_online;
 
     struct t_gui_buffer *buffer;
+    struct t_gui_nick_group *nicklist_group;
     struct t_hook *tox_do_timer;
 
     struct t_twc_list *chats;

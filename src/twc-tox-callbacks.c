@@ -84,6 +84,7 @@ twc_connection_status_callback(Tox *tox, uint32_t friend_number,
 {
     struct t_twc_profile *profile = data;
     char *name = twc_get_name_nt(profile->tox, friend_number);
+    struct t_gui_nick *nick = NULL;
     struct t_twc_chat *chat = twc_chat_search_friend(profile,
                                                      friend_number,
                                                      false);
@@ -91,6 +92,11 @@ twc_connection_status_callback(Tox *tox, uint32_t friend_number,
     // TODO: print in friend's buffer if it exists
     if (status == 0)
     {
+        nick = weechat_nicklist_search_nick(profile->buffer,
+                                            profile->nicklist_group, name);
+        if (nick)
+            weechat_nicklist_remove_nick(profile->buffer, nick);
+
         weechat_printf(profile->buffer,
                        "%s%s just went offline.",
                        weechat_prefix("network"),
@@ -105,6 +111,9 @@ twc_connection_status_callback(Tox *tox, uint32_t friend_number,
     }
     else if (status == 1)
     {
+        weechat_nicklist_add_nick(profile->buffer, profile->nicklist_group,
+                                  name, NULL, NULL, NULL, 1);
+
         weechat_printf(profile->buffer,
                        "%s%s just came online.",
                        weechat_prefix("network"),
@@ -127,6 +136,7 @@ twc_name_change_callback(Tox *tox, uint32_t friend_number,
                          void *data)
 {
     struct t_twc_profile *profile = data;
+    struct t_gui_nick *nick = NULL;
     struct t_twc_chat *chat = twc_chat_search_friend(profile,
                                                      friend_number,
                                                      false);
@@ -145,6 +155,14 @@ twc_name_change_callback(Tox *tox, uint32_t friend_number,
                            weechat_prefix("network"),
                            old_name, new_name);
         }
+
+        nick = weechat_nicklist_search_nick(profile->buffer,
+                                            profile->nicklist_group, old_name);
+        if (nick)
+            weechat_nicklist_remove_nick(profile->buffer, nick);
+
+        weechat_nicklist_add_nick(profile->buffer, profile->nicklist_group,
+                                  new_name, NULL, NULL, NULL, 1);
 
         weechat_printf(profile->buffer,
                        "%s%s is now known as %s",
