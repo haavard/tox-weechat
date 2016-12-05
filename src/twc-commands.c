@@ -464,7 +464,7 @@ twc_cmd_friend(const void *pointer, void *data, struct t_gui_buffer *buffer,
 
             if (accept)
             {
-                if (twc_friend_request_accept(request))
+                if (!twc_friend_request_accept(request))
                 {
                     weechat_printf(profile->buffer,
                                    "%sCould not accept friend request from %s",
