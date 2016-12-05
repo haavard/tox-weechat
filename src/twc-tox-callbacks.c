@@ -211,7 +211,7 @@ twc_friend_request_callback(Tox *tox, const uint8_t *public_key,
 
     if (rc == -1)
     {
-        weechat_printf(profile->buffer,
+        weechat_printf_date_tags(profile->buffer, 0, "notify_private",
                        "%sReceived a friend request, but your friend request list is full!",
                        weechat_prefix("warning"));
     }
@@ -220,7 +220,7 @@ twc_friend_request_callback(Tox *tox, const uint8_t *public_key,
         char hex_address[TOX_PUBLIC_KEY_SIZE * 2 + 1];
         twc_bin2hex(public_key, TOX_PUBLIC_KEY_SIZE, hex_address);
 
-        weechat_printf(profile->buffer,
+        weechat_printf_date_tags(profile->buffer, 0, "notify_private",
                        "%sReceived a friend request from %s with message \"%s\"; "
                        "accept it with \"/friend accept %d\"",
                        weechat_prefix("network"),
@@ -228,7 +228,7 @@ twc_friend_request_callback(Tox *tox, const uint8_t *public_key,
 
         if (rc == -2)
         {
-            weechat_printf(profile->buffer,
+            weechat_printf_date_tags(profile->buffer, 0, "notify_private",
                            "%sFailed to save friend request, try manually "
                            "accepting with /friend add",
                            weechat_prefix("error"));

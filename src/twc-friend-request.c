@@ -67,7 +67,7 @@ twc_friend_request_add(struct t_twc_profile *profile,
 bool
 twc_friend_request_accept(struct t_twc_friend_request *request)
 {
-    TOX_ERR_FRIEND_ADD err;
+    TOX_ERR_FRIEND_ADD err = TOX_ERR_FRIEND_ADD_OK;
     tox_friend_add_norequest(request->profile->tox, request->tox_id, &err);
     twc_friend_request_remove(request);
 
