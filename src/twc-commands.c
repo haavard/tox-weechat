@@ -380,7 +380,7 @@ twc_cmd_friend(const void *pointer, void *data, struct t_gui_buffer *buffer,
         TWC_CHECK_FRIEND_NUMBER(profile, friend_number, argv[2]);
 
         char *name = twc_get_name_nt(profile->tox, friend_number);
-        if (tox_friend_delete(profile->tox, friend_number, NULL) == 0)
+        if (tox_friend_delete(profile->tox, friend_number, NULL))
         {
             weechat_printf(profile->buffer,
                            "%sRemoved %s from friend list.",
