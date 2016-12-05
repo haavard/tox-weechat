@@ -242,7 +242,7 @@ twc_cmd_friend(const void *pointer, void *data, struct t_gui_buffer *buffer,
         }
 
         weechat_printf(profile->buffer,
-                       "%s[#] Name [Tox ID (short)]",
+                       "%s[#] Name [Tox ID (short)] Status",
                        weechat_prefix("network"));
 
         for (size_t i = 0; i < friend_count; ++i)
@@ -252,12 +252,16 @@ twc_cmd_friend(const void *pointer, void *data, struct t_gui_buffer *buffer,
             char *hex_address = twc_get_friend_id_short(profile->tox,
                                                         friend_number);
 
+            char *status = twc_get_status_message_nt(profile->tox, friend_number);
+            char *online_color =
+                (tox_friend_get_connection_status(profile->tox, friend_number, NULL) != TOX_CONNECTION_NONE) ? "chat_nick" : "chat_nick_offline";
             weechat_printf(profile->buffer,
-                           "%s[%d] %s [%s]",
+                           "%s[%d] %s%s [%s]%s %s",
                            weechat_prefix("network"),
-                           friend_number, name, hex_address);
+                           friend_number, weechat_color(online_color), name, hex_address, weechat_color("reset"), status);
 
             free(name);
+            free(status);
             free(hex_address);
         }
 
