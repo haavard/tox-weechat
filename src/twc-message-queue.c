@@ -97,9 +97,6 @@ twc_message_queue_flush_friend(struct t_twc_profile *profile,
 {
     struct t_twc_list *message_queue
         = twc_message_queue_get_or_create(profile, friend_number);
-    struct t_twc_chat *friend_chat
-        = twc_chat_search_friend(profile, friend_number, true);
-
     size_t index;
     struct t_twc_list_item *item;
     twc_list_foreach(message_queue, index, item)
@@ -151,6 +148,9 @@ twc_message_queue_flush_friend(struct t_twc_profile *profile,
             }
             if (err != TOX_ERR_FRIEND_SEND_MESSAGE_OK)
             {
+                struct t_twc_chat *friend_chat
+                    = twc_chat_search_friend(profile, friend_number, true);
+
                 weechat_printf(friend_chat->buffer,
                                "%s%sFailed to send message: %s%s",
                                weechat_prefix("error"),
