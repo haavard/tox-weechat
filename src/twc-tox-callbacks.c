@@ -383,7 +383,7 @@ twc_handle_group_message(Tox *tox,
                                                     group_number,
                                                     true);
 
-    char myname[TOX_MAX_NAME_LENGTH];
+    char *myname = twc_get_self_name_nt(profile->tox);
     char *name = twc_get_peer_name_nt(profile->tox, group_number, peer_number);
     char *tags = "notify_message";
     char *message_nt = twc_null_terminate(message, length);
@@ -394,15 +394,13 @@ twc_handle_group_message(Tox *tox,
     else
         nick_color = weechat_info_get("nick_color", name);
 
-    tox_self_get_name(tox, (uint8_t *)myname);
-    myname[tox_self_get_name_size(tox)] = '\0';
-
-    if ((myname[0] != '\0') && weechat_string_has_highlight(message_nt, myname))
+    if (weechat_string_has_highlight(message_nt, myname))
         tags = "notify_highlight";
     twc_chat_print_message(chat, tags, nick_color, name,
                            message_nt, message_type);
 
     free(name);
+    free(myname);
     free(message_nt);
 }
 
