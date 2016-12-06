@@ -62,9 +62,24 @@ twc_chat_new(struct t_twc_profile *profile, const char *name)
     size_t full_name_size = strlen(profile->name) + 1 + strlen(name) + 1;
     char *full_name = malloc(full_name_size);
     snprintf(full_name, full_name_size, "%s/%s", profile->name, name);
-    chat->buffer = weechat_buffer_new(full_name,
-                                      twc_chat_buffer_input_callback, chat, NULL,
-                                      twc_chat_buffer_close_callback, chat, NULL);
+    chat->buffer = weechat_buffer_search("tox", full_name);
+    if (!(chat->buffer))
+    {
+        chat->buffer = weechat_buffer_new(full_name,
+                                          twc_chat_buffer_input_callback, chat, NULL,
+                                          twc_chat_buffer_close_callback, chat, NULL);
+    }
+    else
+    {
+        weechat_buffer_set_pointer(chat->buffer,
+                                   "input_callback",
+                                   twc_chat_buffer_input_callback);
+        weechat_buffer_set_pointer(chat->buffer, "input_callback_pointer", chat);
+        weechat_buffer_set_pointer(chat->buffer,
+                                   "close_callback",
+                                   twc_chat_buffer_close_callback);
+        weechat_buffer_set_pointer(chat->buffer, "close_callback_pointer", chat);
+    }
     free(full_name);
 
     if (!(chat->buffer))
@@ -380,6 +395,7 @@ twc_chat_buffer_close_callback(const void *pointer, void *data,
 void
 twc_chat_free(struct t_twc_chat *chat)
 {
+    weechat_nicklist_remove_all(chat->buffer);
     if (chat->nicks)
         weechat_hashtable_free(chat->nicks);
     free(chat);
