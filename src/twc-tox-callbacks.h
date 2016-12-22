@@ -28,9 +28,8 @@ twc_do_timer_cb(const void *pointer, void *data,
 
 void
 twc_friend_message_callback(Tox *tox, uint32_t friend_number,
-                            TOX_MESSAGE_TYPE type,
-                            const uint8_t *message, size_t length,
-                            void *data);
+                            TOX_MESSAGE_TYPE type, const uint8_t *message,
+                            size_t length, void *data);
 
 void
 twc_connection_status_callback(Tox *tox, uint32_t friend_number,
@@ -57,32 +56,26 @@ twc_friend_request_callback(Tox *tox, const uint8_t *public_key,
 
 void
 twc_group_invite_callback(Tox *tox,
-                          int32_t friend_number, uint8_t type,
-                          const uint8_t *invite_data, uint16_t length,
+                          uint32_t friend_number, TOX_CONFERENCE_TYPE type,
+                          const uint8_t *invite_data, size_t length,
                           void *data);
 
 void
 twc_group_message_callback(Tox *tox,
-                           int32_t group_number, int32_t peer_number,
-                           const uint8_t *message, uint16_t length,
-                           void *data);
-
-void
-twc_group_action_callback(Tox *tox,
-                          int32_t group_number, int32_t peer_number,
-                          const uint8_t *message, uint16_t length,
-                          void *data);
+                           uint32_t group_number, uint32_t peer_number,
+                           TOX_MESSAGE_TYPE type, const uint8_t *message,
+                           size_t length, void *data);
 
 void
 twc_group_namelist_change_callback(Tox *tox,
-                                   int group_number, int peer_number,
-                                   uint8_t change_type,
+                                   uint32_t group_number, uint32_t peer_number,
+                                   TOX_CONFERENCE_STATE_CHANGE change_type,
                                    void *data);
 
 void
 twc_group_title_callback(Tox *tox,
-                         int group_number, int peer_number,
-                         const uint8_t *title, uint8_t length,
+                         uint32_t group_number, uint32_t peer_number,
+                         const uint8_t *title, size_t length,
                          void *data);
 
 #endif // TOX_WEECHAT_TOX_CALLBACKS_H

@@ -43,7 +43,7 @@ twc_do_timer_cb(const void *pointer, void *data,
     /* TODO: don't strip the const */
     struct t_twc_profile *profile = (void *)pointer;
 
-    tox_iterate(profile->tox);
+    tox_iterate(profile->tox, profile);
     struct t_hook *hook = weechat_hook_timer(tox_iteration_interval(profile->tox),
                                              0, 1, twc_do_timer_cb, profile, NULL);
     profile->tox_do_timer = hook;
@@ -240,10 +240,11 @@ twc_friend_request_callback(Tox *tox, const uint8_t *public_key,
 
 void
 twc_group_invite_callback(Tox *tox,
-                          int32_t friend_number, uint8_t type,
-                          const uint8_t *invite_data, uint16_t length,
+                          uint32_t friend_number, TOX_CONFERENCE_TYPE type,
+                          const uint8_t *invite_data, size_t length,
                           void *data)
 {
+    TOX_ERR_CONFERENCE_JOIN err = TOX_ERR_CONFERENCE_JOIN_OK;
     struct t_twc_profile *profile = data;
     char *friend_name = twc_get_name_nt(profile->tox, friend_number);
     struct t_twc_chat *friend_chat
@@ -254,10 +255,10 @@ twc_group_invite_callback(Tox *tox,
     char *type_str;
     switch (type)
     {
-        case TOX_GROUPCHAT_TYPE_TEXT:
+        case TOX_CONFERENCE_TYPE_TEXT:
             type_str = "a text-only group chat"; break;
-        case TOX_GROUPCHAT_TYPE_AV:
-            type_str = "an audio/video group chat"; break;
+        case TOX_CONFERENCE_TYPE_AV:
+            type_str = "an audio/vikdeo group chat"; break;
         default:
             type_str = "a group chat"; break;
     }
@@ -266,12 +267,12 @@ twc_group_invite_callback(Tox *tox,
     {
         switch (type)
         {
-            case TOX_GROUPCHAT_TYPE_TEXT:
-                rc = tox_join_groupchat(tox, friend_number,
-                                        invite_data, length);
+            case TOX_CONFERENCE_TYPE_TEXT:
+                rc = tox_conference_join(tox, friend_number,
+                                         invite_data, length, &err);
                 break;
 #ifdef TOXAV_ENABLED
-            case TOX_GROUPCHAT_TYPE_AV:
+            case TOX_CONFERENCE_TYPE_AV:
                 rc = toxav_join_av_groupchat(tox, friend_number,
                                              invite_data, length,
                                              NULL, NULL);
@@ -282,7 +283,7 @@ twc_group_invite_callback(Tox *tox,
                 break;
         }
 
-        if (rc >= 0)
+        if (rc >= 0 && err == TOX_ERR_CONFERENCE_JOIN_OK)
         {
             tags = "notify_private";
             if (friend_chat)
@@ -353,10 +354,10 @@ twc_group_invite_callback(Tox *tox,
             {
                 weechat_printf_date_tags(friend_chat->buffer, 0, tags,
                                "%s%s%s%s invites you to join %s, but we failed to "
-                               "process the invite. Please try again.",
+                               "process the invite with error %d. Please try again.",
                                weechat_prefix("network"),
                                weechat_color("chat_nick_other"), friend_name,
-                               weechat_color("reset"), rc);
+                               weechat_color("reset"), rc, err);
                 tags = "";
             }
             weechat_printf_date_tags(profile->buffer, 0, tags,
@@ -375,8 +376,10 @@ twc_handle_group_message(Tox *tox,
                          int32_t group_number, int32_t peer_number,
                          const uint8_t *message, uint16_t length,
                          void *data,
-                         enum TWC_MESSAGE_TYPE message_type)
+                         TOX_MESSAGE_TYPE message_type)
 {
+    TOX_ERR_CONFERENCE_PEER_QUERY err = TOX_ERR_CONFERENCE_PEER_QUERY_OK;
+    bool rc;
     struct t_twc_profile *profile = data;
 
     struct t_twc_chat *chat = twc_chat_search_group(profile,
@@ -389,7 +392,8 @@ twc_handle_group_message(Tox *tox,
     char *message_nt = twc_null_terminate(message, length);
 
     const char *nick_color;
-    if (tox_group_peernumber_is_ours(tox, group_number, peer_number))
+    rc = tox_conference_peer_number_is_ours(tox, group_number, peer_number, &err);
+    if (rc && (err == TOX_ERR_CONFERENCE_PEER_QUERY_OK))
         nick_color = weechat_color("chat_nick_self");
     else
         nick_color = weechat_info_get("nick_color", name);
@@ -406,9 +410,9 @@ twc_handle_group_message(Tox *tox,
 
 void
 twc_group_message_callback(Tox *tox,
-                           int32_t group_number, int32_t peer_number,
-                           const uint8_t *message, uint16_t length,
-                           void *data)
+                           uint32_t group_number, uint32_t peer_number,
+                           TOX_MESSAGE_TYPE type, const uint8_t *message,
+                           size_t length, void *data)
 {
     twc_handle_group_message(tox,
                              group_number,
@@ -416,28 +420,13 @@ twc_group_message_callback(Tox *tox,
                              message,
                              length,
                              data,
-                             TWC_MESSAGE_TYPE_MESSAGE);
-}
-
-void
-twc_group_action_callback(Tox *tox,
-                          int32_t group_number, int32_t peer_number,
-                          const uint8_t *message, uint16_t length,
-                          void *data)
-{
-    twc_handle_group_message(tox,
-                             group_number,
-                             peer_number,
-                             message,
-                             length,
-                             data,
-                             TWC_MESSAGE_TYPE_ACTION);
+                             type);
 }
 
 void
 twc_group_namelist_change_callback(Tox *tox,
-                                   int group_number, int peer_number,
-                                   uint8_t change_type,
+                                   uint32_t group_number, uint32_t peer_number,
+                                   TOX_CONFERENCE_STATE_CHANGE change_type,
                                    void *data)
 {
     struct t_twc_profile *profile = data;
@@ -449,8 +438,8 @@ twc_group_namelist_change_callback(Tox *tox,
     char *name = twc_get_peer_name_nt(profile->tox, group_number, peer_number);
     char *prev_name = NULL;
 
-    if (change_type == TOX_CHAT_CHANGE_PEER_DEL
-        || change_type == TOX_CHAT_CHANGE_PEER_NAME)
+    if (change_type == TOX_CONFERENCE_STATE_CHANGE_PEER_EXIT
+        || change_type == TOX_CONFERENCE_STATE_CHANGE_PEER_NAME_CHANGE)
     {
         nick = weechat_hashtable_get(chat->nicks, &peer_number);
         if (nick)
@@ -462,8 +451,8 @@ twc_group_namelist_change_callback(Tox *tox,
         }
     }
 
-    if (change_type == TOX_CHAT_CHANGE_PEER_ADD
-        || change_type == TOX_CHAT_CHANGE_PEER_NAME)
+    if (change_type == TOX_CONFERENCE_STATE_CHANGE_PEER_JOIN
+        || change_type == TOX_CONFERENCE_STATE_CHANGE_PEER_NAME_CHANGE)
     {
         nick = weechat_nicklist_add_nick(chat->buffer, chat->nicklist_group,
                                          name, NULL, NULL, NULL, 1);
@@ -473,17 +462,17 @@ twc_group_namelist_change_callback(Tox *tox,
 
     switch (change_type)
     {
-        case TOX_CHAT_CHANGE_PEER_NAME:
+        case TOX_CONFERENCE_STATE_CHANGE_PEER_NAME_CHANGE:
             if (prev_name && name)
                 weechat_printf(chat->buffer, "%s%s is now known as %s",
                                weechat_prefix("network"), prev_name, name);
             break;
-        case TOX_CHAT_CHANGE_PEER_ADD:
+        case TOX_CONFERENCE_STATE_CHANGE_PEER_JOIN:
             if (name)
                 weechat_printf(chat->buffer, "%s%s just joined the group chat",
                                weechat_prefix("join"), name);
             break;
-        case TOX_CHAT_CHANGE_PEER_DEL:
+        case TOX_CONFERENCE_STATE_CHANGE_PEER_EXIT:
             if (prev_name)
                 weechat_printf(chat->buffer, "%s%s just left the group chat",
                                weechat_prefix("quit"), prev_name);
@@ -496,8 +485,8 @@ twc_group_namelist_change_callback(Tox *tox,
 
 void
 twc_group_title_callback(Tox *tox,
-                         int group_number, int peer_number,
-                         const uint8_t *title, uint8_t length,
+                         uint32_t group_number, uint32_t peer_number,
+                         const uint8_t *title, size_t length,
                          void *data)
 {
     struct t_twc_profile *profile = data;
@@ -506,14 +495,11 @@ twc_group_title_callback(Tox *tox,
                                                     true);
     twc_chat_queue_refresh(chat);
 
-    if (peer_number >= 0)
-    {
-        char *name = twc_get_peer_name_nt(profile->tox, group_number, peer_number);
+    char *name = twc_get_peer_name_nt(profile->tox, group_number, peer_number);
 
-        char *topic = strndup((char *)title, length);
-        weechat_printf(chat->buffer, "%s%s has changed the topic to \"%s\"",
-                       weechat_prefix("network"), name, topic);
-        free(topic);
-    }
+    char *topic = strndup((char *)title, length);
+    weechat_printf(chat->buffer, "%s%s has changed the topic to \"%s\"",
+                   weechat_prefix("network"), name, topic);
+    free(topic);
 }
 

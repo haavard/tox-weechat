@@ -29,12 +29,6 @@ extern const char *twc_tag_unsent_message;
 extern const char *twc_tag_sent_message;
 extern const char *twc_tag_received_message;
 
-enum TWC_MESSAGE_TYPE
-{
-    TWC_MESSAGE_TYPE_MESSAGE,
-    TWC_MESSAGE_TYPE_ACTION,
-};
-
 struct t_twc_chat
 {
     struct t_twc_profile *profile;
@@ -64,11 +58,11 @@ twc_chat_print_message(struct t_twc_chat *chat,
                        const char *color,
                        const char *sender,
                        const char *message,
-                       enum TWC_MESSAGE_TYPE message_type);
+                       TOX_MESSAGE_TYPE message_type);
 
 void
 twc_chat_send_message(struct t_twc_chat *chat, const char *message,
-                      enum TWC_MESSAGE_TYPE message_type);
+                      TOX_MESSAGE_TYPE message_type);
 
 void
 twc_chat_queue_refresh(struct t_twc_chat *chat);

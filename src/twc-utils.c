@@ -124,10 +124,17 @@ char *
 twc_get_peer_name_nt(Tox *tox, int32_t group_number, int32_t peer_number)
 {
     uint8_t name[TOX_MAX_NAME_LENGTH+1] = {0};
+    TOX_ERR_CONFERENCE_PEER_QUERY err = TOX_ERR_CONFERENCE_PEER_QUERY_OK;
 
-    int length = tox_group_peername(tox, group_number, peer_number, name);
-    if (length >= 0)
-        return twc_null_terminate(name, length);
+    int length = tox_conference_peer_get_name_size(tox, group_number, peer_number, &err);
+    if ((err == TOX_ERR_CONFERENCE_PEER_QUERY_OK) && (length <= TOX_MAX_NAME_LENGTH))
+    {
+        tox_conference_peer_get_name(tox, group_number, peer_number, name, &err);
+        if (err == TOX_ERR_CONFERENCE_PEER_QUERY_OK)
+            return twc_null_terminate(name, length);
+        else
+            return "<unknown>";
+    }
     else
         return "<unknown>";
 }

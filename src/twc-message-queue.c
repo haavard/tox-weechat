@@ -56,7 +56,7 @@ void
 twc_message_queue_add_friend_message(struct t_twc_profile *profile,
                                      int32_t friend_number,
                                      const char *message,
-                                     enum TWC_MESSAGE_TYPE message_type)
+                                     TOX_MESSAGE_TYPE message_type)
 {
     int len = strlen(message);
     while (len > 0)
@@ -107,9 +107,7 @@ twc_message_queue_flush_friend(struct t_twc_profile *profile,
         TOX_ERR_FRIEND_SEND_MESSAGE err;
         (void)tox_friend_send_message(profile->tox,
                                       friend_number,
-                                      queued_message->message_type == TWC_MESSAGE_TYPE_MESSAGE?
-                                        TOX_MESSAGE_TYPE_NORMAL:
-                                        TOX_MESSAGE_TYPE_ACTION,
+                                      queued_message->message_type,
                                       (uint8_t *)queued_message->message,
                                       strlen(queued_message->message),
                                       &err);
