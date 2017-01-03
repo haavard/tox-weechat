@@ -133,11 +133,7 @@ twc_chat_new_group(struct t_twc_profile *profile, int32_t group_number)
 
         chat->nicklist_group = weechat_nicklist_add_group(chat->buffer, NULL,
                                                           NULL, NULL, true);
-        chat->nicks = weechat_hashtable_new(32,
-                                            WEECHAT_HASHTABLE_INTEGER,
-                                            WEECHAT_HASHTABLE_POINTER,
-                                            NULL,
-                                            NULL);
+        chat->nicks = weechat_list_new();
 
         weechat_buffer_set(chat->buffer, "nicklist", "1");
     }
@@ -401,7 +397,10 @@ twc_chat_free(struct t_twc_chat *chat)
 {
     weechat_nicklist_remove_all(chat->buffer);
     if (chat->nicks)
-        weechat_hashtable_free(chat->nicks);
+    {
+        weechat_list_remove_all(chat->nicks);
+        weechat_list_free(chat->nicks);
+    }
     free(chat);
 }
 

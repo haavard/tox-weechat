@@ -435,52 +435,64 @@ twc_group_namelist_change_callback(Tox *tox,
                                                     true);
 
     struct t_gui_nick *nick = NULL;
-    char *name = twc_get_peer_name_nt(profile->tox, group_number, peer_number);
-    char *prev_name = NULL;
+    int i, npeers;
+    TOX_ERR_CONFERENCE_PEER_QUERY err = TOX_ERR_CONFERENCE_PEER_QUERY_OK;
 
-    if (change_type == TOX_CONFERENCE_STATE_CHANGE_PEER_EXIT
-        || change_type == TOX_CONFERENCE_STATE_CHANGE_PEER_NAME_CHANGE)
+    struct t_weelist *new_nicks;
+    struct t_weelist_item *n;
+
+    npeers = tox_conference_peer_count(profile->tox, group_number, &err);
+
+    if (err == TOX_ERR_CONFERENCE_PEER_QUERY_OK)
     {
-        nick = weechat_hashtable_get(chat->nicks, &peer_number);
-        if (nick)
+        new_nicks = weechat_list_new();
+        for (i = 0; i < npeers; i++)
         {
-            prev_name = strdup(weechat_nicklist_nick_get_string(chat->buffer,
-                                                                nick, "name"));
-            weechat_nicklist_remove_nick(chat->buffer, nick);
-            weechat_hashtable_remove(chat->nicks, &peer_number);
+            char *name = twc_get_peer_name_nt(profile->tox, group_number, i);
+            weechat_list_add(new_nicks, name, WEECHAT_LIST_POS_SORT, NULL);
+            free(name);
         }
     }
+    else
+        return;
 
-    if (change_type == TOX_CONFERENCE_STATE_CHANGE_PEER_JOIN
-        || change_type == TOX_CONFERENCE_STATE_CHANGE_PEER_NAME_CHANGE)
+    // searching for exits
+    n = weechat_list_get(chat->nicks, 0);
+
+    while (n)
     {
-        nick = weechat_nicklist_add_nick(chat->buffer, chat->nicklist_group,
-                                         name, NULL, NULL, NULL, 1);
-        if (nick)
-            weechat_hashtable_set(chat->nicks, &peer_number, nick);
+        const char *name = weechat_list_string(n);
+        if (!weechat_list_search(new_nicks, name))
+        {
+            weechat_printf(chat->buffer, "%s%s just left the group chat",
+                           weechat_prefix("quit"), name);
+            nick = weechat_nicklist_search_nick(chat->buffer,
+                                                chat->nicklist_group,
+                                                name);
+            weechat_nicklist_remove_nick(chat->buffer, nick);
+        }
+        n = weechat_list_next(n);
     }
 
-    switch (change_type)
+    // searching for joins
+    n = weechat_list_get(new_nicks, 0);
+
+    while (n)
     {
-        case TOX_CONFERENCE_STATE_CHANGE_PEER_NAME_CHANGE:
-            if (prev_name && name)
-                weechat_printf(chat->buffer, "%s%s is now known as %s",
-                               weechat_prefix("network"), prev_name, name);
-            break;
-        case TOX_CONFERENCE_STATE_CHANGE_PEER_JOIN:
-            if (name)
-                weechat_printf(chat->buffer, "%s%s just joined the group chat",
-                               weechat_prefix("join"), name);
-            break;
-        case TOX_CONFERENCE_STATE_CHANGE_PEER_EXIT:
-            if (prev_name)
-                weechat_printf(chat->buffer, "%s%s just left the group chat",
-                               weechat_prefix("quit"), prev_name);
-            break;
+        const char *name = weechat_list_string(n);
+        if (!weechat_list_search(chat->nicks, name))
+        {
+            weechat_printf(chat->buffer, "%s%s just joined the group chat",
+                           weechat_prefix("join"), name);
+            weechat_nicklist_add_nick(chat->buffer, chat->nicklist_group,
+                                      name, NULL, NULL, NULL, 1);
+        }
+        n = weechat_list_next(n);
     }
 
-    if (prev_name)
-        free(prev_name);
+    weechat_list_remove_all(chat->nicks);
+    weechat_list_free(chat->nicks);
+    chat->nicks = new_nicks;
 }
 
 void

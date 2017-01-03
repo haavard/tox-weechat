@@ -38,7 +38,7 @@ struct t_twc_chat
     int32_t group_number;
 
     struct t_gui_nick_group *nicklist_group;
-    struct t_hashtable *nicks;
+    struct t_weelist *nicks;
 };
 
 struct t_twc_chat *
