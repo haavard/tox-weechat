@@ -1,26 +1,20 @@
 # Tox-WeeChat
 Tox-WeeChat is a [Tox][1] protocol plugin for [WeeChat][2]. It is functional,
-but lacks certain features.
+but lacks certain features that might be expected of a full-fledged Tox client.
 
-Current build status: [![Build Status](https://travis-ci.org/haavardp/tox-weechat.svg?branch=master)][3]
+[![Build Status](https://travis-ci.org/haavard/tox-weechat.svg?branch=master)][3]
 
 ## Features
-Below is a list of implemented features, as well as a rough roadmap for the
-future.
-
- - [x] One-to-one chats
- - [x] Group chats (text only)
- - [x] Proxy support
- - [x] Multiple profiles
- - [x] Encrypted save files
- - [ ] File transfer
- - [ ] WeeChat `/upgrade`
- - [ ] Audio/video
+ - One-to-one chats
+ - Group chats (text only)
+ - Proxy support
+ - Multiple profiles
+ - Encrypted save files
 
 ## Installation
-Tox-WeeChat requires [WeeChat][2] >= 1.5 and the latest-ish [toxcore][4]. It
-also requires CMake to be built. Installation is fairly simple; after getting
-the source, compile and install using CMake:
+Tox-WeeChat is tested with [WeeChat][2] 1.7 and [TokTok c-toxcore][4] 0.1.6.
+It also requires CMake 2.8.11 or later to be built. Installation is fairly
+simple; after getting the source code, compile and install with CMake:
 
     $ mkdir build && cd build
     $ cmake -DPLUGIN_PATH=~/.weechat/plugins ..
@@ -40,7 +34,6 @@ This installs the plugin binary `tox.so` to the recommended location
    `/set tox.*` for a list of options.
 
 ### Common issues
-
 #### Long Tox names messing up WeeChat layout
 Tox allows names up to 128 bytes long. To prevent long names from taking all
 your screen space, you can set the following options in WeeChat:
@@ -71,8 +64,8 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with Tox-WeeChat.  If not, see <http://www.gnu.org/licenses/>.
 
-[1]: http://tox.im
+[1]: http://tox.chat
 [2]: http://weechat.org
-[3]: https://travis-ci.org/haavardp/tox-weechat
-[4]: https://github.com/irungentoo/toxcore
+[3]: https://travis-ci.org/haavard/tox-weechat
+[4]: https://github.com/TokTok/c-toxcore
 
