@@ -54,7 +54,7 @@ disabled (`/set tox.profile.*.udp`).
 
 License
 ---------
-Copyright (c) 2016 Håvard Pettersson <mail@haavard.me>
+Copyright (c) 2017 Håvard Pettersson <mail@haavard.me>
 
 This file is part of Tox-WeeChat.
 
