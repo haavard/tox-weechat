@@ -46,25 +46,6 @@ twc_chat_buffer_close_callback(const void *pointer,
                                struct t_gui_buffer *weechat_buffer);
 
 /**
- * Hash a Tox ID for the nicklist hashtable in group chat objects.
- */
-unsigned long long
-twc_tox_id_hash_callback(struct t_hashtable *hashtable, const void *key)
-{
-    return twc_hash_tox_id(key);
-}
-
-/**
- * Compare two Tox IDs for the nicklist hashtable in group chat objects.
- */
-int
-twc_tox_id_compare_callback(struct t_hashtable *hashtable,
-                            const void *id1, const void *id2)
-{
-    return memcmp(id1, id2, TOX_PUBLIC_KEY_SIZE);
-}
-
-/**
  * Create a new chat.
  */
 struct t_twc_chat *
@@ -81,9 +62,25 @@ twc_chat_new(struct t_twc_profile *profile, const char *name)
     size_t full_name_size = strlen(profile->name) + 1 + strlen(name) + 1;
     char *full_name = malloc(full_name_size);
     snprintf(full_name, full_name_size, "%s/%s", profile->name, name);
-    chat->buffer = weechat_buffer_new(full_name,
-                                      twc_chat_buffer_input_callback, chat, NULL,
-                                      twc_chat_buffer_close_callback, chat, NULL);
+    chat->buffer = weechat_buffer_search("tox", full_name);
+    if (!(chat->buffer))
+    {
+        chat->buffer = weechat_buffer_new(full_name,
+                                          twc_chat_buffer_input_callback, chat, NULL,
+                                          twc_chat_buffer_close_callback, chat, NULL);
+    }
+    else
+    {
+        weechat_buffer_set_pointer(chat->buffer,
+                                   "input_callback",
+                                   twc_chat_buffer_input_callback);
+        weechat_buffer_set_pointer(chat->buffer, "input_callback_pointer", chat);
+        weechat_buffer_set_pointer(chat->buffer,
+                                   "close_callback",
+                                   twc_chat_buffer_close_callback);
+        weechat_buffer_set_pointer(chat->buffer, "close_callback_pointer", chat);
+    }
+
     free(full_name);
 
     if (!(chat->buffer))
@@ -136,11 +133,7 @@ twc_chat_new_group(struct t_twc_profile *profile, int32_t group_number)
 
         chat->nicklist_group = weechat_nicklist_add_group(chat->buffer, NULL,
                                                           NULL, NULL, true);
-        chat->nicks = weechat_hashtable_new(32,
-                                            WEECHAT_HASHTABLE_BUFFER,
-                                            WEECHAT_HASHTABLE_POINTER,
-                                            twc_tox_id_hash_callback,
-                                            twc_tox_id_compare_callback);
+        chat->nicks = weechat_list_new();
 
         weechat_buffer_set(chat->buffer, "nicklist", "1");
     }
@@ -156,6 +149,9 @@ twc_chat_refresh(const struct t_twc_chat *chat)
 {
     char *name = NULL;
     char *title = NULL;
+    bool rc = false;
+    TOX_ERR_CONFERENCE_TITLE err = TOX_ERR_CONFERENCE_TITLE_OK;
+
     if (chat->friend_number >= 0)
     {
         name = twc_get_name_nt(chat->profile->tox,
@@ -166,10 +162,12 @@ twc_chat_refresh(const struct t_twc_chat *chat)
     else if (chat->group_number >= 0)
     {
         char group_name[TOX_MAX_NAME_LENGTH + 1] = {0};
-        int len = tox_group_get_title(chat->profile->tox, chat->group_number,
-                                      (uint8_t *)group_name,
-                                      TOX_MAX_NAME_LENGTH);
-        if (len <= 0)
+        int len = tox_conference_get_title_size(chat->profile->tox, chat->group_number,
+                                                &err);
+        if ((err == TOX_ERR_CONFERENCE_TITLE_OK) && (len <= TOX_MAX_NAME_LENGTH))
+            rc = tox_conference_get_title(chat->profile->tox, chat->group_number,
+                                          (uint8_t *)group_name, &err);
+        if (!rc)
             sprintf(group_name, "Group Chat %d", chat->group_number);
 
         name = title = strdup((char *)group_name);
@@ -282,18 +280,18 @@ twc_chat_print_message(struct t_twc_chat *chat,
                        const char *color,
                        const char *sender,
                        const char *message,
-                       enum TWC_MESSAGE_TYPE message_type)
+                       TOX_MESSAGE_TYPE message_type)
 {
     switch (message_type)
     {
-        case TWC_MESSAGE_TYPE_MESSAGE:
-            weechat_printf_tags(chat->buffer, tags,
+        case TOX_MESSAGE_TYPE_NORMAL:
+            weechat_printf_date_tags(chat->buffer, 0, tags,
                                 "%s%s%s\t%s",
                                 color, sender,
                                 weechat_color("reset"), message);
             break;
-        case TWC_MESSAGE_TYPE_ACTION:
-            weechat_printf_tags(chat->buffer, tags,
+        case TOX_MESSAGE_TYPE_ACTION:
+            weechat_printf_date_tags(chat->buffer, 0, tags,
                                 "%s%s%s%s %s",
                                 weechat_prefix("action"),
                                 color, sender,
@@ -307,27 +305,44 @@ twc_chat_print_message(struct t_twc_chat *chat,
  */
 void
 twc_chat_send_message(struct t_twc_chat *chat, const char *message,
-                      enum TWC_MESSAGE_TYPE message_type)
+                      TOX_MESSAGE_TYPE message_type)
 {
+    TOX_ERR_CONFERENCE_SEND_MESSAGE err = TOX_ERR_CONFERENCE_SEND_MESSAGE_OK;
     if (chat->friend_number >= 0)
     {
         twc_message_queue_add_friend_message(chat->profile,
                                              chat->friend_number,
                                              message, message_type);
         char *name = twc_get_self_name_nt(chat->profile->tox);
-        twc_chat_print_message(chat, "",
+        twc_chat_print_message(chat, "notify_message",
                                weechat_color("chat_nick_self"), name,
                                message, message_type);
         free(name);
     }
     else if (chat->group_number >= 0)
     {
-        if (message_type == TWC_MESSAGE_TYPE_MESSAGE)
-            tox_group_message_send(chat->profile->tox, chat->group_number,
-                                   (uint8_t *)message, strlen(message));
-        else if (message_type == TWC_MESSAGE_TYPE_ACTION)
-            tox_group_action_send(chat->profile->tox, chat->group_number,
-                                  (uint8_t *)message, strlen(message));
+        int len = strlen(message);
+        while (len > 0)
+        {
+            int fit_len = twc_fit_utf8(message, TWC_MAX_GROUP_MESSAGE_LENGTH);
+            err = TOX_ERR_CONFERENCE_SEND_MESSAGE_OK;
+            tox_conference_send_message(chat->profile->tox, chat->group_number,
+                                        message_type, (uint8_t *)message, fit_len,
+                                        &err);
+            if (err != TOX_ERR_CONFERENCE_SEND_MESSAGE_OK)
+                break;
+            message += fit_len;
+            len -= fit_len;
+        }
+        if (err != TOX_ERR_CONFERENCE_SEND_MESSAGE_OK)
+        {
+            weechat_printf(chat->buffer,
+                           "%s%sFailed to send message with error %d%s",
+                           weechat_prefix("error"),
+                           weechat_color("chat_highlight"),
+                           err,
+                           weechat_color("reset"));
+        }
     }
 }
 
@@ -341,7 +356,7 @@ twc_chat_buffer_input_callback(const void *pointer, void *data,
 {
     /* TODO: don't strip the const */
     struct t_twc_chat *chat = (void *)pointer;
-    twc_chat_send_message(chat, input_data, TWC_MESSAGE_TYPE_MESSAGE);
+    twc_chat_send_message(chat, input_data, TOX_MESSAGE_TYPE_NORMAL);
 
     return WEECHAT_RC_OK;
 }
@@ -354,16 +369,17 @@ twc_chat_buffer_close_callback(const void *pointer, void *data,
                                struct t_gui_buffer *weechat_buffer)
 {
     /* TODO: don't strip the const */
+    TOX_ERR_CONFERENCE_DELETE err = TOX_ERR_CONFERENCE_DELETE_OK;
     struct t_twc_chat *chat = (void *)pointer;
 
     if (chat->profile->tox && chat->group_number >= 0)
     {
-        int rc = tox_del_groupchat(chat->profile->tox, chat->group_number);
-        if (rc != 0)
+        tox_conference_delete(chat->profile->tox, chat->group_number, &err);
+        if (err != TOX_ERR_CONFERENCE_DELETE_OK)
         {
             weechat_printf(chat->profile->buffer,
-                           "%swarning: failed to leave group chat",
-                           weechat_prefix("error"));
+                           "%swarning: failed to leave group chat with error %d",
+                           weechat_prefix("error"), err);
         }
     }
 
@@ -379,8 +395,12 @@ twc_chat_buffer_close_callback(const void *pointer, void *data,
 void
 twc_chat_free(struct t_twc_chat *chat)
 {
+    weechat_nicklist_remove_all(chat->buffer);
     if (chat->nicks)
-        weechat_hashtable_free(chat->nicks);
+    {
+        weechat_list_remove_all(chat->nicks);
+        weechat_list_free(chat->nicks);
+    }
     free(chat);
 }
 

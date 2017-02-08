@@ -242,7 +242,7 @@ twc_cmd_friend(const void *pointer, void *data, struct t_gui_buffer *buffer,
         }
 
         weechat_printf(profile->buffer,
-                       "%s[#] Name [Tox ID (short)]",
+                       "%s[#] Name [Tox ID (short)] Status",
                        weechat_prefix("network"));
 
         for (size_t i = 0; i < friend_count; ++i)
@@ -252,12 +252,16 @@ twc_cmd_friend(const void *pointer, void *data, struct t_gui_buffer *buffer,
             char *hex_address = twc_get_friend_id_short(profile->tox,
                                                         friend_number);
 
+            char *status = twc_get_status_message_nt(profile->tox, friend_number);
+            char *online_color =
+                (tox_friend_get_connection_status(profile->tox, friend_number, NULL) != TOX_CONNECTION_NONE) ? "chat_nick" : "chat_nick_offline";
             weechat_printf(profile->buffer,
-                           "%s[%d] %s [%s]",
+                           "%s[%d] %s%s [%s]%s %s",
                            weechat_prefix("network"),
-                           friend_number, name, hex_address);
+                           friend_number, weechat_color(online_color), name, hex_address, weechat_color("reset"), status);
 
             free(name);
+            free(status);
             free(hex_address);
         }
 
@@ -380,7 +384,7 @@ twc_cmd_friend(const void *pointer, void *data, struct t_gui_buffer *buffer,
         TWC_CHECK_FRIEND_NUMBER(profile, friend_number, argv[2]);
 
         char *name = twc_get_name_nt(profile->tox, friend_number);
-        if (tox_friend_delete(profile->tox, friend_number, NULL) == 0)
+        if (tox_friend_delete(profile->tox, friend_number, NULL))
         {
             weechat_printf(profile->buffer,
                            "%sRemoved %s from friend list.",
@@ -464,7 +468,7 @@ twc_cmd_friend(const void *pointer, void *data, struct t_gui_buffer *buffer,
 
             if (accept)
             {
-                if (twc_friend_request_accept(request))
+                if (!twc_friend_request_accept(request))
                 {
                     weechat_printf(profile->buffer,
                                    "%sCould not accept friend request from %s",
@@ -530,19 +534,20 @@ twc_cmd_group(const void *pointer, void *data, struct t_gui_buffer *buffer,
               int argc, char **argv, char **argv_eol)
 {
     struct t_twc_profile *profile = twc_profile_search_buffer(buffer);
+    TOX_ERR_CONFERENCE_NEW err = TOX_ERR_CONFERENCE_NEW_OK;
     TWC_CHECK_PROFILE(profile);
     TWC_CHECK_PROFILE_LOADED(profile);
 
     // /group create
     if (argc == 2 && weechat_strcasecmp(argv[1], "create") == 0)
     {
-        int rc = tox_add_groupchat(profile->tox);
-        if (rc >= 0)
+        int rc = tox_conference_new(profile->tox, &err);
+        if (err == TOX_ERR_CONFERENCE_NEW_OK)
             twc_chat_search_group(profile, rc, true);
         else
             weechat_printf(profile->buffer,
-                           "%sCould not create group chat (unknown error)",
-                           weechat_prefix("error"));
+                           "%sCould not create group chat with error %d",
+                           weechat_prefix("error"), err);
 
         return WEECHAT_RC_OK;
     }
@@ -622,6 +627,7 @@ twc_cmd_invite(const void *pointer, void *data, struct t_gui_buffer *buffer,
     if (argc == 1)
         return WEECHAT_RC_ERROR;
 
+    TOX_ERR_CONFERENCE_INVITE err = TOX_ERR_CONFERENCE_INVITE_OK;
 
     struct t_twc_chat *chat = twc_chat_search_buffer(buffer);
     TWC_CHECK_PROFILE_LOADED(chat->profile);
@@ -630,10 +636,9 @@ twc_cmd_invite(const void *pointer, void *data, struct t_gui_buffer *buffer,
     int32_t friend_number = twc_match_friend(chat->profile, argv_eol[1]);
     TWC_CHECK_FRIEND_NUMBER(chat->profile, friend_number, argv_eol[1]);
 
-    int rc = tox_invite_friend(chat->profile->tox,
-                               friend_number, chat->group_number);
+    tox_conference_invite(chat->profile->tox, friend_number, chat->group_number, &err);
 
-    if (rc == 0)
+    if (err == TOX_ERR_CONFERENCE_INVITE_OK)
     {
         char *friend_name = twc_get_name_nt(chat->profile->tox, friend_number);
         weechat_printf(chat->buffer, "%sInvited %s to the group chat.",
@@ -643,8 +648,8 @@ twc_cmd_invite(const void *pointer, void *data, struct t_gui_buffer *buffer,
     else
     {
         weechat_printf(chat->buffer,
-                       "%sFailed to send group chat invite (unknown error)",
-                       weechat_prefix("error"));
+                       "%sFailed to send group chat invite with error %d",
+                       weechat_prefix("error"), err);
     }
 
     return WEECHAT_RC_OK;
@@ -664,7 +669,7 @@ twc_cmd_me(const void *pointer, void *data, struct t_gui_buffer *buffer,
     TWC_CHECK_CHAT(chat);
     TWC_CHECK_PROFILE_LOADED(chat->profile);
 
-    twc_chat_send_message(chat, argv_eol[1], TWC_MESSAGE_TYPE_ACTION);
+    twc_chat_send_message(chat, argv_eol[1], TOX_MESSAGE_TYPE_ACTION);
 
     return WEECHAT_RC_OK;
 }
@@ -710,7 +715,7 @@ twc_cmd_msg(const void *pointer, void *data, struct t_gui_buffer *buffer,
     if (message)
         twc_chat_send_message(chat,
                               weechat_string_strip(message, 1, 1, " "),
-                              TWC_MESSAGE_TYPE_MESSAGE);
+                              TOX_MESSAGE_TYPE_NORMAL);
 
     return WEECHAT_RC_OK;
 }
@@ -856,11 +861,12 @@ twc_cmd_part(const void *pointer, void *data, struct t_gui_buffer *buffer,
              int argc, char **argv, char **argv_eol)
 {
     struct t_twc_chat *chat = twc_chat_search_buffer(buffer);
+    TOX_ERR_CONFERENCE_DELETE err = TOX_ERR_CONFERENCE_DELETE_OK;
     TWC_CHECK_PROFILE_LOADED(chat->profile);
     TWC_CHECK_GROUP_CHAT(chat);
 
-    int rc = tox_del_groupchat(chat->profile->tox, chat->group_number);
-    if (rc == 0)
+    tox_conference_delete(chat->profile->tox, chat->group_number, &err);
+    if (err == TOX_ERR_CONFERENCE_DELETE_OK)
     {
         weechat_printf(chat->buffer,
                        "%sYou have left the group chat",
@@ -869,8 +875,8 @@ twc_cmd_part(const void *pointer, void *data, struct t_gui_buffer *buffer,
     else
     {
         weechat_printf(chat->buffer,
-                       "%sFailed to leave group chat",
-                       weechat_prefix("error"));
+                       "%sFailed to leave group chat with error %d",
+                       weechat_prefix("error"), err);
     }
 
     weechat_buffer_set_pointer(chat->buffer, "input_callback", NULL);
@@ -992,6 +998,8 @@ twc_cmd_topic(const void *pointer, void *data, struct t_gui_buffer *buffer,
     if (argc == 1)
         return WEECHAT_RC_ERROR;
 
+    TOX_ERR_CONFERENCE_TITLE err = TOX_ERR_CONFERENCE_TITLE_OK;
+
     struct t_twc_chat *chat = twc_chat_search_buffer(buffer);
     TWC_CHECK_CHAT(chat);
     TWC_CHECK_PROFILE_LOADED(chat->profile);
@@ -1007,9 +1015,9 @@ twc_cmd_topic(const void *pointer, void *data, struct t_gui_buffer *buffer,
 
     char *topic = argv_eol[1];
 
-    int result = tox_group_set_title(chat->profile->tox, chat->group_number,
-                                     (uint8_t *)topic, strlen(topic));
-    if (result == -1)
+    tox_conference_set_title(chat->profile->tox, chat->group_number,
+                        (uint8_t *)topic, strlen(topic), &err);
+    if (err != TOX_ERR_CONFERENCE_TITLE_OK)
     {
         weechat_printf(chat->buffer, "%s%s",
                        weechat_prefix("error"), "Could not set topic.");

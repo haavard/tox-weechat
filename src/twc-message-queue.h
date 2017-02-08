@@ -33,14 +33,14 @@ struct t_twc_queued_message
 {
     struct tm *time;
     char *message;
-    enum TWC_MESSAGE_TYPE message_type;
+    TOX_MESSAGE_TYPE message_type;
 };
 
 void
 twc_message_queue_add_friend_message(struct t_twc_profile *profile,
                                      int32_t friend_number,
                                      const char *message,
-                                     enum TWC_MESSAGE_TYPE message_type);
+                                     TOX_MESSAGE_TYPE message_type);
 
 void
 twc_message_queue_flush_friend(struct t_twc_profile *profile,

@@ -33,7 +33,7 @@ struct t_twc_group_chat_invite
 {
     struct t_twc_profile *profile;
 
-    int32_t friend_number;
+    uint32_t friend_number;
     uint8_t group_chat_type;
     uint8_t *data;
     size_t data_size;

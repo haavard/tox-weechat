@@ -42,6 +42,7 @@ char *twc_profile_option_names[TWC_PROFILE_NUM_OPTIONS] =
 {
     "save_file",
     "autoload",
+    "autojoin",
     "max_friend_requests",
     "proxy_address",
     "proxy_port",
@@ -196,6 +197,12 @@ twc_config_init_option(struct t_config_section *section,
             type = "boolean";
             description = "automatically load profile and connect to the Tox "
                           "network when WeeChat starts";
+            default_value = "off";
+            break;
+        case TWC_PROFILE_OPTION_AUTOJOIN:
+            type = "boolean";
+            description = "automatically join all groups you are invited in "
+                          "by your friends";
             default_value = "off";
             break;
         case TWC_PROFILE_OPTION_IPV6:

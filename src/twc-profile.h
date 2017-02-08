@@ -30,6 +30,7 @@ enum t_twc_profile_option
 {
     TWC_PROFILE_OPTION_SAVEFILE = 0,
     TWC_PROFILE_OPTION_AUTOLOAD,
+    TWC_PROFILE_OPTION_AUTOJOIN,
     TWC_PROFILE_OPTION_MAX_FRIEND_REQUESTS,
     TWC_PROFILE_OPTION_PROXY_ADDRESS,
     TWC_PROFILE_OPTION_PROXY_PORT,
@@ -50,6 +51,7 @@ struct t_twc_profile
     int tox_online;
 
     struct t_gui_buffer *buffer;
+    struct t_gui_nick_group *nicklist_group;
     struct t_hook *tox_do_timer;
 
     struct t_twc_list *chats;

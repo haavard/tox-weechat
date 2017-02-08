@@ -285,6 +285,10 @@ twc_profile_load(struct t_twc_profile *profile)
                                              profile, NULL);
         if (!(profile->buffer))
             return TWC_RC_ERROR;
+
+        profile->nicklist_group = weechat_nicklist_add_group(profile->buffer, NULL,
+                                                             NULL, NULL, true);
+        weechat_buffer_set(profile->buffer, "nicklist", "1");
     }
 
     weechat_printf(profile->buffer,
@@ -412,17 +416,16 @@ twc_profile_load(struct t_twc_profile *profile)
     twc_do_timer_cb(profile, NULL, 0);
 
     // register Tox callbacks
-    tox_callback_friend_message(profile->tox, twc_friend_message_callback, profile);
-    tox_callback_friend_connection_status(profile->tox, twc_connection_status_callback, profile);
-    tox_callback_friend_name(profile->tox, twc_name_change_callback, profile);
-    tox_callback_friend_status(profile->tox, twc_user_status_callback, profile);
-    tox_callback_friend_status_message(profile->tox, twc_status_message_callback, profile);
-    tox_callback_friend_request(profile->tox, twc_friend_request_callback, profile);
-    tox_callback_group_invite(profile->tox, twc_group_invite_callback, profile);
-    tox_callback_group_message(profile->tox, twc_group_message_callback, profile);
-    tox_callback_group_action(profile->tox, twc_group_action_callback, profile);
-    tox_callback_group_namelist_change(profile->tox, twc_group_namelist_change_callback, profile);
-    tox_callback_group_title(profile->tox, twc_group_title_callback, profile);
+    tox_callback_friend_message(profile->tox, twc_friend_message_callback);
+    tox_callback_friend_connection_status(profile->tox, twc_connection_status_callback);
+    tox_callback_friend_name(profile->tox, twc_name_change_callback);
+    tox_callback_friend_status(profile->tox, twc_user_status_callback);
+    tox_callback_friend_status_message(profile->tox, twc_status_message_callback);
+    tox_callback_friend_request(profile->tox, twc_friend_request_callback);
+    tox_callback_conference_invite(profile->tox, twc_group_invite_callback);
+    tox_callback_conference_message(profile->tox, twc_group_message_callback);
+    tox_callback_conference_namelist_change(profile->tox, twc_group_namelist_change_callback);
+    tox_callback_conference_title(profile->tox, twc_group_title_callback);
     return TWC_RC_OK;
 }
 

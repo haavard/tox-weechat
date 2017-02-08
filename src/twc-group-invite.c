@@ -71,15 +71,15 @@ int
 twc_group_chat_invite_join(struct t_twc_group_chat_invite *invite)
 {
     int rc;
+    TOX_ERR_CONFERENCE_JOIN err = TOX_ERR_CONFERENCE_JOIN_OK;
     switch (invite->group_chat_type)
     {
-        case TOX_GROUPCHAT_TYPE_TEXT:
-            rc = tox_join_groupchat(invite->profile->tox,
-                                    invite->friend_number,
-                                    invite->data, invite->data_size);
+        case TOX_CONFERENCE_TYPE_TEXT:
+            rc = tox_conference_join(invite->profile->tox, invite->friend_number,
+                                     invite->data, invite->data_size, &err);
             break;
 #ifdef TOXAV_ENABLED
-        case TOX_GROUPCHAT_TYPE_AV:
+        case TOX_CONFERENCE_TYPE_AV:
             rc = toxav_join_av_groupchat(invite->profile->tox,
                                          invite->friend_number,
                                          invite->data, invite->data_size,
@@ -93,6 +93,8 @@ twc_group_chat_invite_join(struct t_twc_group_chat_invite *invite)
 
     twc_group_chat_invite_remove(invite);
 
+    if (err != TOX_ERR_CONFERENCE_JOIN_OK)
+        return -1;
     return rc;
 }
 
