@@ -22,9 +22,8 @@
 
 #include <stdbool.h>
 
+#include <weechat/weechat-plugin.h>
 #include <tox/tox.h>
-
-struct t_hashtable;
 
 enum t_twc_profile_option
 {
