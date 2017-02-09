@@ -200,3 +200,28 @@ twc_fit_utf8(const char *str, int max)
 {
     return weechat_utf8_real_pos(str, weechat_utf8_strnlen(str, max));
 }
+
+/**
+ * Enable or disable logging for a WeeChat buffer.
+ */
+int
+twc_set_buffer_logging(struct t_gui_buffer *buffer, bool logging)
+{
+    if (!buffer)
+        return WEECHAT_RC_ERROR;
+
+    char const *signal;
+    if (logging)
+    {
+        weechat_buffer_set(buffer, "localvar_del_no_log", "");
+        signal = "logger_start";
+    }
+    else
+    {
+        weechat_buffer_set(buffer, "localvar_set_no_log", "1");
+        signal = "logger_stop";
+    }
+
+    return weechat_hook_signal_send(signal,
+                                    WEECHAT_HOOK_SIGNAL_POINTER, buffer);
+}

@@ -89,10 +89,9 @@ twc_chat_new(struct t_twc_profile *profile, const char *name)
         return NULL;
     }
 
-    /* disable logging for buffer */
-    weechat_hook_signal_send("logger_stop",
-                             WEECHAT_HOOK_SIGNAL_POINTER,
-                             chat->buffer);
+    /* set correct logging state for buffer */
+    bool log = TWC_PROFILE_OPTION_BOOLEAN(profile, TWC_PROFILE_OPTION_LOGGING);
+    twc_set_buffer_logging(chat->buffer, log);
 
     twc_chat_queue_refresh(chat);
     twc_list_item_new_data_add(profile->chats, chat);
@@ -275,6 +274,7 @@ twc_chat_search_buffer(struct t_gui_buffer *buffer)
     }
     return NULL;
 }
+
 
 /**
  * Print a chat message to a chat's buffer.

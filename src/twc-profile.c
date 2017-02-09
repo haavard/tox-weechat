@@ -286,10 +286,10 @@ twc_profile_load(struct t_twc_profile *profile)
         if (!(profile->buffer))
             return TWC_RC_ERROR;
 
-        /* disable logging for buffer */
-        weechat_hook_signal_send("logger_stop",
-                                 WEECHAT_HOOK_SIGNAL_POINTER,
-                                 profile->buffer);
+        /* disable logging for buffer if option is off */
+        bool logging = TWC_PROFILE_OPTION_BOOLEAN(profile,
+                                                  TWC_PROFILE_OPTION_LOGGING);
+        twc_set_buffer_logging(profile->buffer, logging);
 
         profile->nicklist_group = weechat_nicklist_add_group(profile->buffer, NULL,
                                                              NULL, NULL, true);
@@ -568,6 +568,49 @@ twc_profile_search_buffer(struct t_gui_buffer *buffer)
     }
 
     return NULL;
+}
+
+/**
+ * Enable or disable the WeeChat logger for all buffers for a profile.
+ *
+ * Return TWC_RC_OK if logging was enabled or disabled for all buffers.
+ * Return TWC_RC_ERROR if one or more errors occurred.
+ */
+enum t_twc_rc
+twc_profile_set_logging(struct t_twc_profile *profile, bool logging)
+{
+    /* track if an error occurs */
+    bool error;
+
+    /* if profile buffer is NULL, profile isn't loaded */
+    if (!profile->buffer)
+        return TWC_RC_OK;
+
+    /* signal profile's main buffer */
+    if (WEECHAT_RC_ERROR == twc_set_buffer_logging(profile->buffer, logging))
+    {
+        error = true;
+        weechat_printf(profile->buffer,
+                "%swarning: failed to %s logging in this buffer!",
+                weechat_prefix("error"), logging ? "enable" : "disable");
+    }
+
+    /* signal all chat buffers for profile */
+    size_t index;
+    struct t_twc_list_item *item;
+    twc_list_foreach(profile->chats, index, item)
+    {
+        if (WEECHAT_RC_ERROR == twc_set_buffer_logging(item->chat->buffer,
+                                                       logging))
+        {
+            error = true;
+            weechat_printf(item->chat->buffer,
+                    "%swarning: failed to %s logging in this buffer!",
+                    weechat_prefix("error"), logging ? "enable" : "disable");
+        }
+    }
+
+    return error ? TWC_RC_ERROR : TWC_RC_OK;
 }
 
 /**

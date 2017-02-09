@@ -37,6 +37,7 @@ enum t_twc_profile_option
     TWC_PROFILE_OPTION_UDP,
     TWC_PROFILE_OPTION_IPV6,
     TWC_PROFILE_OPTION_PASSPHRASE,
+    TWC_PROFILE_OPTION_LOGGING,
 
     TWC_PROFILE_NUM_OPTIONS,
 };
@@ -118,6 +119,9 @@ twc_profile_search_name(const char *name);
 
 struct t_twc_profile *
 twc_profile_search_buffer(struct t_gui_buffer *buffer);
+
+enum t_twc_rc
+twc_profile_set_logging(struct t_twc_profile *profile, bool logging);
 
 void
 twc_profile_delete(struct t_twc_profile *profile, bool delete_data);

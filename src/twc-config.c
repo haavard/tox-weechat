@@ -50,6 +50,7 @@ char *twc_profile_option_names[TWC_PROFILE_NUM_OPTIONS] =
     "udp",
     "ipv6",
     "passphrase",
+    "logging",
 };
 
 /**
@@ -154,7 +155,7 @@ twc_config_profile_check_value_callback(const void *pointer, void *data,
                                         struct t_config_option *option,
                                         const char *value)
 {
-    enum t_twc_profile_option option_index = (intptr_t)pointer;
+    enum t_twc_profile_option option_index = *(int *)data;
 
     switch (option_index)
     {
@@ -172,13 +173,44 @@ void
 twc_config_profile_change_callback(const void *pointer, void *data,
                                    struct t_config_option *option)
 {
+    struct t_twc_profile *profile = (void *)pointer;
+    enum t_twc_profile_option option_index = *(int *)data;
+
+    switch (option_index)
+    {
+        case TWC_PROFILE_OPTION_LOGGING:
+            if (profile)
+            {
+                /* toggle logging for a specific profile */
+                bool logging_enabled = weechat_config_boolean(option);
+                twc_profile_set_logging(profile, logging_enabled);
+            }
+            else
+            {
+                /* option changed for default profile, update all profiles */
+                size_t index;
+                struct t_twc_list_item *item;
+                twc_list_foreach(twc_profiles, index, item)
+                {
+                    bool logging_enabled
+                        = TWC_PROFILE_OPTION_BOOLEAN(item->profile,
+                                                     TWC_PROFILE_OPTION_LOGGING);
+                    twc_profile_set_logging(item->profile, logging_enabled);
+                }
+            }
+
+        default:
+            break;
+    }
+
 }
 
 /**
- * Create a new option for a profile.
+ * Create a new option for a profile. Returns NULL if an error occurs.
  */
 struct t_config_option *
-twc_config_init_option(struct t_config_section *section,
+twc_config_init_option(struct t_twc_profile *profile,
+                       struct t_config_section *section,
                        int option_index, const char *option_name,
                        bool is_default_profile)
 {
@@ -189,7 +221,6 @@ twc_config_init_option(struct t_config_section *section,
     char *value;
     char *default_value = NULL;
     bool null_allowed = false;
-
 
     switch (option_index)
     {
@@ -210,6 +241,11 @@ twc_config_init_option(struct t_config_section *section,
             description = "use IPv6 as well as IPv4 to connect to the Tox "
                           "network";
             default_value = "on";
+            break;
+        case TWC_PROFILE_OPTION_LOGGING:
+            type = "boolean";
+            description = "log chat buffers to disk";
+            default_value = "off";
             break;
         case TWC_PROFILE_OPTION_MAX_FRIEND_REQUESTS:
             type = "integer";
@@ -259,14 +295,24 @@ twc_config_init_option(struct t_config_section *section,
     null_allowed = null_allowed || !is_default_profile;
     value = is_default_profile ? default_value : NULL;
 
+    /* store option index as data for WeeChat callbacks */
+    int *index_check_pointer = malloc(sizeof(int));
+    int *index_change_pointer = malloc(sizeof(int));
+    if (!index_check_pointer || !index_change_pointer)
+    {
+        free(index_check_pointer);
+        free(index_change_pointer);
+        return NULL;
+    }
+    *index_check_pointer = option_index;
+    *index_change_pointer = option_index;
+
     return weechat_config_new_option(
         twc_config_file, section,
         option_name, type, description, string_values, min, max,
         default_value, value, null_allowed,
-        twc_config_profile_check_value_callback,
-        (void *)(intptr_t)option_index, NULL,
-        twc_config_profile_change_callback,
-        (void *)(intptr_t)option_index, NULL,
+        twc_config_profile_check_value_callback, profile, index_check_pointer,
+        twc_config_profile_change_callback, profile, index_change_pointer,
         NULL, NULL, NULL);
 }
 
@@ -300,7 +346,7 @@ twc_config_init()
     for (int i = 0; i < TWC_PROFILE_NUM_OPTIONS; ++i)
     {
         twc_config_profile_default[i] =
-            twc_config_init_option(twc_config_section_profile_default,
+            twc_config_init_option(NULL, twc_config_section_profile_default,
                                    i, twc_profile_option_names[i], true);
     }
 
@@ -350,8 +396,8 @@ twc_config_init_profile(struct t_twc_profile *profile)
                      profile->name,
                      twc_profile_option_names[i]);
 
-            profile->options[i] = twc_config_init_option(twc_config_section_profile,
-                                                         i, option_name, false);
+            profile->options[i] = twc_config_init_option(profile,
+                    twc_config_section_profile, i, option_name, false);
             free(option_name);
         }
     }

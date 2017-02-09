@@ -52,6 +52,9 @@ twc_chat_search_group(struct t_twc_profile *profile,
 struct t_twc_chat *
 twc_chat_search_buffer(struct t_gui_buffer *target_buffer);
 
+enum t_twc_rc
+twc_chat_set_logging(struct t_twc_chat const *const chat, bool logging);
+
 void
 twc_chat_print_message(struct t_twc_chat *chat,
                        const char *tags,

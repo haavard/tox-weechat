@@ -22,6 +22,7 @@
 
 #include <stdlib.h>
 
+#include <weechat/weechat-plugin.h>
 #include <tox/tox.h>
 
 void
@@ -53,6 +54,9 @@ twc_uint32_reverse_bytes(uint32_t num);
 
 int
 twc_fit_utf8(const char *str, int max);
+
+int
+twc_set_buffer_logging(struct t_gui_buffer *buffer, bool logging);
 
 #endif // TOX_WEECHAT_UTILS_H
 
