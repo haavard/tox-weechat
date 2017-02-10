@@ -506,11 +506,9 @@ twc_cmd_friend(const void *pointer, void *data, struct t_gui_buffer *buffer,
         struct t_twc_list_item *item;
         twc_list_foreach(profile->friend_requests, index, item)
         {
-            size_t short_id_length = weechat_config_integer(twc_config_short_id_size);
-            char hex_address[short_id_length + 1];
+            char hex_address[TOX_PUBLIC_KEY_SIZE * 2 + 1];
             twc_bin2hex(item->friend_request->tox_id,
-                        short_id_length / 2,
-                        hex_address);
+                        TOX_PUBLIC_KEY_SIZE, hex_address);
 
             weechat_printf(profile->buffer,
                            "%s[%d] Address: %s\n"
