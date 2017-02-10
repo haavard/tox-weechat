@@ -324,10 +324,11 @@ twc_profile_load(struct t_twc_profile *profile)
 
         if (options.udp_enabled)
             weechat_printf(profile->buffer,
-                           "%swarning: Tox is configured to use a proxy, but "
-                           " UDP is not disabled. Your IP address may not be "
-                           "hidden.",
+                           "%s%swarning:%s Tox is configured to use a proxy, "
+                           "but UDP is not disabled. Your IP address may not "
+                           "be hidden.",
                            weechat_prefix("error"),
+                           weechat_color("lightred"), weechat_color("reset"),
                            options.proxy_host, options.proxy_port);
     }
 
