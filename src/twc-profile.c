@@ -208,6 +208,11 @@ twc_profile_set_options(struct Tox_Options *options,
     TWC_PROFILE_OPTION_BOOLEAN(profile, TWC_PROFILE_OPTION_UDP);
     options->ipv6_enabled =
     TWC_PROFILE_OPTION_BOOLEAN(profile, TWC_PROFILE_OPTION_IPV6);
+
+#ifndef NDEBUG
+    options->log_callback = twc_tox_log_callback;
+    options->log_user_data = profile;
+#endif /* !NDEBUG */
 }
 
 void

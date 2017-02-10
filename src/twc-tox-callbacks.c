@@ -18,6 +18,7 @@
  */
 
 #include <string.h>
+#include <inttypes.h>
 
 #include <weechat/weechat-plugin.h>
 #include <tox/tox.h>
@@ -514,4 +515,41 @@ twc_group_title_callback(Tox *tox,
                    weechat_prefix("network"), name, topic);
     free(topic);
 }
+
+#ifndef NDEBUG
+void
+twc_tox_log_callback(Tox *tox,
+                     TOX_LOG_LEVEL level,
+                     const char *file, uint32_t line, const char *func,
+                     const char *message, void *user_data)
+{
+    struct t_twc_profile *const profile = user_data;
+
+    char const *color;
+    switch (level)
+    {
+        case TOX_LOG_LEVEL_TRACE:
+            color = weechat_color("gray");
+            break;
+        case TOX_LOG_LEVEL_DEBUG:
+            color = weechat_color("white");
+            break;
+        case TOX_LOG_LEVEL_INFO:
+            color = weechat_color("lightblue");
+            break;
+        case TOX_LOG_LEVEL_WARNING:
+            color = weechat_color("yellow");
+            break;
+        case TOX_LOG_LEVEL_ERROR:
+            color = weechat_color("red");
+            break;
+        default:
+            color = weechat_color("reset");
+    }
+
+    weechat_printf(profile->buffer, "%stox\t%s%s:%"PRIu32" [%s]%s %s",
+            color, weechat_color("reset"), file, line, func,
+            weechat_color("lightred"), message);
+}
+#endif /* !NDEBUG */
 

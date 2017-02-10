@@ -78,5 +78,13 @@ twc_group_title_callback(Tox *tox,
                          const uint8_t *title, size_t length,
                          void *data);
 
+#ifndef NDEBUG
+void
+twc_tox_log_callback(Tox *tox,
+                     TOX_LOG_LEVEL level,
+                     const char *file, uint32_t line, const char *func,
+                     const char *message, void *user_data);
+#endif /* !NDEBUG */
+
 #endif // TOX_WEECHAT_TOX_CALLBACKS_H
 
