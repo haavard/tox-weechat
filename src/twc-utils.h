@@ -22,8 +22,8 @@
 
 #include <stdlib.h>
 
-#include <weechat/weechat-plugin.h>
 #include <tox/tox.h>
+#include <weechat/weechat-plugin.h>
 
 void
 twc_hex2bin(const char *hex, size_t size, uint8_t *out);
@@ -58,5 +58,4 @@ twc_fit_utf8(const char *str, int max);
 int
 twc_set_buffer_logging(struct t_gui_buffer *buffer, bool logging);
 
-#endif // TOX_WEECHAT_UTILS_H
-
+#endif /* TOX_WEECHAT_UTILS_H */

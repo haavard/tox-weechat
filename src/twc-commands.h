@@ -20,7 +20,7 @@
 #ifndef TOX_WEECHAT_COMMANDS_H
 #define TOX_WEECHAT_COMMANDS_H
 
-void twc_commands_init();
+void
+twc_commands_init();
 
-#endif // TOX_WEECHAT_COMMANDS_H
-
+#endif /* TOX_WEECHAT_COMMANDS_H */

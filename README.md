@@ -2,7 +2,10 @@
 Tox-WeeChat is a [Tox][1] protocol plugin for [WeeChat][2]. It is functional,
 but lacks certain features that might be expected of a full-fledged Tox client.
 
-[![Build Status](https://travis-ci.org/haavard/tox-weechat.svg?branch=master)][3]
+Tox-WeeChat is compliant with all "Required" points in the [Tox Client
+Standard][3].
+
+[![Build Status](https://travis-ci.org/haavard/tox-weechat.svg?branch=master)][4]
 
 ## Features
  - One-to-one chats
@@ -12,8 +15,8 @@ but lacks certain features that might be expected of a full-fledged Tox client.
  - Encrypted save files
 
 ## Installation
-Tox-WeeChat is tested with [WeeChat][2] 1.7 and [TokTok c-toxcore][4] 0.1.6.
-It also requires CMake 2.8.11 or later to be built. Installation is fairly
+Tox-WeeChat is tested with [WeeChat][2] 1.7 and [TokTok c-toxcore][5] 0.1.6.
+It also requires CMake 2.8.12 or newer to be built. Installation is fairly
 simple; after getting the source code, compile and install with CMake:
 
     $ mkdir build && cd build
@@ -25,7 +28,8 @@ This installs the plugin binary `tox.so` to the recommended location
 
 ## Usage
  - If the plugin does not load automatically, load it with `/plugin load tox`.
-   You may have to specify the full path to the plugin binary.
+   You may have to specify the full path to the plugin binary if you installed
+   it to a non-standard location.
  - Create a new profile with `/tox create <profile name>`. The data file is
    stored in `~/.weechat/tox/` by default.
  - Load your profile and connect to the Tox network with
@@ -45,8 +49,7 @@ your screen space, you can set the following options in WeeChat:
 Make sure the proxy type, address and port is correct, and that UDP is
 disabled (`/set tox.profile.*.udp`).
 
-License
----------
+## License
 Copyright (c) 2017 Håvard Pettersson <mail@haavard.me>
 
 This file is part of Tox-WeeChat.
@@ -66,6 +69,7 @@ along with Tox-WeeChat.  If not, see <http://www.gnu.org/licenses/>.
 
 [1]: http://tox.chat
 [2]: http://weechat.org
-[3]: https://travis-ci.org/haavard/tox-weechat
-[4]: https://github.com/TokTok/c-toxcore
+[3]: https://github.com/Tox/Tox-Client-Standard
+[4]: https://travis-ci.org/haavard/tox-weechat
+[5]: https://github.com/TokTok/c-toxcore
 

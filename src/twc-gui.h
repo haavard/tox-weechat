@@ -20,7 +20,7 @@
 #ifndef TOX_WEECHAT_GUI_H
 #define TOX_WEECHAT_GUI_H
 
-void twc_gui_init();
+void
+twc_gui_init();
 
-#endif // TOX_WEECHAT_GUI_H
-
+#endif /* TOX_WEECHAT_GUI_H */

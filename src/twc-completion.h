@@ -23,5 +23,4 @@
 void
 twc_completion_init();
 
-#endif // TOX_WEECHAT_COMPLETION_H
-
+#endif /* TOX_WEECHAT_COMPLETION_H */

@@ -17,27 +17,27 @@
  * along with Tox-WeeChat.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <pwd.h>
 #include <stdio.h>
 #include <string.h>
-#include <pwd.h>
 #include <unistd.h>
 
-#include <weechat/weechat-plugin.h>
 #include <tox/tox.h>
+#include <weechat/weechat-plugin.h>
 #ifdef TOXENCRYPTSAVE_ENABLED
-    #include <tox/toxencryptsave.h>
-#endif // TOXENCRYPTSAVE_ENABLED
+#include <tox/toxencryptsave.h>
+#endif /* TOXENCRYPTSAVE_ENABLED */
 
-#include "twc.h"
-#include "twc-list.h"
 #include "twc-bootstrap.h"
+#include "twc-chat.h"
 #include "twc-config.h"
 #include "twc-friend-request.h"
 #include "twc-group-invite.h"
+#include "twc-list.h"
 #include "twc-message-queue.h"
-#include "twc-chat.h"
 #include "twc-tox-callbacks.h"
 #include "twc-utils.h"
+#include "twc.h"
 
 #include "twc-profile.h"
 
@@ -54,10 +54,12 @@ struct t_config_option *twc_config_profile_default[TWC_PROFILE_NUM_OPTIONS];
 char *
 twc_profile_expanded_data_path(struct t_twc_profile *profile)
 {
-    const char *weechat_dir = weechat_info_get ("weechat_dir", NULL);
-    const char *base_path = TWC_PROFILE_OPTION_STRING(profile, TWC_PROFILE_OPTION_SAVEFILE);
+    const char *weechat_dir = weechat_info_get("weechat_dir", NULL);
+    const char *base_path =
+        TWC_PROFILE_OPTION_STRING(profile, TWC_PROFILE_OPTION_SAVEFILE);
     char *home_expanded = weechat_string_replace(base_path, "%h", weechat_dir);
-    char *full_path = weechat_string_replace(home_expanded, "%p", profile->name);
+    char *full_path =
+        weechat_string_replace(home_expanded, "%p", profile->name);
     free(home_expanded);
 
     return full_path;
@@ -72,17 +74,17 @@ int
 twc_profile_save_data_file(struct t_twc_profile *profile)
 {
     if (!(profile->tox))
-    return -1;
+        return -1;
 
     char *full_path = twc_profile_expanded_data_path(profile);
 
-    // create containing folder if it doesn't exist
+    /* create containing folder if it doesn't exist */
     char *rightmost_slash = strrchr(full_path, '/');
     char *dir_path = weechat_strndup(full_path, rightmost_slash - full_path);
     weechat_mkdir_parents(dir_path, 0755);
     free(dir_path);
 
-    // save Tox data to a buffer
+    /* save Tox data to a buffer */
     size_t size = tox_get_savedata_size(profile->tox);
     uint8_t data[size];
     uint8_t *d = data;
@@ -90,13 +92,14 @@ twc_profile_save_data_file(struct t_twc_profile *profile)
 
 #ifdef TOXENCRYPTSAVE_ENABLED
     uint8_t enc_data[size + TOX_PASS_ENCRYPTION_EXTRA_LENGTH];
-    const char *pw
-        = weechat_config_string(profile->options[TWC_PROFILE_OPTION_PASSPHRASE]);
+    const char *pw =
+        weechat_config_string(profile->options[TWC_PROFILE_OPTION_PASSPHRASE]);
 
     if (pw)
     {
         pw = weechat_string_eval_expression(pw, NULL, NULL, NULL);
-        if (!tox_pass_encrypt(data, size, (uint8_t *)pw, strlen(pw), enc_data, NULL))
+        if (!tox_pass_encrypt(data, size, (uint8_t *)pw, strlen(pw), enc_data,
+                              NULL))
         {
             weechat_printf(profile->buffer, "error encrypting data");
             return -1;
@@ -104,9 +107,9 @@ twc_profile_save_data_file(struct t_twc_profile *profile)
         d = enc_data;
         size += TOX_PASS_ENCRYPTION_EXTRA_LENGTH;
     }
-#endif // TOXENCRYPTSAVE_ENABLED
+#endif /* TOXENCRYPTSAVE_ENABLED */
 
-    // save buffer to a file
+    /* save buffer to a file */
     FILE *file = fopen(full_path, "w");
     if (file)
     {
@@ -152,10 +155,10 @@ twc_profile_new(const char *name)
     struct t_twc_profile *profile = malloc(sizeof(struct t_twc_profile));
     profile->name = strdup(name);
 
-    // add to profile list
+    /* add to profile list */
     twc_list_item_new_data_add(twc_profiles, profile);
 
-    // set up internal vars
+    /* set up internal vars */
     profile->tox = NULL;
     profile->buffer = NULL;
     profile->tox_do_timer = NULL;
@@ -164,12 +167,10 @@ twc_profile_new(const char *name)
     profile->chats = twc_list_new();
     profile->friend_requests = twc_list_new();
     profile->group_chat_invites = twc_list_new();
-    profile->message_queues = weechat_hashtable_new(32,
-                                                    WEECHAT_HASHTABLE_INTEGER,
-                                                    WEECHAT_HASHTABLE_POINTER,
-                                                    NULL, NULL);
+    profile->message_queues = weechat_hashtable_new(
+        32, WEECHAT_HASHTABLE_INTEGER, WEECHAT_HASHTABLE_POINTER, NULL, NULL);
 
-    // set up config
+    /* set up config */
     twc_config_init_profile(profile);
 
     return profile;
@@ -203,11 +204,11 @@ twc_profile_set_options(struct Tox_Options *options,
     }
 
     options->proxy_port =
-    TWC_PROFILE_OPTION_INTEGER(profile, TWC_PROFILE_OPTION_PROXY_PORT);
+        TWC_PROFILE_OPTION_INTEGER(profile, TWC_PROFILE_OPTION_PROXY_PORT);
     options->udp_enabled =
-    TWC_PROFILE_OPTION_BOOLEAN(profile, TWC_PROFILE_OPTION_UDP);
+        TWC_PROFILE_OPTION_BOOLEAN(profile, TWC_PROFILE_OPTION_UDP);
     options->ipv6_enabled =
-    TWC_PROFILE_OPTION_BOOLEAN(profile, TWC_PROFILE_OPTION_IPV6);
+        TWC_PROFILE_OPTION_BOOLEAN(profile, TWC_PROFILE_OPTION_IPV6);
 
 #ifndef NDEBUG
     options->log_callback = twc_tox_log_callback;
@@ -217,57 +218,58 @@ twc_profile_set_options(struct Tox_Options *options,
 
 void
 twc_tox_new_print_error(struct t_twc_profile *profile,
-                        struct Tox_Options *options,
-                        TOX_ERR_NEW error)
+                        struct Tox_Options *options, TOX_ERR_NEW error)
 {
     switch (error)
     {
-    case TOX_ERR_NEW_MALLOC:
-        weechat_printf(profile->buffer,
-                       "%scould not load Tox (malloc error)",
-                       weechat_prefix("error"));
-        break;
-    case TOX_ERR_NEW_PORT_ALLOC:
-        weechat_printf(profile->buffer,
-                       "%scould not load Tox (failed to allocate a port)",
-                       weechat_prefix("error"));
-        break;
-    case TOX_ERR_NEW_PROXY_BAD_TYPE:
-        weechat_printf(profile->buffer,
-                       "%scould not load Tox (internal error; bad proxy type)",
-                       weechat_prefix("error"));
-        break;
-    case TOX_ERR_NEW_PROXY_BAD_HOST:
-        weechat_printf(profile->buffer,
-                       "%scould not load Tox (invalid proxy host: \"%s\")",
-                       weechat_prefix("error"), options->proxy_host);
-        break;
-    case TOX_ERR_NEW_PROXY_BAD_PORT:
-        weechat_printf(profile->buffer,
-                       "%scould not load Tox (invalid proxy port: \"%d\")",
-                       weechat_prefix("error"), options->proxy_port);
-        break;
-    case TOX_ERR_NEW_PROXY_NOT_FOUND:
-        weechat_printf(profile->buffer,
-                       "%scould not load Tox (proxy host not found: \"%s\")",
-                       weechat_prefix("error"), options->proxy_host);
-        break;
-    case TOX_ERR_NEW_LOAD_ENCRYPTED:
-        weechat_printf(profile->buffer,
-                       "%scould not load Tox (encrypted data files are not yet supported)",
-                       weechat_prefix("error"));
-        break;
-    case TOX_ERR_NEW_LOAD_BAD_FORMAT:
-        weechat_printf(profile->buffer,
-                       "%scould not load Tox (invalid data file, some data "
-                       "may have been loaded; use -force to try using it)",
-                       weechat_prefix("error"));
-        break;
-    default:
-        weechat_printf(profile->buffer,
-                       "%scould not load Tox (unknown error %d)",
-                       weechat_prefix("error"), error);
-        break;
+        case TOX_ERR_NEW_MALLOC:
+            weechat_printf(profile->buffer,
+                           "%scould not load Tox (malloc error)",
+                           weechat_prefix("error"));
+            break;
+        case TOX_ERR_NEW_PORT_ALLOC:
+            weechat_printf(profile->buffer,
+                           "%scould not load Tox (failed to allocate a port)",
+                           weechat_prefix("error"));
+            break;
+        case TOX_ERR_NEW_PROXY_BAD_TYPE:
+            weechat_printf(
+                profile->buffer,
+                "%scould not load Tox (internal error; bad proxy type)",
+                weechat_prefix("error"));
+            break;
+        case TOX_ERR_NEW_PROXY_BAD_HOST:
+            weechat_printf(profile->buffer,
+                           "%scould not load Tox (invalid proxy host: \"%s\")",
+                           weechat_prefix("error"), options->proxy_host);
+            break;
+        case TOX_ERR_NEW_PROXY_BAD_PORT:
+            weechat_printf(profile->buffer,
+                           "%scould not load Tox (invalid proxy port: \"%d\")",
+                           weechat_prefix("error"), options->proxy_port);
+            break;
+        case TOX_ERR_NEW_PROXY_NOT_FOUND:
+            weechat_printf(
+                profile->buffer,
+                "%scould not load Tox (proxy host not found: \"%s\")",
+                weechat_prefix("error"), options->proxy_host);
+            break;
+        case TOX_ERR_NEW_LOAD_ENCRYPTED:
+            weechat_printf(profile->buffer, "%scould not load Tox (encrypted "
+                                            "data files are not yet supported)",
+                           weechat_prefix("error"));
+            break;
+        case TOX_ERR_NEW_LOAD_BAD_FORMAT:
+            weechat_printf(profile->buffer,
+                           "%scould not load Tox (invalid data file, some data "
+                           "may have been loaded; use -force to try using it)",
+                           weechat_prefix("error"));
+            break;
+        default:
+            weechat_printf(profile->buffer,
+                           "%scould not load Tox (unknown error %d)",
+                           weechat_prefix("error"), error);
+            break;
     }
 }
 
@@ -283,43 +285,39 @@ twc_profile_load(struct t_twc_profile *profile)
 
     if (!(profile->buffer))
     {
-        // create main buffer
-        profile->buffer = weechat_buffer_new(profile->name,
-                                             NULL, NULL, NULL,
+        /* create main buffer */
+        profile->buffer = weechat_buffer_new(profile->name, NULL, NULL, NULL,
                                              twc_profile_buffer_close_callback,
                                              profile, NULL);
         if (!(profile->buffer))
             return TWC_RC_ERROR;
 
         /* disable logging for buffer if option is off */
-        bool logging = TWC_PROFILE_OPTION_BOOLEAN(profile,
-                                                  TWC_PROFILE_OPTION_LOGGING);
+        bool logging =
+            TWC_PROFILE_OPTION_BOOLEAN(profile, TWC_PROFILE_OPTION_LOGGING);
         twc_set_buffer_logging(profile->buffer, logging);
 
-        profile->nicklist_group = weechat_nicklist_add_group(profile->buffer, NULL,
-                                                             NULL, NULL, true);
+        profile->nicklist_group =
+            weechat_nicklist_add_group(profile->buffer, NULL, NULL, NULL, true);
         weechat_buffer_set(profile->buffer, "nicklist", "1");
     }
 
-    weechat_printf(profile->buffer,
-                   "%sprofile %s connecting",
+    weechat_printf(profile->buffer, "%sprofile %s connecting",
                    weechat_prefix("network"), profile->name);
 
-    // create Tox options object
+    /* create Tox options object */
     struct Tox_Options options;
 
-    //tox_options_default(&options);
     twc_profile_set_options(&options, profile);
 
-    // print a proxy message
+    /* print a proxy message */
     if (options.proxy_type != TOX_PROXY_TYPE_NONE)
     {
-        weechat_printf(profile->buffer,
-                       "%susing %s proxy %s:%d",
+        weechat_printf(profile->buffer, "%susing %s proxy %s:%d",
                        weechat_prefix("network"),
-                       options.proxy_type == TOX_PROXY_TYPE_HTTP ? "HTTP" :
-                       TOX_PROXY_TYPE_SOCKS5 ? "SOCKS5" :
-                       NULL,
+                       options.proxy_type == TOX_PROXY_TYPE_HTTP
+                           ? "HTTP"
+                           : TOX_PROXY_TYPE_SOCKS5 ? "SOCKS5" : NULL,
                        options.proxy_host, options.proxy_port);
 
         if (options.udp_enabled)
@@ -327,12 +325,12 @@ twc_profile_load(struct t_twc_profile *profile)
                            "%s%swarning:%s Tox is configured to use a proxy, "
                            "but UDP is not disabled. Your IP address may not "
                            "be hidden.",
-                           weechat_prefix("error"),
-                           weechat_color("lightred"), weechat_color("reset"),
-                           options.proxy_host, options.proxy_port);
+                           weechat_prefix("error"), weechat_color("lightred"),
+                           weechat_color("reset"), options.proxy_host,
+                           options.proxy_port);
     }
 
-    // try loading data file
+    /* try loading data file */
     char *path = twc_profile_expanded_data_path(profile);
     FILE *file = NULL;
     size_t data_size;
@@ -355,7 +353,8 @@ twc_profile_load(struct t_twc_profile *profile)
         if ((data_size != fread(&data, 1, data_size, file)))
         {
             fclose(file);
-            weechat_printf(profile->buffer, "%scould not load Tox data file, aborting",
+            weechat_printf(profile->buffer,
+                           "%scould not load Tox data file, aborting",
                            weechat_prefix("error"));
             return TWC_RC_ERROR;
         }
@@ -367,15 +366,19 @@ twc_profile_load(struct t_twc_profile *profile)
 
     if (data_size && tox_is_data_encrypted(data))
     {
-        const char *pw = weechat_config_string(profile->options[TWC_PROFILE_OPTION_PASSPHRASE]);
+        const char *pw = weechat_config_string(
+            profile->options[TWC_PROFILE_OPTION_PASSPHRASE]);
 
         if (pw)
         {
-            // evaluate password option and duplicate as tox_*_decrypt wipes it
+            /* evaluate password option and duplicate as tox_*_decrypt wipes
+             * it */
             pw = weechat_string_eval_expression(pw, NULL, NULL, NULL);
-            if (!tox_pass_decrypt(data, data_size, (uint8_t *)pw, strlen(pw), dec_data, NULL))
+            if (!tox_pass_decrypt(data, data_size, (uint8_t *)pw, strlen(pw),
+                                  dec_data, NULL))
             {
-                weechat_printf(profile->buffer, "%scould not decrypt Tox data file, aborting",
+                weechat_printf(profile->buffer,
+                               "%scould not decrypt Tox data file, aborting",
                                weechat_prefix("error"));
                 return TWC_RC_ERROR;
             }
@@ -387,12 +390,13 @@ twc_profile_load(struct t_twc_profile *profile)
     {
         options.savedata_data = data;
     }
-#endif // TOXENCRYPTSAVE_ENABLED
+#endif /* TOXENCRYPTSAVE_ENABLED */
 
-    options.savedata_type = (data_size == 0) ? TOX_SAVEDATA_TYPE_NONE : TOX_SAVEDATA_TYPE_TOX_SAVE;
+    options.savedata_type =
+        (data_size == 0) ? TOX_SAVEDATA_TYPE_NONE : TOX_SAVEDATA_TYPE_TOX_SAVE;
     options.savedata_length = data_size;
 
-    // create Tox
+    /* create Tox */
     TOX_ERR_NEW rc;
     profile->tox = tox_new(&options, &rc);
     if (rc != TOX_ERR_NEW_OK)
@@ -404,7 +408,7 @@ twc_profile_load(struct t_twc_profile *profile)
 
     if (data_size == 0)
     {
-        // no data file loaded, set default name
+        /* no data file loaded, set default name */
         const char *default_name = "Tox-WeeChat User";
 
         const char *name;
@@ -415,35 +419,35 @@ twc_profile_load(struct t_twc_profile *profile)
             name = default_name;
 
         TOX_ERR_SET_INFO rc;
-        tox_self_set_name(profile->tox,
-                          (uint8_t *)name, strlen(name),
-                          &rc);
+        tox_self_set_name(profile->tox, (uint8_t *)name, strlen(name), &rc);
 
         if (rc == TOX_ERR_SET_INFO_TOO_LONG)
-            tox_self_set_name(profile->tox,
-                              (uint8_t *)default_name, strlen(default_name),
-                              NULL);
+            tox_self_set_name(profile->tox, (uint8_t *)default_name,
+                              strlen(default_name), NULL);
     }
 
-    // bootstrap DHT
-    // TODO: add count to config
+    /* bootstrap DHT
+     * TODO: add count to config */
     int bootstrap_node_count = 5;
     for (int i = 0; i < bootstrap_node_count; ++i)
         twc_bootstrap_random_node(profile->tox);
 
-    // start tox_iterate loop
+    /* start tox_iterate loop */
     twc_do_timer_cb(profile, NULL, 0);
 
-    // register Tox callbacks
+    /* register Tox callbacks */
     tox_callback_friend_message(profile->tox, twc_friend_message_callback);
-    tox_callback_friend_connection_status(profile->tox, twc_connection_status_callback);
+    tox_callback_friend_connection_status(profile->tox,
+                                          twc_connection_status_callback);
     tox_callback_friend_name(profile->tox, twc_name_change_callback);
     tox_callback_friend_status(profile->tox, twc_user_status_callback);
-    tox_callback_friend_status_message(profile->tox, twc_status_message_callback);
+    tox_callback_friend_status_message(profile->tox,
+                                       twc_status_message_callback);
     tox_callback_friend_request(profile->tox, twc_friend_request_callback);
     tox_callback_conference_invite(profile->tox, twc_group_invite_callback);
     tox_callback_conference_message(profile->tox, twc_group_message_callback);
-    tox_callback_conference_namelist_change(profile->tox, twc_group_namelist_change_callback);
+    tox_callback_conference_namelist_change(profile->tox,
+                                            twc_group_namelist_change_callback);
     tox_callback_conference_title(profile->tox, twc_group_title_callback);
     return TWC_RC_OK;
 }
@@ -454,11 +458,11 @@ twc_profile_load(struct t_twc_profile *profile)
 void
 twc_profile_unload(struct t_twc_profile *profile)
 {
-    // check that we're not already disconnected
+    /* check that we're not already disconnected */
     if (!(profile->tox))
         return;
 
-    // save and kill tox
+    /* save and kill tox */
     int result = twc_profile_save_data_file(profile);
     tox_kill(profile->tox);
     profile->tox = NULL;
@@ -466,19 +470,17 @@ twc_profile_unload(struct t_twc_profile *profile)
     if (result == -1)
     {
         char *path = twc_profile_expanded_data_path(profile);
-        weechat_printf(NULL,
-                       "%s%s: Could not save Tox data for profile %s to file: %s",
-                       weechat_prefix("error"), weechat_plugin->name,
-                       profile->name,
-                       path);
+        weechat_printf(
+            NULL, "%s%s: Could not save Tox data for profile %s to file: %s",
+            weechat_prefix("error"), weechat_plugin->name, profile->name, path);
         free(path);
     }
 
-    // stop Tox timer
+    /* stop Tox timer */
     weechat_unhook(profile->tox_do_timer);
 
-    // have to refresh and hide bar items even if we were already offline
-    // TODO
+    /* have to refresh and hide bar items even if we were already offline
+     * TODO */
     twc_profile_refresh_online_status(profile);
     twc_profile_set_online_status(profile, false);
 }
@@ -491,9 +493,10 @@ twc_profile_autoload()
 {
     size_t index;
     struct t_twc_list_item *item;
-    twc_list_foreach(twc_profiles, index, item)
+    twc_list_foreach (twc_profiles, index, item)
     {
-        if (TWC_PROFILE_OPTION_BOOLEAN(item->profile, TWC_PROFILE_OPTION_AUTOLOAD))
+        if (TWC_PROFILE_OPTION_BOOLEAN(item->profile,
+                                       TWC_PROFILE_OPTION_AUTOLOAD))
             twc_profile_load(item->profile);
     }
 }
@@ -507,8 +510,7 @@ twc_profile_refresh_online_status(struct t_twc_profile *profile)
 }
 
 void
-twc_profile_set_online_status(struct t_twc_profile *profile,
-                              bool status)
+twc_profile_set_online_status(struct t_twc_profile *profile, bool status)
 {
     if (profile->tox_online ^ status)
     {
@@ -517,18 +519,14 @@ twc_profile_set_online_status(struct t_twc_profile *profile,
 
         if (profile->tox_online)
         {
-            weechat_printf(profile->buffer,
-                           "%s%s: profile %s connected",
-                           weechat_prefix("network"),
-                           weechat_plugin->name,
+            weechat_printf(profile->buffer, "%s%s: profile %s connected",
+                           weechat_prefix("network"), weechat_plugin->name,
                            profile->name);
         }
         else
         {
-            weechat_printf(profile->buffer,
-                           "%s%s: profile %s disconnected",
-                           weechat_prefix("network"),
-                           weechat_plugin->name,
+            weechat_printf(profile->buffer, "%s%s: profile %s disconnected",
+                           weechat_prefix("network"), weechat_plugin->name,
                            profile->name);
         }
     }
@@ -542,7 +540,7 @@ twc_profile_search_name(const char *name)
 {
     size_t index;
     struct t_twc_list_item *item;
-    twc_list_foreach(twc_profiles, index, item)
+    twc_list_foreach (twc_profiles, index, item)
     {
         if (weechat_strcasecmp(item->profile->name, name) == 0)
             return item->profile;
@@ -559,14 +557,14 @@ twc_profile_search_buffer(struct t_gui_buffer *buffer)
 {
     size_t profile_index;
     struct t_twc_list_item *profile_item;
-    twc_list_foreach(twc_profiles, profile_index, profile_item)
+    twc_list_foreach (twc_profiles, profile_index, profile_item)
     {
         if (profile_item->profile->buffer == buffer)
             return profile_item->profile;
 
         size_t chat_index;
         struct t_twc_list_item *chat_item;
-        twc_list_foreach(profile_item->profile->chats, chat_index, chat_item)
+        twc_list_foreach (profile_item->profile->chats, chat_index, chat_item)
         {
             if (chat_item->chat->buffer == buffer)
                 return profile_item->profile;
@@ -597,22 +595,23 @@ twc_profile_set_logging(struct t_twc_profile *profile, bool logging)
     {
         error = true;
         weechat_printf(profile->buffer,
-                "%swarning: failed to %s logging in this buffer!",
-                weechat_prefix("error"), logging ? "enable" : "disable");
+                       "%swarning: failed to %s logging in this buffer!",
+                       weechat_prefix("error"), logging ? "enable" : "disable");
     }
 
     /* signal all chat buffers for profile */
     size_t index;
     struct t_twc_list_item *item;
-    twc_list_foreach(profile->chats, index, item)
+    twc_list_foreach (profile->chats, index, item)
     {
-        if (WEECHAT_RC_ERROR == twc_set_buffer_logging(item->chat->buffer,
-                                                       logging))
+        if (WEECHAT_RC_ERROR ==
+            twc_set_buffer_logging(item->chat->buffer, logging))
         {
             error = true;
             weechat_printf(item->chat->buffer,
-                    "%swarning: failed to %s logging in this buffer!",
-                    weechat_prefix("error"), logging ? "enable" : "disable");
+                           "%swarning: failed to %s logging in this buffer!",
+                           weechat_prefix("error"),
+                           logging ? "enable" : "disable");
         }
     }
 
@@ -624,8 +623,7 @@ twc_profile_set_logging(struct t_twc_profile *profile, bool logging)
  * true, Tox data on disk is also deleted.
  */
 void
-twc_profile_delete(struct t_twc_profile *profile,
-                   bool delete_data)
+twc_profile_delete(struct t_twc_profile *profile, bool delete_data)
 {
     char *data_path = twc_profile_expanded_data_path(profile);
 
@@ -644,17 +642,17 @@ twc_profile_delete(struct t_twc_profile *profile,
 void
 twc_profile_free(struct t_twc_profile *profile)
 {
-    // unload if needed
+    /* unload if needed */
     twc_profile_unload(profile);
 
-    // close buffer
+    /* close buffer */
     if (profile->buffer)
     {
         weechat_buffer_set_pointer(profile->buffer, "close_callback", NULL);
         weechat_buffer_close(profile->buffer);
     }
 
-    // free things
+    /* free things */
     twc_chat_free_list(profile->chats);
     twc_friend_request_free_list(profile->friend_requests);
     twc_group_chat_invite_free_list(profile->group_chat_invites);
@@ -662,7 +660,7 @@ twc_profile_free(struct t_twc_profile *profile)
     free(profile->name);
     free(profile);
 
-    // remove from list
+    /* remove from list */
     twc_list_remove_with_data(twc_profiles, profile);
 }
 
@@ -678,4 +676,3 @@ twc_profile_free_all()
 
     free(twc_profiles);
 }
-

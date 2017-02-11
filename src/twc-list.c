@@ -82,8 +82,7 @@ twc_list_item_new_data_add(struct t_twc_list *list, const void *data)
  * Add an item to the list.
  */
 void
-twc_list_add(struct t_twc_list *list,
-             struct t_twc_list_item *item)
+twc_list_add(struct t_twc_list *list, struct t_twc_list_item *item)
 {
     item->list = list;
 
@@ -140,7 +139,7 @@ twc_list_remove_with_data(struct t_twc_list *list, const void *data)
 {
     size_t index;
     struct t_twc_list_item *item;
-    twc_list_foreach(list, index, item)
+    twc_list_foreach (list, index, item)
     {
         if (item->data == data)
         {
@@ -176,7 +175,7 @@ twc_list_get(struct t_twc_list *list, size_t index)
     struct t_twc_list_item *item;
     if (list->count - index > index / 2)
     {
-        twc_list_foreach(list, current_index, item)
+        twc_list_foreach (list, current_index, item)
         {
             if (current_index == index)
                 return item;
@@ -184,7 +183,7 @@ twc_list_get(struct t_twc_list *list, size_t index)
     }
     else
     {
-        twc_list_foreach_reverse(list, current_index, item)
+        twc_list_foreach_reverse (list, current_index, item)
         {
             if (current_index == index)
                 return item;
@@ -193,4 +192,3 @@ twc_list_get(struct t_twc_list *list, size_t index)
 
     return NULL;
 }
-

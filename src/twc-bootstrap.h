@@ -29,5 +29,4 @@ twc_bootstrap_tox(Tox *tox, const char *address, uint16_t port,
 void
 twc_bootstrap_random_node(Tox *tox);
 
-#endif // TOX_WEECHAT_BOOTSTRAP_H
-
+#endif /* TOX_WEECHAT_BOOTSTRAP_H */

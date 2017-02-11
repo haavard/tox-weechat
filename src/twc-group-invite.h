@@ -40,9 +40,8 @@ struct t_twc_group_chat_invite
 };
 
 int
-twc_group_chat_invite_add(struct t_twc_profile *profile,
-                          int32_t friend_number, uint8_t group_chat_type,
-                          uint8_t *data, size_t size);
+twc_group_chat_invite_add(struct t_twc_profile *profile, int32_t friend_number,
+                          uint8_t group_chat_type, uint8_t *data, size_t size);
 
 int
 twc_group_chat_invite_join(struct t_twc_group_chat_invite *invite);
@@ -51,8 +50,7 @@ void
 twc_group_chat_invite_remove(struct t_twc_group_chat_invite *invite);
 
 struct t_twc_group_chat_invite *
-twc_group_chat_invite_with_index(struct t_twc_profile *profile,
-                                 size_t index);
+twc_group_chat_invite_with_index(struct t_twc_profile *profile, size_t index);
 
 void
 twc_group_chat_invite_free(struct t_twc_group_chat_invite *invite);
@@ -60,5 +58,4 @@ twc_group_chat_invite_free(struct t_twc_group_chat_invite *invite);
 void
 twc_group_chat_invite_free_list(struct t_twc_list *list);
 
-#endif // TOX_WEECHAT_GROUP_INVITE_H
-
+#endif /* TOX_WEECHAT_GROUP_INVITE_H */

@@ -22,18 +22,17 @@
 
 extern struct t_weechat_plugin *weechat_plugin;
 
-/// Return codes used throughout Tox-WeeChat.
+/** Return codes used throughout Tox-WeeChat. */
 enum t_twc_rc
 {
     TWC_RC_OK = 0,
-    /// Generic error return code.
+    /* Generic error return code. */
     TWC_RC_ERROR = -1,
-    /// Malloc error return code.
+    /* Malloc error return code. */
     TWC_RC_ERROR_MALLOC = -2,
 };
 
-#define TWC_MAX_FRIEND_MESSAGE_LENGTH (TOX_MAX_MESSAGE_LENGTH-1)
-#define TWC_MAX_GROUP_MESSAGE_LENGTH  (TOX_MAX_MESSAGE_LENGTH-16)
+#define TWC_MAX_FRIEND_MESSAGE_LENGTH (TOX_MAX_MESSAGE_LENGTH - 1)
+#define TWC_MAX_GROUP_MESSAGE_LENGTH (TOX_MAX_MESSAGE_LENGTH - 16)
 
-#endif // TOX_WEECHAT_H
-
+#endif /* TOX_WEECHAT_H */

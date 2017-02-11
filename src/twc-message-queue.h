@@ -38,8 +38,7 @@ struct t_twc_queued_message
 
 void
 twc_message_queue_add_friend_message(struct t_twc_profile *profile,
-                                     int32_t friend_number,
-                                     const char *message,
+                                     int32_t friend_number, const char *message,
                                      TOX_MESSAGE_TYPE message_type);
 
 void
@@ -52,5 +51,4 @@ twc_message_queue_free_message(struct t_twc_queued_message *message);
 void
 twc_message_queue_free_profile(struct t_twc_profile *profile);
 
-#endif // TOX_WEECHAT_MESSAGE_QUEUE_H
-
+#endif /* TOX_WEECHAT_MESSAGE_QUEUE_H */

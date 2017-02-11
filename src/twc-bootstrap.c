@@ -78,27 +78,24 @@ char *twc_bootstrap_keys[] = {
     /* Maintainer: ws, location: NZ */
     "F202E0936ABEE09067F55B0955C3FF6A84ABEED3C750A9EB930D926D03248F4C",
     /* Maintainer: clearmartin, location: DE */
-    "CD133B521159541FB1D326DE9850F5E56A6C724B5B8E5EB5CD8D950408E95707"
-};
+    "CD133B521159541FB1D326DE9850F5E56A6C724B5B8E5EB5CD8D950408E95707"};
 
 char *twc_bootstrap_addresses[] = {
-    "130.133.110.14", "205.185.116.116", "198.98.51.198",
-    "108.61.165.198", "194.249.212.109", "185.25.116.107",
-    "95.215.46.114", "5.189.176.217", "148.251.23.146", "104.223.122.15",
-    "104.233.104.126", "51.254.84.212", "185.58.206.164", "92.54.84.70",
-    "95.215.44.78", "163.172.136.118", "37.97.185.116", "193.124.186.205",
-    "80.87.193.193", "46.229.52.198", "185.14.30.213", "77.37.160.178",
-    "85.21.144.224", "37.187.122.30", "202.36.75.162", "46.101.197.175"
-};
+    "130.133.110.14",  "205.185.116.116", "198.98.51.198",   "108.61.165.198",
+    "194.249.212.109", "185.25.116.107",  "95.215.46.114",   "5.189.176.217",
+    "148.251.23.146",  "104.223.122.15",  "104.233.104.126", "51.254.84.212",
+    "185.58.206.164",  "92.54.84.70",     "95.215.44.78",    "163.172.136.118",
+    "37.97.185.116",   "193.124.186.205", "80.87.193.193",   "46.229.52.198",
+    "185.14.30.213",   "77.37.160.178",   "85.21.144.224",   "37.187.122.30",
+    "202.36.75.162",   "46.101.197.175"};
 
 uint16_t twc_bootstrap_ports[] = {
-    33445, 33445, 33445, 33445, 33445, 33445, 33445, 5190, 2306, 33445,
-    33445, 33445, 33445, 33445, 33445, 33445, 33445, 5228, 33445, 33445,
-    443, 33440, 33445, 33445, 33445, 443
-};
+    33445, 33445, 33445, 33445, 33445, 33445, 33445, 5190,  2306,
+    33445, 33445, 33445, 33445, 33445, 33445, 33445, 33445, 5228,
+    33445, 33445, 443,   33440, 33445, 33445, 33445, 443};
 
-int twc_bootstrap_count = sizeof(twc_bootstrap_addresses)
-                          / sizeof(twc_bootstrap_addresses[0]);
+int twc_bootstrap_count =
+    sizeof(twc_bootstrap_addresses) / sizeof(twc_bootstrap_addresses[0]);
 
 /**
  * Bootstrap a Tox object with a DHT bootstrap node. Returns the result of
@@ -112,8 +109,7 @@ twc_bootstrap_tox(Tox *tox, const char *address, uint16_t port,
     twc_hex2bin(public_key, TOX_ADDRESS_SIZE, binary_key);
     TOX_ERR_BOOTSTRAP err;
 
-    int result = tox_bootstrap(tox, address, port,
-                               binary_key, &err);
+    int result = tox_bootstrap(tox, address, port, binary_key, &err);
 
     return result;
 }
@@ -125,8 +121,6 @@ void
 twc_bootstrap_random_node(Tox *tox)
 {
     int i = rand() % twc_bootstrap_count;
-    twc_bootstrap_tox(tox, twc_bootstrap_addresses[i],
-                           twc_bootstrap_ports[i],
-                           twc_bootstrap_keys[i]);
+    twc_bootstrap_tox(tox, twc_bootstrap_addresses[i], twc_bootstrap_ports[i],
+                      twc_bootstrap_keys[i]);
 }
-

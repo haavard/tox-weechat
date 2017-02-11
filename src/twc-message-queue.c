@@ -19,13 +19,13 @@
 
 #include <string.h>
 
-#include <weechat/weechat-plugin.h>
 #include <tox/tox.h>
+#include <weechat/weechat-plugin.h>
 
-#include "twc.h"
 #include "twc-list.h"
 #include "twc-profile.h"
 #include "twc-utils.h"
+#include "twc.h"
 
 #include "twc-message-queue.h"
 
@@ -36,12 +36,12 @@ struct t_twc_list *
 twc_message_queue_get_or_create(struct t_twc_profile *profile,
                                 int32_t friend_number)
 {
-    struct t_twc_list *message_queue = weechat_hashtable_get(profile->message_queues, &friend_number);
+    struct t_twc_list *message_queue =
+        weechat_hashtable_get(profile->message_queues, &friend_number);
     if (!message_queue)
     {
         message_queue = twc_list_new();
-        weechat_hashtable_set(profile->message_queues,
-                              &friend_number,
+        weechat_hashtable_set(profile->message_queues, &friend_number,
                               message_queue);
     }
 
@@ -50,12 +50,12 @@ twc_message_queue_get_or_create(struct t_twc_profile *profile,
 
 /**
  * Add a friend message to the message queue and tries to send it if the
- * friend is online. Handles splitting of messages. (TODO: actually split messages)
+ * friend is online. Handles splitting of messages. (TODO: actually split
+ * messages)
  */
 void
 twc_message_queue_add_friend_message(struct t_twc_profile *profile,
-                                     int32_t friend_number,
-                                     const char *message,
+                                     int32_t friend_number, const char *message,
                                      TOX_MESSAGE_TYPE message_type)
 {
     int len = strlen(message);
@@ -63,8 +63,8 @@ twc_message_queue_add_friend_message(struct t_twc_profile *profile,
     {
         int fit_len = twc_fit_utf8(message, TWC_MAX_FRIEND_MESSAGE_LENGTH);
 
-        struct t_twc_queued_message *queued_message
-            = malloc(sizeof(struct t_twc_queued_message));
+        struct t_twc_queued_message *queued_message =
+            malloc(sizeof(struct t_twc_queued_message));
 
         time_t rawtime = time(NULL);
         queued_message->time = malloc(sizeof(struct tm));
@@ -76,15 +76,16 @@ twc_message_queue_add_friend_message(struct t_twc_profile *profile,
         message += fit_len;
         len -= fit_len;
 
-        // create a queue if needed and add message
-        struct t_twc_list *message_queue
-            = twc_message_queue_get_or_create(profile, friend_number);
+        /* create a queue if needed and add message */
+        struct t_twc_list *message_queue =
+            twc_message_queue_get_or_create(profile, friend_number);
         twc_list_item_new_data_add(message_queue, queued_message);
     }
-    
-    // flush if friend is online
-    if (profile->tox
-        && (tox_friend_get_connection_status(profile->tox, friend_number, NULL) != TOX_CONNECTION_NONE))
+
+    /* flush if friend is online */
+    if (profile->tox &&
+        (tox_friend_get_connection_status(profile->tox, friend_number, NULL) !=
+         TOX_CONNECTION_NONE))
         twc_message_queue_flush_friend(profile, friend_number);
 }
 
@@ -95,32 +96,30 @@ void
 twc_message_queue_flush_friend(struct t_twc_profile *profile,
                                int32_t friend_number)
 {
-    struct t_twc_list *message_queue
-        = twc_message_queue_get_or_create(profile, friend_number);
+    struct t_twc_list *message_queue =
+        twc_message_queue_get_or_create(profile, friend_number);
     size_t index;
     struct t_twc_list_item *item;
-    twc_list_foreach(message_queue, index, item)
+    twc_list_foreach (message_queue, index, item)
     {
         struct t_twc_queued_message *queued_message = item->queued_message;
 
-        // TODO: store and deal with message IDs
+        /* TODO: store and deal with message IDs */
         TOX_ERR_FRIEND_SEND_MESSAGE err;
-        (void)tox_friend_send_message(profile->tox,
-                                      friend_number,
+        (void)tox_friend_send_message(profile->tox, friend_number,
                                       queued_message->message_type,
                                       (uint8_t *)queued_message->message,
-                                      strlen(queued_message->message),
-                                      &err);
+                                      strlen(queued_message->message), &err);
 
         if (err == TOX_ERR_FRIEND_SEND_MESSAGE_FRIEND_NOT_CONNECTED)
         {
-            // break if message send failed
+            /* break if message send failed */
             break;
         }
         else
         {
             char *err_str;
-            // check if error occured
+            /* check if error occured */
             switch (err)
             {
                 case TOX_ERR_FRIEND_SEND_MESSAGE_TOO_LONG:
@@ -146,22 +145,20 @@ twc_message_queue_flush_friend(struct t_twc_profile *profile,
             }
             if (err != TOX_ERR_FRIEND_SEND_MESSAGE_OK)
             {
-                struct t_twc_chat *friend_chat
-                    = twc_chat_search_friend(profile, friend_number, true);
+                struct t_twc_chat *friend_chat =
+                    twc_chat_search_friend(profile, friend_number, true);
 
-                weechat_printf(friend_chat->buffer,
-                               "%s%sFailed to send message: %s%s",
-                               weechat_prefix("error"),
-                               weechat_color("chat_highlight"),
-                               err_str,
-                               weechat_color("reset"));
+                weechat_printf(
+                    friend_chat->buffer, "%s%sFailed to send message: %s%s",
+                    weechat_prefix("error"), weechat_color("chat_highlight"),
+                    err_str, weechat_color("reset"));
             }
             twc_message_queue_free_message(queued_message);
             item->queued_message = NULL;
         }
     }
 
-    // remove any now-empty items
+    /* remove any now-empty items */
     while (message_queue->head && !(message_queue->head->queued_message))
         twc_list_remove(message_queue->head);
 }
@@ -200,4 +197,3 @@ twc_message_queue_free_profile(struct t_twc_profile *profile)
                           twc_message_queue_free_map_callback, NULL);
     weechat_hashtable_free(profile->message_queues);
 }
-

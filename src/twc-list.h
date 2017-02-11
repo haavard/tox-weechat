@@ -33,10 +33,9 @@ struct t_twc_list_item
 {
     struct t_twc_list *list;
 
-    // don't know if this is a good idea
-    // probably not
-    union
-    {
+    /* don't know if this is a good idea
+     * probably not */
+    union {
         void *data;
         struct t_twc_profile *profile;
         struct t_twc_friend_request *friend_request;
@@ -79,15 +78,11 @@ twc_list_pop(struct t_twc_list *list);
 struct t_twc_list_item *
 twc_list_get(struct t_twc_list *list, size_t index);
 
-#define twc_list_foreach(list, index, item) \
-    for (item = list->head, index = 0; \
-         item; \
-         item = item->next_item, ++index)
+#define twc_list_foreach(list, index, item)                                    \
+    for (item = list->head, index = 0; item; item = item->next_item, ++index)
 
-#define twc_list_foreach_reverse(list, index, item) \
-    for (item = list->tail, index = list->count - 1; \
-         item; \
+#define twc_list_foreach_reverse(list, index, item)                            \
+    for (item = list->tail, index = list->count - 1; item;                     \
          item = item->prev_item, --index)
 
-#endif // TOX_WEECHAT_LIST_H
-
+#endif /* TOX_WEECHAT_LIST_H */

@@ -17,15 +17,15 @@
  * along with Tox-WeeChat.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <string.h>
 #include <stdio.h>
+#include <string.h>
 
 #include <weechat/weechat-plugin.h>
 
-#include "twc.h"
 #include "twc-list.h"
 #include "twc-profile.h"
 #include "twc-utils.h"
+#include "twc.h"
 
 #include "twc-completion.h"
 
@@ -47,8 +47,7 @@ enum
  */
 int
 twc_completion_friend(const void *pointer, void *data,
-                      const char *completion_item,
-                      struct t_gui_buffer *buffer,
+                      const char *completion_item, struct t_gui_buffer *buffer,
                       struct t_gui_completion *completion)
 {
     int flags = (int)(intptr_t)pointer;
@@ -69,7 +68,8 @@ twc_completion_friend(const void *pointer, void *data,
             char hex_id[TOX_PUBLIC_KEY_SIZE * 2 + 1];
 
             TOX_ERR_FRIEND_GET_PUBLIC_KEY err;
-            tox_friend_get_public_key(profile->tox, friend_numbers[i], tox_id, &err);
+            tox_friend_get_public_key(profile->tox, friend_numbers[i], tox_id,
+                                      &err);
             if (err == TOX_ERR_FRIEND_GET_PUBLIC_KEY_OK)
             {
                 twc_bin2hex(tox_id, TOX_PUBLIC_KEY_SIZE, hex_id);
@@ -83,7 +83,7 @@ twc_completion_friend(const void *pointer, void *data,
         {
             char *name = twc_get_name_nt(profile->tox, friend_numbers[i]);
 
-            // add quotes if needed
+            /* add quotes if needed */
             if (strchr(name, ' '))
             {
                 size_t length = strlen(name) + 3;
@@ -109,23 +109,21 @@ twc_completion_friend(const void *pointer, void *data,
  */
 int
 twc_completion_profile(const void *pointer, void *data,
-                       const char *completion_item,
-                       struct t_gui_buffer *buffer,
+                       const char *completion_item, struct t_gui_buffer *buffer,
                        struct t_gui_completion *completion)
 {
     int flag = (int)(intptr_t)pointer;
 
     size_t index;
     struct t_twc_list_item *item;
-    twc_list_foreach(twc_profiles, index, item)
+    twc_list_foreach (twc_profiles, index, item)
     {
-        if (flag == TWC_ALL_PROFILES
-            || (flag == TWC_LOADED_PROFILES && item->profile->tox != NULL)
-            || (flag == TWC_UNLOADED_PROFILES && item->profile->tox == NULL))
+        if (flag == TWC_ALL_PROFILES ||
+            (flag == TWC_LOADED_PROFILES && item->profile->tox != NULL) ||
+            (flag == TWC_UNLOADED_PROFILES && item->profile->tox == NULL))
         {
-            weechat_hook_completion_list_add(completion,
-                                             item->profile->name,
-                                             0, WEECHAT_LIST_POS_SORT);
+            weechat_hook_completion_list_add(completion, item->profile->name, 0,
+                                             WEECHAT_LIST_POS_SORT);
         }
     }
 
@@ -135,8 +133,7 @@ twc_completion_profile(const void *pointer, void *data,
 void
 twc_completion_init()
 {
-    weechat_hook_completion("tox_profiles", "profile",
-                            twc_completion_profile,
+    weechat_hook_completion("tox_profiles", "profile", twc_completion_profile,
                             (void *)(intptr_t)TWC_ALL_PROFILES, NULL);
     weechat_hook_completion("tox_loaded_profiles", "loaded profile",
                             twc_completion_profile,
@@ -151,4 +148,3 @@ twc_completion_init()
                             twc_completion_friend,
                             (void *)(intptr_t)TWC_COMPLETE_FRIEND_NAME, NULL);
 }
-

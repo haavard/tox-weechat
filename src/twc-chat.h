@@ -20,8 +20,8 @@
 #ifndef TOX_WEECHAT_CHAT_H
 #define TOX_WEECHAT_CHAT_H
 
-#include <stdint.h>
 #include <stdbool.h>
+#include <stdint.h>
 
 struct t_twc_list;
 
@@ -42,12 +42,12 @@ struct t_twc_chat
 };
 
 struct t_twc_chat *
-twc_chat_search_friend(struct t_twc_profile *profile,
-                       int32_t friend_number, bool create_new);
+twc_chat_search_friend(struct t_twc_profile *profile, int32_t friend_number,
+                       bool create_new);
 
 struct t_twc_chat *
-twc_chat_search_group(struct t_twc_profile *profile,
-                      int32_t group_number, bool create_new);
+twc_chat_search_group(struct t_twc_profile *profile, int32_t group_number,
+                      bool create_new);
 
 struct t_twc_chat *
 twc_chat_search_buffer(struct t_gui_buffer *target_buffer);
@@ -56,12 +56,9 @@ enum t_twc_rc
 twc_chat_set_logging(struct t_twc_chat const *const chat, bool logging);
 
 void
-twc_chat_print_message(struct t_twc_chat *chat,
-                       const char *tags,
-                       const char *color,
-                       const char *sender,
-                       const char *message,
-                       TOX_MESSAGE_TYPE message_type);
+twc_chat_print_message(struct t_twc_chat *chat, const char *tags,
+                       const char *color, const char *sender,
+                       const char *message, TOX_MESSAGE_TYPE message_type);
 
 void
 twc_chat_send_message(struct t_twc_chat *chat, const char *message,
@@ -76,5 +73,4 @@ twc_chat_free(struct t_twc_chat *chat);
 void
 twc_chat_free_list(struct t_twc_list *list);
 
-#endif // TOX_WEECHAT_CHAT_H
-
+#endif /* TOX_WEECHAT_CHAT_H */

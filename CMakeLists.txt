@@ -17,19 +17,8 @@
 # along with Tox-WeeChat.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-cmake_minimum_required(VERSION 2.8.11)
-
+cmake_minimum_required(VERSION 2.8.12)
 project(tox-weechat C)
-
-set(CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake ${CMAKE_MODULE_PATH})
-
-find_package(WeeChat REQUIRED)
-find_package(Tox REQUIRED
-    COMPONENTS CORE
-    OPTIONAL_COMPONENTS AV ENCRYPTSAVE)
-
-set(PLUGIN_PATH "lib/weechat/plugins" CACHE PATH
-    "Path to install the plugin binary to.")
 
 add_library(tox MODULE
     src/twc.c
@@ -45,27 +34,33 @@ add_library(tox MODULE
     src/twc-message-queue.c
     src/twc-profile.c
     src/twc-tox-callbacks.c
-    src/twc-utils.c
-)
+    src/twc-utils.c)
 
-set(CMAKE_C_FLAGS_DEBUG "-DTWC_DEBUG")
-set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -std=gnu99 -Wall -Wextra -Wno-unused-parameter")
+set_target_properties(tox PROPERTIES
+    PREFIX ""  # remove lib prefix (libtox.so -> tox.so)
+    C_STANDARD 99)
+target_compile_options(tox PRIVATE -Wall -Wextra -Wno-unused-parameter)
 
-include_directories(${Tox_INCLUDE_DIRS})
-include_directories(${WeeChat_INCLUDE_DIRS})
+# find include and shared library locations
+list(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake")
+find_package(WeeChat)
+find_package(Tox REQUIRED CORE OPTIONAL_COMPONENTS AV ENCRYPTSAVE)
 
-target_link_libraries(tox ${Tox_LIBRARIES})
+target_include_directories(tox PRIVATE
+    "${WeeChat_INCLUDE_DIRS}"
+    "${Tox_INCLUDE_DIRS}")
+target_link_libraries(tox "${Tox_LIBRARIES}")
 
 if(Tox_AV_FOUND)
-    add_definitions(-DTOXAV_ENABLED)
+    target_compile_definitions(tox PRIVATE TOXAV_ENABLED)
 endif()
 
 if(Tox_ENCRYPTSAVE_FOUND)
-    add_definitions(-DTOXENCRYPTSAVE_ENABLED)
+    target_compile_definitions(tox PRIVATE TOXENCRYPTSAVE_ENABLED)
 endif()
 
-# remove lib prefix (libtox.so -> tox.so)
-set_target_properties(tox PROPERTIES PREFIX "")
-
+# install plugin binary
+set(PLUGIN_PATH "lib/weechat/plugins" CACHE PATH
+    "Path to install the plugin binary to.")
 install(TARGETS tox DESTINATION "${PLUGIN_PATH}")
 

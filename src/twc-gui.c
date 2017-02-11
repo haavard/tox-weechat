@@ -5,7 +5,8 @@
  *
  * Tox-WeeChat is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or * (at your option) any later version.
+ * the Free Software Foundation, either version 3 of the License, or * (at your
+ * option) any later version.
  *
  * Tox-WeeChat is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -19,20 +20,18 @@
 #include <stdio.h>
 #include <string.h>
 
-#include <weechat/weechat-plugin.h>
 #include <tox/tox.h>
+#include <weechat/weechat-plugin.h>
 
-#include "twc.h"
 #include "twc-profile.h"
 #include "twc-utils.h"
+#include "twc.h"
 
 #include "twc-gui.h"
 
 char *
-twc_bar_item_away(const void *pointer, void *data,
-                  struct t_gui_bar_item *item,
-                  struct t_gui_window *window,
-                  struct t_gui_buffer *buffer,
+twc_bar_item_away(const void *pointer, void *data, struct t_gui_bar_item *item,
+                  struct t_gui_window *window, struct t_gui_buffer *buffer,
                   struct t_hashtable *extra_info)
 {
     struct t_twc_profile *profile = twc_profile_search_buffer(buffer);
@@ -90,23 +89,19 @@ twc_bar_item_buffer_plugin(const void *pointer, void *data,
 
     const char *profile_name = profile->name;
 
-    snprintf(string, sizeof(string),
-             "%s%s/%s%s%s/%s%s",
-             plugin_name,
-             weechat_color("bar_delim"),
-             weechat_color("bar_fg"),
-             profile_name,
-             weechat_color("bar_delim"),
-             weechat_color("bar_fg"),
+    snprintf(string, sizeof(string), "%s%s/%s%s%s/%s%s", plugin_name,
+             weechat_color("bar_delim"), weechat_color("bar_fg"), profile_name,
+             weechat_color("bar_delim"), weechat_color("bar_fg"),
              profile->tox_online ? "online" : "offline");
 
     return strdup(string);
 }
 
-void twc_gui_init()
+void
+twc_gui_init()
 {
     weechat_bar_item_new("away", twc_bar_item_away, NULL, NULL);
     weechat_bar_item_new("input_prompt", twc_bar_item_input_prompt, NULL, NULL);
-    weechat_bar_item_new("buffer_plugin", twc_bar_item_buffer_plugin, NULL, NULL);
+    weechat_bar_item_new("buffer_plugin", twc_bar_item_buffer_plugin, NULL,
+                         NULL);
 }
-

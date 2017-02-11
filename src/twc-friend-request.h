@@ -36,8 +36,7 @@ struct t_twc_friend_request
 };
 
 int
-twc_friend_request_add(struct t_twc_profile *profile,
-                       const uint8_t *client_id,
+twc_friend_request_add(struct t_twc_profile *profile, const uint8_t *client_id,
                        const char *message);
 
 bool
@@ -47,8 +46,7 @@ void
 twc_friend_request_remove(struct t_twc_friend_request *request);
 
 struct t_twc_friend_request *
-twc_friend_request_with_index(struct t_twc_profile *profile,
-                              int64_t index);
+twc_friend_request_with_index(struct t_twc_profile *profile, int64_t index);
 
 void
 twc_friend_request_free(struct t_twc_friend_request *request);
@@ -56,5 +54,4 @@ twc_friend_request_free(struct t_twc_friend_request *request);
 void
 twc_friend_request_free_list(struct t_twc_list *list);
 
-#endif // TOX_WEECHAT_FRIEND_REQUEST_H
-
+#endif /* TOX_WEECHAT_FRIEND_REQUEST_H */

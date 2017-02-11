@@ -19,13 +19,13 @@
 
 #include <string.h>
 
-#include <weechat/weechat-plugin.h>
 #include <tox/tox.h>
+#include <weechat/weechat-plugin.h>
 
-#include "twc.h"
 #include "twc-list.h"
 #include "twc-profile.h"
 #include "twc-utils.h"
+#include "twc.h"
 
 #include "twc-friend-request.h"
 
@@ -36,18 +36,17 @@
  * other error.
  */
 int
-twc_friend_request_add(struct t_twc_profile *profile,
-                       const uint8_t *client_id,
+twc_friend_request_add(struct t_twc_profile *profile, const uint8_t *client_id,
                        const char *message)
 {
-    size_t max_request_count =
-        TWC_PROFILE_OPTION_INTEGER(profile, TWC_PROFILE_OPTION_MAX_FRIEND_REQUESTS);
+    size_t max_request_count = TWC_PROFILE_OPTION_INTEGER(
+        profile, TWC_PROFILE_OPTION_MAX_FRIEND_REQUESTS);
     if (profile->friend_requests->count >= max_request_count)
         return -1;
 
-    // create a new request
-    struct t_twc_friend_request *request
-        = malloc(sizeof(struct t_twc_friend_request));
+    /* create a new request */
+    struct t_twc_friend_request *request =
+        malloc(sizeof(struct t_twc_friend_request));
     if (!request)
         return -2;
 
@@ -114,4 +113,3 @@ twc_friend_request_free_list(struct t_twc_list *list)
 
     free(list);
 }
-

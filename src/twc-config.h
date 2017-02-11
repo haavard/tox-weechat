@@ -44,5 +44,4 @@ twc_config_write();
 void
 twc_config_init_profile(struct t_twc_profile *profile);
 
-#endif // TOX_WEECHAT_CONFIG_H
-
+#endif /* TOX_WEECHAT_CONFIG_H */

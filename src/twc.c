@@ -21,11 +21,11 @@
 
 #include <weechat/weechat-plugin.h>
 
-#include "twc-profile.h"
 #include "twc-commands.h"
-#include "twc-gui.h"
-#include "twc-config.h"
 #include "twc-completion.h"
+#include "twc-config.h"
+#include "twc-gui.h"
+#include "twc-profile.h"
 
 #include "twc.h"
 
@@ -53,8 +53,8 @@ weechat_plugin_init(struct t_weechat_plugin *plugin, int argc, char *argv[])
     bool no_autoconnect = false;
     for (int i = 0; i < argc; i++)
     {
-        if (weechat_strcasecmp(argv[i], "-a") == 0
-            || weechat_strcasecmp(argv[i], "--no-connect") == 0)
+        if (weechat_strcasecmp(argv[i], "-a") == 0 ||
+            weechat_strcasecmp(argv[i], "--no-connect") == 0)
         {
             no_autoconnect = true;
         }
@@ -74,4 +74,3 @@ weechat_plugin_end(struct t_weechat_plugin *plugin)
 
     return WEECHAT_RC_OK;
 }
-

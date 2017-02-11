@@ -19,17 +19,17 @@
 
 #include <string.h>
 
-#include <weechat/weechat-plugin.h>
 #include <tox/tox.h>
+#include <weechat/weechat-plugin.h>
 
 #ifdef TOXAV_ENABLED
-    #include <tox/toxav.h>
-#endif // TOXAV_ENABLED
+#include <tox/toxav.h>
+#endif /* TOXAV_ENABLED */
 
-#include "twc.h"
 #include "twc-list.h"
 #include "twc-profile.h"
 #include "twc-utils.h"
+#include "twc.h"
 
 #include "twc-group-invite.h"
 
@@ -39,13 +39,12 @@
  * Returns the index of the invite on success, -1 on error.
  */
 int
-twc_group_chat_invite_add(struct t_twc_profile *profile,
-                          int32_t friend_number, uint8_t group_chat_type,
-                          uint8_t *data, size_t size)
+twc_group_chat_invite_add(struct t_twc_profile *profile, int32_t friend_number,
+                          uint8_t group_chat_type, uint8_t *data, size_t size)
 {
-    // create a new invite object
-    struct t_twc_group_chat_invite *invite
-        = malloc(sizeof(struct t_twc_group_chat_invite));
+    /* create a new invite object */
+    struct t_twc_group_chat_invite *invite =
+        malloc(sizeof(struct t_twc_group_chat_invite));
     if (!invite)
         return -1;
 
@@ -75,15 +74,15 @@ twc_group_chat_invite_join(struct t_twc_group_chat_invite *invite)
     switch (invite->group_chat_type)
     {
         case TOX_CONFERENCE_TYPE_TEXT:
-            rc = tox_conference_join(invite->profile->tox, invite->friend_number,
-                                     invite->data, invite->data_size, &err);
+            rc =
+                tox_conference_join(invite->profile->tox, invite->friend_number,
+                                    invite->data, invite->data_size, &err);
             break;
 #ifdef TOXAV_ENABLED
         case TOX_CONFERENCE_TYPE_AV:
             rc = toxav_join_av_groupchat(invite->profile->tox,
-                                         invite->friend_number,
-                                         invite->data, invite->data_size,
-                                         NULL, NULL);
+                                         invite->friend_number, invite->data,
+                                         invite->data_size, NULL, NULL);
             break;
 #endif
         default:
@@ -112,8 +111,7 @@ twc_group_chat_invite_remove(struct t_twc_group_chat_invite *invite)
  * Get group chat invite with a given index.
  */
 struct t_twc_group_chat_invite *
-twc_group_chat_invite_with_index(struct t_twc_profile *profile,
-                                 size_t index)
+twc_group_chat_invite_with_index(struct t_twc_profile *profile, size_t index)
 {
     struct t_twc_list_item *item =
         twc_list_get(profile->group_chat_invites, index);
@@ -145,4 +143,3 @@ twc_group_chat_invite_free_list(struct t_twc_list *list)
 
     free(list);
 }
-

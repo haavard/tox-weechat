@@ -23,8 +23,7 @@
 #include <tox/tox.h>
 
 int
-twc_do_timer_cb(const void *pointer, void *data,
-                int remaining_calls);
+twc_do_timer_cb(const void *pointer, void *data, int remaining_calls);
 
 void
 twc_friend_message_callback(Tox *tox, uint32_t friend_number,
@@ -36,9 +35,8 @@ twc_connection_status_callback(Tox *tox, uint32_t friend_number,
                                TOX_CONNECTION status, void *data);
 
 void
-twc_name_change_callback(Tox *tox, uint32_t friend_number,
-                         const uint8_t *name, size_t length,
-                         void *data);
+twc_name_change_callback(Tox *tox, uint32_t friend_number, const uint8_t *name,
+                         size_t length, void *data);
 
 void
 twc_user_status_callback(Tox *tox, uint32_t friend_number,
@@ -46,45 +44,37 @@ twc_user_status_callback(Tox *tox, uint32_t friend_number,
 
 void
 twc_status_message_callback(Tox *tox, uint32_t friend_number,
-                            const uint8_t *message, size_t length,
-                            void *data);
+                            const uint8_t *message, size_t length, void *data);
 
 void
 twc_friend_request_callback(Tox *tox, const uint8_t *public_key,
-                            const uint8_t *message, size_t length,
-                            void *data);
+                            const uint8_t *message, size_t length, void *data);
 
 void
-twc_group_invite_callback(Tox *tox,
-                          uint32_t friend_number, TOX_CONFERENCE_TYPE type,
-                          const uint8_t *invite_data, size_t length,
-                          void *data);
+twc_group_invite_callback(Tox *tox, uint32_t friend_number,
+                          TOX_CONFERENCE_TYPE type, const uint8_t *invite_data,
+                          size_t length, void *data);
 
 void
-twc_group_message_callback(Tox *tox,
-                           uint32_t group_number, uint32_t peer_number,
-                           TOX_MESSAGE_TYPE type, const uint8_t *message,
-                           size_t length, void *data);
+twc_group_message_callback(Tox *tox, uint32_t group_number,
+                           uint32_t peer_number, TOX_MESSAGE_TYPE type,
+                           const uint8_t *message, size_t length, void *data);
 
 void
-twc_group_namelist_change_callback(Tox *tox,
-                                   uint32_t group_number, uint32_t peer_number,
+twc_group_namelist_change_callback(Tox *tox, uint32_t group_number,
+                                   uint32_t peer_number,
                                    TOX_CONFERENCE_STATE_CHANGE change_type,
                                    void *data);
 
 void
-twc_group_title_callback(Tox *tox,
-                         uint32_t group_number, uint32_t peer_number,
-                         const uint8_t *title, size_t length,
-                         void *data);
+twc_group_title_callback(Tox *tox, uint32_t group_number, uint32_t peer_number,
+                         const uint8_t *title, size_t length, void *data);
 
 #ifndef NDEBUG
 void
-twc_tox_log_callback(Tox *tox,
-                     TOX_LOG_LEVEL level,
-                     const char *file, uint32_t line, const char *func,
-                     const char *message, void *user_data);
+twc_tox_log_callback(Tox *tox, TOX_LOG_LEVEL level, const char *file,
+                     uint32_t line, const char *func, const char *message,
+                     void *user_data);
 #endif /* !NDEBUG */
 
-#endif // TOX_WEECHAT_TOX_CALLBACKS_H
-
+#endif /* TOX_WEECHAT_TOX_CALLBACKS_H */
