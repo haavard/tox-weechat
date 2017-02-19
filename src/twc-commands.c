@@ -1246,6 +1246,13 @@ twc_commands_init()
                          "%(tox_friend_name)|%(tox_friend_tox_id)", twc_cmd_msg,
                          NULL, NULL);
 
+    weechat_hook_command("query", "send a message to a Tox friend",
+                         "<number>|<name>|<Tox ID> [<message>]",
+                         "number, name, Tox ID: friend to message\n"
+                         "message: message to send",
+                         "%(tox_friend_name)|%(tox_friend_tox_id)", twc_cmd_msg,
+                         NULL, NULL);
+
     weechat_hook_command("myid", "get your Tox ID to give to friends", "", "",
                          NULL, twc_cmd_myid, NULL, NULL);
 
