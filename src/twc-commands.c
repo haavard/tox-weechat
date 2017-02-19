@@ -775,6 +775,81 @@ twc_cmd_name(const void *pointer, void *data, struct t_gui_buffer *buffer,
 }
 
 /**
+ * Command /names callback.
+ */
+int
+twc_cmd_names(const void *pointer, void *data, struct t_gui_buffer *buffer,
+              int argc, char **argv, char **argv_eol)
+{
+    struct t_twc_chat *chat = twc_chat_search_buffer(buffer);
+    TWC_CHECK_CHAT(chat);
+    TWC_CHECK_PROFILE_LOADED(chat->profile);
+
+    if (chat->group_number < 0)
+    {
+        weechat_printf(NULL,
+                       "%s%s: command \"%s\" must be executed in a group chat "
+                       "buffer",
+                       weechat_prefix("error"), weechat_plugin->name, argv[0]);
+        return WEECHAT_RC_OK;
+    }
+
+    size_t const num_names = weechat_list_size(chat->nicks);
+
+    if (num_names == 0)
+        return WEECHAT_RC_ERROR;
+
+    char const *names[num_names];
+    char const *colors[num_names];
+    size_t total_names_length = 0;
+
+    /* iterate over all names, retrieving length and string representation */
+    struct t_weelist_item *name = weechat_list_get(chat->nicks, 0);
+    size_t index = 0;
+    while (name != NULL)
+    {
+        char const *const name_string = weechat_list_string(name);
+        char const *const color = weechat_info_get("nick_color", name_string);
+
+        names[index] = name_string;
+        colors[index] = color;
+
+        total_names_length += strlen(name_string) + strlen(color);
+
+        ++index;
+        name = weechat_list_next(name);
+    }
+
+    /* allocate space for all names, plus spaces and colours, plus \0 */
+    char *const names_str = malloc(total_names_length + num_names);
+    if (!names_str)
+        return WEECHAT_RC_ERROR;
+
+    /* copy all names into name_str buffer, with nick coloring */
+    size_t loc = 0;
+    for (size_t index = 0; index < num_names; ++index)
+    {
+        if (loc > 0)
+            names_str[loc++] = ' ';
+
+        char const *const name = names[index];
+        char const *const color = colors[index];
+
+        strcpy(names_str + loc, color);
+        loc += strlen(color);
+
+        strcpy(names_str + loc, name);
+        loc += strlen(name);
+    }
+
+    weechat_printf(chat->buffer, "%s%zu names: %s", weechat_prefix("network"),
+                   num_names, names_str);
+
+    free(names_str);
+    return WEECHAT_RC_OK;
+}
+
+/**
  * Command /nospam callback.
  */
 int
@@ -1176,6 +1251,9 @@ twc_commands_init()
 
     weechat_hook_command("name", "change your Tox name", "<name>",
                          "name: your new name", NULL, twc_cmd_name, NULL, NULL);
+
+    weechat_hook_command("names", "list names in a group chat", "", "", NULL,
+                         twc_cmd_names, NULL, NULL);
 
     weechat_hook_command("nospam", "change nospam value", "[<hex value>]",
                          "hex value: new nospam value; when omitted, a random "
