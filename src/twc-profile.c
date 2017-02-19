@@ -519,15 +519,13 @@ twc_profile_set_online_status(struct t_twc_profile *profile, bool status)
 
         if (profile->tox_online)
         {
-            weechat_printf(profile->buffer, "%s%s: profile %s connected",
-                           weechat_prefix("network"), weechat_plugin->name,
-                           profile->name);
+            weechat_printf(profile->buffer, "%sprofile %s connected",
+                           weechat_prefix("network"), profile->name);
         }
         else
         {
-            weechat_printf(profile->buffer, "%s%s: profile %s disconnected",
-                           weechat_prefix("network"), weechat_plugin->name,
-                           profile->name);
+            weechat_printf(profile->buffer, "%sprofile %s disconnected",
+                           weechat_prefix("network"), profile->name);
         }
     }
 }
