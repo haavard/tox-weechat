@@ -39,21 +39,16 @@ twc_bar_item_away(const void *pointer, void *data, struct t_gui_bar_item *item,
     if (!profile || !(profile->tox))
         return NULL;
 
-    char *status;
     switch (tox_self_get_status(profile->tox))
     {
+        default:
         case TOX_USER_STATUS_NONE:
-            status = NULL;
-            break;
+            return NULL;
         case TOX_USER_STATUS_BUSY:
-            status = strdup("busy");
-            break;
+            return strdup("busy");
         case TOX_USER_STATUS_AWAY:
-            status = strdup("away");
-            break;
+            return strdup("away");
     }
-
-    return status;
 }
 
 char *
