@@ -1041,17 +1041,8 @@ twc_cmd_topic(const void *pointer, void *data, struct t_gui_buffer *buffer,
     TOX_ERR_CONFERENCE_TITLE err = TOX_ERR_CONFERENCE_TITLE_OK;
 
     struct t_twc_chat *chat = twc_chat_search_buffer(buffer);
-    TWC_CHECK_CHAT(chat);
+    TWC_CHECK_GROUP_CHAT(chat);
     TWC_CHECK_PROFILE_LOADED(chat->profile);
-
-    if (chat->group_number < 0)
-    {
-        weechat_printf(NULL,
-                       "%s%s: command \"%s\" must be executed in a group chat "
-                       "buffer",
-                       weechat_prefix("error"), weechat_plugin->name, argv[0]);
-        return WEECHAT_RC_OK;
-    }
 
     char *topic = argv_eol[1];
 
