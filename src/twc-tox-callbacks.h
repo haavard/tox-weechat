@@ -61,10 +61,16 @@ twc_group_message_callback(Tox *tox, uint32_t group_number,
                            const uint8_t *message, size_t length, void *data);
 
 void
-twc_group_namelist_change_callback(Tox *tox, uint32_t group_number,
-                                   uint32_t peer_number,
-                                   TOX_CONFERENCE_STATE_CHANGE change_type,
-                                   void *data);
+twc_group_peer_list_changed_callback(Tox *tox, uint32_t group_number,
+                                     void *data);
+
+void
+twc_group_peer_name_callback(Tox *tox, uint32_t group_number,
+                             uint32_t peer_number,
+                             const uint8_t *nick,
+                             size_t nick_len,
+                             void *data);
+
 
 void
 twc_group_title_callback(Tox *tox, uint32_t group_number, uint32_t peer_number,
