@@ -400,10 +400,8 @@ twc_group_message_callback(Tox *tox, uint32_t group_number,
 }
 
 void
-twc_group_namelist_change_callback(Tox *tox, uint32_t group_number,
-                                   uint32_t peer_number,
-                                   TOX_CONFERENCE_STATE_CHANGE change_type,
-                                   void *data)
+twc_group_peer_list_changed_callback(Tox *tox, uint32_t group_number,
+                                     void *data)
 {
     struct t_twc_profile *profile = data;
     struct t_twc_chat *chat =
@@ -424,7 +422,7 @@ twc_group_namelist_change_callback(Tox *tox, uint32_t group_number,
         for (i = 0; i < npeers; i++)
         {
             char *name = twc_get_peer_name_nt(profile->tox, group_number, i);
-            weechat_list_add(new_nicks, name, WEECHAT_LIST_POS_SORT, NULL);
+            weechat_list_add(new_nicks, name, WEECHAT_LIST_POS_END, NULL);
             free(name);
         }
     }
@@ -468,6 +466,51 @@ twc_group_namelist_change_callback(Tox *tox, uint32_t group_number,
     weechat_list_free(chat->nicks);
     chat->nicks = new_nicks;
 }
+
+void
+twc_group_peer_name_callback(Tox *tox, uint32_t group_number,
+                                       uint32_t peer_number,
+                                       const uint8_t *pname,
+                                       size_t pname_len,
+                                       void *data)
+{
+    struct t_twc_profile *profile = data;
+    struct t_twc_chat *chat =
+        twc_chat_search_group(profile, group_number, true);
+
+    struct t_gui_nick *nick = NULL;
+    const char *prev_name;
+    char *name;
+
+    struct t_weelist_item *n;
+
+    n = weechat_list_get(chat->nicks, peer_number);
+    if (!n)
+    {
+        // We missed some events, fallback to full list update
+        twc_group_peer_list_changed_callback(tox, group_number, data);
+        return;
+    }
+
+    prev_name = weechat_list_string(n);
+    name = twc_null_terminate(pname, pname_len);
+
+    nick = weechat_nicklist_search_nick(chat->buffer,
+                                        chat->nicklist_group, prev_name);
+
+    weechat_nicklist_remove_nick(chat->buffer, nick);
+
+    weechat_printf(chat->buffer, "%s%s is now known as %s",
+                   weechat_prefix("network"), prev_name, name);
+
+    weechat_list_set(n, name);
+
+    weechat_nicklist_add_nick(chat->buffer, chat->nicklist_group, name,
+                              NULL, NULL, NULL, 1);
+
+    free(name);
+}
+
 
 void
 twc_group_title_callback(Tox *tox, uint32_t group_number, uint32_t peer_number,

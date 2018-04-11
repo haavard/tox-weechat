@@ -446,9 +446,12 @@ twc_profile_load(struct t_twc_profile *profile)
     tox_callback_friend_request(profile->tox, twc_friend_request_callback);
     tox_callback_conference_invite(profile->tox, twc_group_invite_callback);
     tox_callback_conference_message(profile->tox, twc_group_message_callback);
-    tox_callback_conference_namelist_change(profile->tox,
-                                            twc_group_namelist_change_callback);
+    tox_callback_conference_peer_list_changed(profile->tox,
+                                              twc_group_peer_list_changed_callback);
+    tox_callback_conference_peer_name(profile->tox,
+                                      twc_group_peer_name_callback);
     tox_callback_conference_title(profile->tox, twc_group_title_callback);
+
     return TWC_RC_OK;
 }
 
