@@ -89,7 +89,7 @@ twc_connection_status_callback(Tox *tox, uint32_t friend_number,
         twc_chat_search_friend(profile, friend_number, false);
 
     /* TODO: print in friend's buffer if it exists */
-    if (status == 0)
+    if (status == TOX_CONNECTION_NONE)
     {
         nick = weechat_nicklist_search_nick(profile->buffer,
                                             profile->nicklist_group, name);
@@ -104,7 +104,7 @@ twc_connection_status_callback(Tox *tox, uint32_t friend_number,
                            weechat_prefix("network"), name);
         }
     }
-    else if (status == 1)
+    else if ((status == TOX_CONNECTION_TCP) || (status == TOX_CONNECTION_UDP))
     {
         weechat_nicklist_add_nick(profile->buffer, profile->nicklist_group,
                                   name, NULL, NULL, NULL, 1);
