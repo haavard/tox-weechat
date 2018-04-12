@@ -482,6 +482,7 @@ twc_group_peer_name_callback(Tox *tox, uint32_t group_number,
     struct t_gui_nick *nick = NULL;
     const char *prev_name;
     char *name;
+    bool rc;
     TOX_ERR_CONFERENCE_PEER_QUERY err = TOX_ERR_CONFERENCE_PEER_QUERY_OK;
 
     struct t_weelist_item *n;
@@ -517,8 +518,11 @@ twc_group_peer_name_callback(Tox *tox, uint32_t group_number,
 
     weechat_nicklist_remove_nick(chat->buffer, nick);
 
-    weechat_printf(chat->buffer, "%s%s is now known as %s",
-                   weechat_prefix("network"), prev_name, name);
+    err = TOX_ERR_CONFERENCE_PEER_QUERY_OK;
+    rc = tox_conference_peer_number_is_ours(tox, group_number, peer_number, &err);
+    if ((err == TOX_ERR_CONFERENCE_PEER_QUERY_OK) && (!rc))
+        weechat_printf(chat->buffer, "%s%s is now known as %s",
+                       weechat_prefix("network"), prev_name, name);
 
     weechat_list_set(n, name);
 
