@@ -15,7 +15,7 @@ Standard][3].
  - Encrypted save files
 
 ## Installation
-Tox-WeeChat is tested with [WeeChat][2] 1.7 and [TokTok c-toxcore][5] 0.1.6.
+Tox-WeeChat is tested with [WeeChat][2] 2.1 and [TokTok c-toxcore][5] 0.2.1.
 It also requires CMake 2.8.12 or newer to be built. Installation is fairly
 simple; after getting the source code, compile and install with CMake:
 
