@@ -204,7 +204,6 @@ twc_config_init_option(struct t_twc_profile *profile,
     char *description;
     char *string_values = NULL;
     int min = 0, max = 0;
-    char *value;
     char *default_value = NULL;
     bool null_allowed = false;
 
@@ -291,7 +290,6 @@ twc_config_init_option(struct t_twc_profile *profile,
     }
 
     null_allowed = null_allowed || !is_default_profile;
-    value = is_default_profile ? default_value : NULL;
 
     /* store option index as data for WeeChat callbacks */
     int *index_check_pointer = malloc(sizeof(int));
@@ -307,7 +305,7 @@ twc_config_init_option(struct t_twc_profile *profile,
 
     return weechat_config_new_option(
         twc_config_file, section, option_name, type, description, string_values,
-        min, max, default_value, value, null_allowed,
+        min, max, default_value, default_value, null_allowed,
         twc_config_profile_check_value_callback, profile, index_check_pointer,
         twc_config_profile_change_callback, profile, index_change_pointer, NULL,
         NULL, NULL);
