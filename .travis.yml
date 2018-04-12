@@ -15,7 +15,7 @@ env:
 install:
   # install libsodium, required by libtoxcore
   - mkdir libsodium && pushd libsodium
-    && curl -fSsL "https://download.libsodium.org/libsodium/releases/libsodium-1.0.11.tar.gz"
+    && curl -fSsL "https://download.libsodium.org/libsodium/releases/libsodium-1.0.16.tar.gz"
        | tar -xz --strip-components 1
     && ./configure --prefix="$DEPENDENCY_DIR"
     && make install
@@ -23,7 +23,7 @@ install:
 
   # install libtoxcore
   - mkdir c-toxcore && pushd c-toxcore
-    && curl -fSsL "https://github.com/TokTok/c-toxcore/archive/v0.1.6.tar.gz"
+    && curl -fSsL "https://github.com/TokTok/c-toxcore/archive/v0.2.1.tar.gz"
        | tar -xz --strip-components 1
     && autoreconf -if
     && ./configure --disable-ntox --disable-tests --disable-daemon
