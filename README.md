@@ -50,7 +50,7 @@ Make sure the proxy type, address and port is correct, and that UDP is
 disabled (`/set tox.profile.*.udp`).
 
 ## License
-Copyright (c) 2017 Håvard Pettersson <mail@haavard.me>
+Copyright (c) 2018 Håvard Pettersson <mail@haavard.me>
 
 This file is part of Tox-WeeChat.
 
