@@ -37,6 +37,7 @@ struct t_twc_group_chat_invite
     uint8_t group_chat_type;
     uint8_t *data;
     size_t data_size;
+    uint32_t autojoin_delay;
 };
 
 int

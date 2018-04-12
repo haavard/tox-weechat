@@ -57,6 +57,11 @@ twc_group_chat_invite_add(struct t_twc_profile *profile, int32_t friend_number,
     invite->data = data_copy;
     invite->data_size = size;
 
+    if (TWC_PROFILE_OPTION_BOOLEAN(profile, TWC_PROFILE_OPTION_AUTOJOIN))
+        invite->autojoin_delay = TWC_PROFILE_OPTION_INTEGER(profile, TWC_PROFILE_OPTION_AUTOJOIN_DELAY);
+    else
+        invite->autojoin_delay = 0;
+
     twc_list_item_new_data_add(profile->group_chat_invites, invite);
 
     return profile->group_chat_invites->count - 1;

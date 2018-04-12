@@ -39,9 +39,9 @@ struct t_config_option *twc_config_friend_request_message;
 struct t_config_option *twc_config_short_id_size;
 
 char *twc_profile_option_names[TWC_PROFILE_NUM_OPTIONS] = {
-    "save_file",     "autoload",   "autojoin",   "max_friend_requests",
-    "proxy_address", "proxy_port", "proxy_type", "udp",
-    "ipv6",          "passphrase", "logging",
+    "save_file", "autoload", "autojoin", "autojoin_delay",
+    "max_friend_requests", "proxy_address", "proxy_port", "proxy_type",
+    "udp", "ipv6", "passphrase", "logging",
 };
 
 /**
@@ -221,6 +221,15 @@ twc_config_init_option(struct t_twc_profile *profile,
             description = "automatically join all groups you are invited in "
                           "by your friends";
             default_value = "off";
+            break;
+        case TWC_PROFILE_OPTION_AUTOJOIN_DELAY:
+            type = "integer";
+            description = "delay befor do autojoin (in ms) this required to "
+                          "tox from entering incorrect state and stop processing "
+                          "group events";
+            min = 0;
+            max = INT_MAX;
+            default_value = "5000";
             break;
         case TWC_PROFILE_OPTION_IPV6:
             type = "boolean";
