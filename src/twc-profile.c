@@ -361,6 +361,9 @@ twc_profile_load(struct t_twc_profile *profile)
         fclose(file);
     }
 
+    options.savedata_data = data;
+    options.savedata_length = data_size;
+
 #if TOXENCRYPTSAVE_ENABLED
     uint8_t dec_data[data_size];
 
@@ -382,19 +385,21 @@ twc_profile_load(struct t_twc_profile *profile)
                                weechat_prefix("error"));
                 return TWC_RC_ERROR;
             }
-            data_size -= TOX_PASS_ENCRYPTION_EXTRA_LENGTH;
+            options.savedata_data = dec_data;
+            options.savedata_length -= TOX_PASS_ENCRYPTION_EXTRA_LENGTH;
         }
-        options.savedata_data = dec_data;
-    }
-    else
-    {
-        options.savedata_data = data;
+        else
+        {
+            weechat_printf(profile->buffer,
+                           "%scould not decrypt Tox data file (no passphrase "
+                           "specified)", weechat_prefix("error"));
+            return TWC_RC_ERROR;
+        }
     }
 #endif /* TOXENCRYPTSAVE_ENABLED */
 
     options.savedata_type =
         (data_size == 0) ? TOX_SAVEDATA_TYPE_NONE : TOX_SAVEDATA_TYPE_TOX_SAVE;
-    options.savedata_length = data_size;
 
     /* create Tox */
     TOX_ERR_NEW rc;
