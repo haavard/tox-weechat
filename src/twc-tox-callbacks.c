@@ -478,11 +478,28 @@ twc_group_peer_name_callback(Tox *tox, uint32_t group_number,
     struct t_twc_chat *chat =
         twc_chat_search_group(profile, group_number, true);
 
+    int npeers, len;
     struct t_gui_nick *nick = NULL;
     const char *prev_name;
     char *name;
+    TOX_ERR_CONFERENCE_PEER_QUERY err = TOX_ERR_CONFERENCE_PEER_QUERY_OK;
 
     struct t_weelist_item *n;
+
+    npeers = tox_conference_peer_count(profile->tox, group_number, &err);
+
+    if (err == TOX_ERR_CONFERENCE_PEER_QUERY_OK)
+    {
+        len = weechat_list_size(chat->nicks);
+        if (len != npeers)
+        {
+            // We missed some events, fallback to full list update
+            twc_group_peer_list_changed_callback(tox, group_number, data);
+            return;
+        }
+    }
+    else
+        return;
 
     n = weechat_list_get(chat->nicks, peer_number);
     if (!n)
