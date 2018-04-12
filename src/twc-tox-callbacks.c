@@ -40,12 +40,18 @@
 int
 twc_do_timer_cb(const void *pointer, void *data, int remaining_calls)
 {
+    uint32_t interval;
+    int i;
+    int64_t rc;
+    char *tags;
+
     /* TODO: don't strip the const */
     struct t_twc_profile *profile = (void *)pointer;
 
+    interval = tox_iteration_interval(profile->tox);
     tox_iterate(profile->tox, profile);
     struct t_hook *hook =
-        weechat_hook_timer(tox_iteration_interval(profile->tox), 0, 1,
+        weechat_hook_timer(interval, 0, 1,
                            twc_do_timer_cb, profile, NULL);
     profile->tox_do_timer = hook;
 
@@ -54,6 +60,75 @@ twc_do_timer_cb(const void *pointer, void *data, int remaining_calls)
     bool is_connected =
         connection == TOX_CONNECTION_TCP || connection == TOX_CONNECTION_UDP;
     twc_profile_set_online_status(profile, is_connected);
+
+    if (TWC_PROFILE_OPTION_BOOLEAN(profile, TWC_PROFILE_OPTION_AUTOJOIN))
+    {
+        struct t_twc_group_chat_invite *invite;
+        for(i = 0; (invite = twc_group_chat_invite_with_index(profile, i)); i++)
+            if(invite->autojoin_delay <= 0)
+            {
+                struct t_twc_chat *friend_chat =
+                    twc_chat_search_friend(profile, invite->friend_number, false);
+                char *friend_name = twc_get_name_nt(profile->tox, invite->friend_number);
+                char *type_str;
+                switch (invite->group_chat_type)
+                {
+                case TOX_CONFERENCE_TYPE_TEXT:
+                    type_str = "a text-only group chat";
+                    break;
+                case TOX_CONFERENCE_TYPE_AV:
+                    type_str = "an audio/vikdeo group chat";
+                    break;
+                default:
+                    type_str = "a group chat";
+                    break;
+                }
+
+                rc = twc_group_chat_invite_join(invite);
+                // item will be deleted, backtrack
+                i--;
+                if (rc >= 0)
+                {
+                    tags = "notify_private";
+                    if (friend_chat)
+                    {
+                        weechat_printf_date_tags(
+                                friend_chat->buffer, 0, tags,
+                                "%sWe joined the %s%s%s's invite to %s.",
+                                weechat_prefix("network"), weechat_color("chat_nick_other"),
+                                friend_name, weechat_color("reset"), type_str);
+                        tags = "";
+                    }
+                    weechat_printf_date_tags(
+                            profile->buffer, 0, tags,
+                            "%sWe joined the %s%s%s's invite to %s.",
+                            weechat_prefix("network"), weechat_color("chat_nick_other"),
+                            friend_name, weechat_color("reset"), type_str);
+                }
+                else
+                {
+                    tags = "notify_highlight";
+                    if (friend_chat)
+                    {
+                        weechat_printf_date_tags(
+                                friend_chat->buffer, 0, tags,
+                                "%s%s%s%s invites you to join %s, but we failed to "
+                                "process the invite. Please try again.",
+                                weechat_prefix("network"), weechat_color("chat_nick_other"),
+                                friend_name, weechat_color("reset"));
+                        tags = "";
+                    }
+                    weechat_printf_date_tags(
+                            profile->buffer, 0, tags,
+                            "%s%s%s%s invites you to join %s, but we failed to "
+                            "process the invite. Please try again.",
+                            weechat_prefix("network"), weechat_color("chat_nick_other"),
+                            friend_name, weechat_color("reset"));
+                }
+            }
+            else
+                invite->autojoin_delay -= interval;
+    }
 
     return WEECHAT_RC_OK;
 }
@@ -248,109 +323,48 @@ twc_group_invite_callback(Tox *tox, uint32_t friend_number,
             break;
     }
 
-    if (TWC_PROFILE_OPTION_BOOLEAN(profile, TWC_PROFILE_OPTION_AUTOJOIN))
-    {
-        switch (type)
-        {
-            case TOX_CONFERENCE_TYPE_TEXT:
-                rc = tox_conference_join(tox, friend_number, invite_data,
-                                         length, &err);
-                break;
-#ifdef TOXAV_ENABLED
-            case TOX_CONFERENCE_TYPE_AV:
-                rc = toxav_join_av_groupchat(tox, friend_number, invite_data,
-                                             length, NULL, NULL);
-                break;
-#endif
-            default:
-                rc = -1;
-                break;
-        }
+    rc = twc_group_chat_invite_add(profile, friend_number, type,
+                                   (uint8_t *)invite_data, length);
 
-        if (rc >= 0 && err == TOX_ERR_CONFERENCE_JOIN_OK)
-        {
-            tags = "notify_private";
-            if (friend_chat)
-            {
-                weechat_printf_date_tags(
-                    friend_chat->buffer, 0, tags,
-                    "%sWe joined the %s%s%s's invite to %s.",
-                    weechat_prefix("network"), weechat_color("chat_nick_other"),
-                    friend_name, weechat_color("reset"), type_str);
-                tags = "";
-            }
-            weechat_printf_date_tags(
-                profile->buffer, 0, tags,
-                "%sWe joined the %s%s%s's invite to %s.",
-                weechat_prefix("network"), weechat_color("chat_nick_other"),
-                friend_name, weechat_color("reset"), type_str);
-        }
-        else
-        {
-            tags = "notify_highlight";
-            if (friend_chat)
-            {
-                weechat_printf_date_tags(
-                    friend_chat->buffer, 0, tags,
-                    "%s%s%s%s invites you to join %s, but we failed to "
-                    "process the invite. Please try again.",
-                    weechat_prefix("network"), weechat_color("chat_nick_other"),
-                    friend_name, weechat_color("reset"));
-                tags = "";
-            }
-            weechat_printf_date_tags(
-                profile->buffer, 0, tags,
-                "%s%s%s%s invites you to join %s, but we failed to "
-                "process the invite. Please try again.",
-                weechat_prefix("network"), weechat_color("chat_nick_other"),
-                friend_name, weechat_color("reset"));
-        }
-    }
-    else
+    if (rc >= 0)
     {
-        rc = twc_group_chat_invite_add(profile, friend_number, type,
-                                       (uint8_t *)invite_data, length);
-
-        if (rc >= 0)
+        tags = "notify_highlight";
+        if (friend_chat)
         {
-            tags = "notify_highlight";
-            if (friend_chat)
-            {
-                weechat_printf_date_tags(
-                    friend_chat->buffer, 0, tags,
-                    "%s%s%s%s invites you to join %s. Type "
-                    "\"/group join %d\" to accept.",
-                    weechat_prefix("network"), weechat_color("chat_nick_other"),
-                    friend_name, weechat_color("reset"), type_str, rc);
-                tags = "";
-            }
             weechat_printf_date_tags(
-                profile->buffer, 0, tags,
+                friend_chat->buffer, 0, tags,
                 "%s%s%s%s invites you to join %s. Type "
                 "\"/group join %d\" to accept.",
                 weechat_prefix("network"), weechat_color("chat_nick_other"),
                 friend_name, weechat_color("reset"), type_str, rc);
+            tags = "";
         }
-        else
+        weechat_printf_date_tags(
+            profile->buffer, 0, tags,
+            "%s%s%s%s invites you to join %s. Type "
+            "\"/group join %d\" to accept.",
+            weechat_prefix("network"), weechat_color("chat_nick_other"),
+            friend_name, weechat_color("reset"), type_str, rc);
+    }
+    else
+    {
+        tags = "notify_highlight";
+        if (friend_chat)
         {
-            tags = "notify_highlight";
-            if (friend_chat)
-            {
-                weechat_printf_date_tags(
-                    friend_chat->buffer, 0, tags,
-                    "%s%s%s%s invites you to join %s, but we failed to "
-                    "process the invite with error %d. Please try again.",
-                    weechat_prefix("network"), weechat_color("chat_nick_other"),
-                    friend_name, weechat_color("reset"), rc, err);
-                tags = "";
-            }
             weechat_printf_date_tags(
-                profile->buffer, 0, tags,
+                friend_chat->buffer, 0, tags,
                 "%s%s%s%s invites you to join %s, but we failed to "
-                "process the invite. Please try again.",
+                "process the invite with error %d. Please try again.",
                 weechat_prefix("network"), weechat_color("chat_nick_other"),
-                friend_name, weechat_color("reset"), rc);
+                friend_name, weechat_color("reset"), rc, err);
+            tags = "";
         }
+        weechat_printf_date_tags(
+            profile->buffer, 0, tags,
+            "%s%s%s%s invites you to join %s, but we failed to "
+            "process the invite. Please try again.",
+            weechat_prefix("network"), weechat_color("chat_nick_other"),
+            friend_name, weechat_color("reset"), rc);
     }
     free(friend_name);
 }
