@@ -24,8 +24,10 @@ find_path(Tox_CORE_INCLUDE_DIR tox/tox.h)
 find_library(Tox_CORE_LIBRARY toxcore)
 
 find_path(Tox_AV_INCLUDE_DIR tox/toxav.h)
+find_library(Tox_AV_LIBRARY toxav)
 
 find_path(Tox_ENCRYPTSAVE_INCLUDE_DIR tox/toxencryptsave.h)
+find_library(Tox_ENCRYPTSAVE_LIBRARY toxencryptsave)
 
 if(Tox_CORE_INCLUDE_DIR AND Tox_CORE_LIBRARY)
     set(Tox_CORE_FOUND TRUE)
@@ -36,11 +38,17 @@ endif()
 if(Tox_AV_INCLUDE_DIR)
     set(Tox_AV_FOUND TRUE)
     list(APPEND Tox_INCLUDE_DIRS "${Tox_AV_INCLUDE_DIR}")
+    if(Tox_AV_LIBRARY)
+        list(APPEND Tox_LIBRARIES "${Tox_AV_LIBRARY}")
+    endif()
 endif()
 
 if(Tox_ENCRYPTSAVE_INCLUDE_DIR)
     set(Tox_ENCRYPTSAVE_FOUND TRUE)
     list(APPEND Tox_INCLUDE_DIRS "${Tox_ENCRYPTSAVE_INCLUDE_DIR}")
+    if(Tox_ENCRYPTSAVE_LIBRARY)
+        list(APPEND Tox_LIBRARIES "${Tox_ENCRYPTSAVE_LIBRARY}")
+    endif()
 endif()
 
 list(REMOVE_DUPLICATES Tox_INCLUDE_DIRS)
