@@ -26,9 +26,7 @@ install:
   - mkdir c-toxcore && pushd c-toxcore
     && curl -fSsL "https://github.com/TokTok/c-toxcore/archive/v0.2.1.tar.gz"
        | tar -xz --strip-components 1
-    && cmake -DCMAKE_INSTALL_PREFIX="$DEPENDENCY_DIR" \
-             -DBUILD_AV_TEST=off \
-             -DBUILD_NTOX=off
+    && cmake -DCMAKE_INSTALL_PREFIX="$DEPENDENCY_DIR" -DBUILD_AV_TEST=off
     && make install
     && popd
 
