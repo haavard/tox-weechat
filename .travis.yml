@@ -13,6 +13,7 @@ env:
   # install dependencies under $HOME because we don't have sudo
   - DEPENDENCY_DIR="$HOME/dependencies" \
     PKG_CONFIG_PATH="$DEPENDENCY_DIR/lib/pkgconfig:$PKG_CONFIG_PATH" \
+    CFLAGS=-Werror \
     SODIUM_VERSION=1.0.16 \
     TOXCORE_VERSION=0.2.1
 
