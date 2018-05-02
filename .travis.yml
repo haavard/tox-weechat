@@ -12,12 +12,14 @@ addons:
 env:
   # install dependencies under $HOME because we don't have sudo
   - DEPENDENCY_DIR="$HOME/dependencies" \
-    PKG_CONFIG_PATH="$DEPENDENCY_DIR/lib/pkgconfig:$PKG_CONFIG_PATH"
+    PKG_CONFIG_PATH="$DEPENDENCY_DIR/lib/pkgconfig:$PKG_CONFIG_PATH" \
+    SODIUM_VERSION=1.0.16 \
+    TOXCORE_VERSION=0.2.1
 
 install:
   # install libsodium, required by libtoxcore
   - mkdir libsodium && pushd libsodium
-    && curl -fSsL "https://download.libsodium.org/libsodium/releases/libsodium-1.0.16.tar.gz"
+    && curl -fSsL "https://download.libsodium.org/libsodium/releases/libsodium-$SODIUM_VERSION.tar.gz"
        | tar -xz --strip-components 1
     && ./configure --prefix="$DEPENDENCY_DIR"
     && make install
@@ -25,7 +27,7 @@ install:
 
   # install libtoxcore
   - mkdir c-toxcore && pushd c-toxcore
-    && curl -fSsL "https://github.com/TokTok/c-toxcore/archive/v0.2.1.tar.gz"
+    && curl -fSsL "https://github.com/TokTok/c-toxcore/archive/v$TOXCORE_VERSION.tar.gz"
        | tar -xz --strip-components 1
     && cmake -DCMAKE_INSTALL_PREFIX="$DEPENDENCY_DIR" -DBUILD_AV_TEST=off
     && make install
