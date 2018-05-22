@@ -21,6 +21,7 @@
 #define TOX_WEECHAT_LIST_H
 
 #include <stdlib.h>
+#include "twc-tfer.h"
 
 struct t_twc_list
 {
@@ -42,6 +43,7 @@ struct t_twc_list_item
         struct t_twc_group_chat_invite *group_chat_invite;
         struct t_twc_chat *chat;
         struct t_twc_queued_message *queued_message;
+        struct t_twc_tfer_file *file;
     };
 
     struct t_twc_list_item *next_item;

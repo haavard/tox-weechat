@@ -13,6 +13,7 @@ Standard][3].
  - Proxy support
  - Multiple profiles
  - Encrypted save files
+ - File transfer
 
 ## Installation
 Tox-WeeChat is tested with [WeeChat][2] 2.1 and [TokTok c-toxcore][5] 0.2.1.

@@ -58,4 +58,19 @@ twc_fit_utf8(const char *str, int max);
 int
 twc_set_buffer_logging(struct t_gui_buffer *buffer, bool logging);
 
+char *
+twc_tox_err_file_control(enum TOX_ERR_FILE_CONTROL error);
+
+char *
+twc_tox_err_file_get(enum TOX_ERR_FILE_GET error);
+
+char *
+twc_tox_err_file_seek(enum TOX_ERR_FILE_SEEK error);
+
+char *
+twc_tox_err_file_send(enum TOX_ERR_FILE_SEND error);
+
+char *
+twc_tox_err_file_send_chunk(enum TOX_ERR_FILE_SEND_CHUNK error);
+
 #endif /* TOX_WEECHAT_UTILS_H */

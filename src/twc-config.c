@@ -26,6 +26,7 @@
 
 #include "twc-list.h"
 #include "twc-profile.h"
+#include "twc-tfer.h"
 #include "twc.h"
 
 #include "twc-config.h"
@@ -41,7 +42,7 @@ struct t_config_option *twc_config_short_id_size;
 char *twc_profile_option_names[TWC_PROFILE_NUM_OPTIONS] = {
     "save_file", "autoload", "autojoin", "autojoin_delay",
     "max_friend_requests", "proxy_address", "proxy_port", "proxy_type",
-    "udp", "ipv6", "passphrase", "logging",
+    "udp", "ipv6", "passphrase", "logging", "downloading_path",
 };
 
 /**
@@ -186,7 +187,10 @@ twc_config_profile_change_callback(const void *pointer, void *data,
                     twc_profile_set_logging(item->profile, logging_enabled);
                 }
             }
-
+            break;
+        case TWC_PROFILE_OPTION_DOWNLOADING_PATH:
+            twc_tfer_update_downloading_path(profile);
+            break;
         default:
             break;
     }
@@ -284,6 +288,12 @@ twc_config_init_option(struct t_twc_profile *profile,
             type = "boolean";
             description = "use UDP when communicating with the Tox network";
             default_value = "on";
+            break;
+        case TWC_PROFILE_OPTION_DOWNLOADING_PATH:
+            type = "string";
+            description = "path to downloaded files (\"%h\" will be replaced by "
+                          "WeeChat home folder and \"%p\" by profile name";
+            default_value = "%h/tfer/%p/";
             break;
         default:
             return NULL;

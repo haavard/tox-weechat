@@ -25,6 +25,8 @@
 #include <tox/tox.h>
 #include <weechat/weechat-plugin.h>
 
+#include "twc-tfer.h"
+
 enum t_twc_profile_option
 {
     TWC_PROFILE_OPTION_SAVEFILE = 0,
@@ -39,6 +41,7 @@ enum t_twc_profile_option
     TWC_PROFILE_OPTION_IPV6,
     TWC_PROFILE_OPTION_PASSPHRASE,
     TWC_PROFILE_OPTION_LOGGING,
+    TWC_PROFILE_OPTION_DOWNLOADING_PATH,
 
     TWC_PROFILE_NUM_OPTIONS,
 };
@@ -59,6 +62,8 @@ struct t_twc_profile
     struct t_twc_list *friend_requests;
     struct t_twc_list *group_chat_invites;
     struct t_hashtable *message_queues;
+
+    struct t_twc_tfer *tfer;
 };
 
 extern struct t_twc_list *twc_profiles;
@@ -127,6 +132,9 @@ twc_profile_search_name(const char *name);
 
 struct t_twc_profile *
 twc_profile_search_buffer(struct t_gui_buffer *buffer);
+
+struct t_twc_profile *
+twc_profile_search_tox(struct Tox *tox);
 
 enum t_twc_rc
 twc_profile_set_logging(struct t_twc_profile *profile, bool logging);
