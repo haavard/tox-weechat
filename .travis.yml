@@ -15,7 +15,7 @@ env:
     PKG_CONFIG_PATH="$DEPENDENCY_DIR/lib/pkgconfig:$PKG_CONFIG_PATH" \
     CFLAGS=-Werror \
     SODIUM_VERSION=1.0.16 \
-    TOXCORE_VERSION=0.2.1
+    TOXCORE_VERSION=0.2.8
 
 install:
   # install libsodium, required by libtoxcore
