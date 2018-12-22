@@ -19,11 +19,15 @@
 
 #include <stdio.h>
 #include <string.h>
+#include <unistd.h>
+#include <sys/stat.h>
+#include <wordexp.h>
 
 #include <tox/tox.h>
 #include <weechat/weechat-plugin.h>
 
 #include "twc-bootstrap.h"
+#include "twc-tfer.h"
 #include "twc-chat.h"
 #include "twc-config.h"
 #include "twc-friend-request.h"
@@ -126,6 +130,22 @@ enum TWC_FRIEND_MATCH
                        weechat_prefix("error"), string);                       \
         return WEECHAT_RC_OK;                                                  \
     }
+
+/**
+ * Make sure a file exists.
+ */
+#define TWC_CHECK_FILE_EXISTS(filename)                                        \
+    if(access(filename, F_OK) == -1 )                                          \
+    {                                                                          \
+        weechat_printf(NULL, "%sFile \"%s\" does not exist",                   \
+                       weechat_prefix("error"), filename);                     \
+        return WEECHAT_RC_ERROR;                                               \
+    }
+
+#define TWC_RETURN_WITH_FILE_ERROR(filename, type)                             \
+    weechat_printf(NULL, "%s\"%s\" must be a regular file or pipe, "           \
+                   "not a %s", weechat_prefix("error"), filename, type);       \
+    return WEECHAT_RC_ERROR;
 
 /**
  * Get number of friend matching string. Tries to match number, name and
@@ -1176,6 +1196,125 @@ twc_cmd_tox(const void *pointer, void *data, struct t_gui_buffer *buffer,
 }
 
 /**
+ * Command /send callback.
+ */
+int
+twc_cmd_send(const void *pointer, void *data, struct t_gui_buffer *buffer,
+            int argc, char **argv, char **argv_eol)
+{
+    if (argc == 1)
+        return WEECHAT_RC_ERROR;
+    struct t_twc_profile *profile = twc_profile_search_buffer(buffer);
+    TWC_CHECK_PROFILE(profile);
+    TWC_CHECK_PROFILE_LOADED(profile);
+
+    char recipient[TOX_MAX_NAME_LENGTH + 1] = {0};
+    char filename[FILENAME_MAX + 1] = {0};
+    size_t filename_arg_num;
+
+    /* /send <file> */
+    if (argc == 2)
+    {
+        if (profile->buffer == buffer || profile->tfer->buffer == buffer)
+        {
+            weechat_printf(profile->buffer, "%s%s", weechat_prefix("error"), "you must specify a friend");
+            return WEECHAT_RC_ERROR;
+        }
+        snprintf(recipient, TOX_MAX_NAME_LENGTH, "%s", weechat_buffer_get_string(buffer, "name"));
+        struct t_twc_chat *chat = twc_chat_search_buffer(buffer);
+        if (chat->group_number != -1)
+        {
+            weechat_printf(profile->buffer, "%s%s", weechat_prefix("error"), "the file transmission is "
+                           "allowed only between friends");
+            return WEECHAT_RC_ERROR;
+        }
+
+        char *name = twc_get_name_nt(profile->tox, chat->friend_number);
+        sprintf(recipient, "%s", name);
+        filename_arg_num = 1;
+        free(name);
+    }
+
+    /* /send <number>|<name>|<Tox ID> <file> */
+    if (argc >= 3)
+    {
+        /* do a shell split in case a friend has spaces in his name 
+         * and join the name */
+        int shell_argc;
+        char **shell_argv = weechat_string_split_shell(argv_eol[1], &shell_argc);
+        for (int i = 0; i < shell_argc -1; i++)
+        {
+            strcat(recipient, shell_argv[i]);
+            if (i < shell_argc - 2)
+                strcat(recipient, " ");
+        }
+        filename_arg_num = shell_argc;
+        weechat_string_free_split(shell_argv);
+    }
+    wordexp_t expanded;
+    wordexp(argv[filename_arg_num], &expanded, 0);
+    snprintf(filename, FILENAME_MAX, "%s", expanded.we_wordv[0]);
+    wordfree(&expanded);
+    TWC_CHECK_FILE_EXISTS(filename);
+
+    uint32_t friend_number = twc_match_friend(profile, recipient);
+    TWC_CHECK_FRIEND_NUMBER(profile, (signed) friend_number, recipient);
+
+    struct stat st;
+    stat(filename, &st);
+    switch (st.st_mode & S_IFMT)
+    {
+        case S_IFBLK:
+            TWC_RETURN_WITH_FILE_ERROR(filename, "block device");
+        case S_IFCHR:
+            TWC_RETURN_WITH_FILE_ERROR(filename, "character device");
+        case S_IFDIR:
+            TWC_RETURN_WITH_FILE_ERROR(filename, "directory");
+        case S_IFSOCK:
+            TWC_RETURN_WITH_FILE_ERROR(filename, "socket");
+        case S_IFREG:
+            break;
+        case S_IFLNK:
+            break;
+        default:
+            weechat_printf(NULL, "%sunknown file type", weechat_prefix("error"));
+            return WEECHAT_RC_ERROR;
+    }
+
+    char *stripped_name = twc_tfer_file_name_strip(filename, FILENAME_MAX + 1 - strlen(filename));
+
+    TOX_ERR_FILE_SEND error;
+    uint32_t file_number = tox_file_send(profile->tox, friend_number, TOX_FILE_KIND_DATA,
+                                         S_ISFIFO(st.st_mode) ? UINT64_MAX : (size_t)st.st_size,
+                                         NULL, (uint8_t *)stripped_name, strlen(filename), &error);
+    free(stripped_name);
+    if (error != TOX_ERR_FILE_SEND_OK)
+    {
+        weechat_printf(profile->buffer, "%ssending \"%s\" has been failed: %s",
+                       weechat_prefix("error"), filename, twc_tox_err_file_send(error));
+        return WEECHAT_RC_ERROR;
+    }
+    if (!(profile->tfer->buffer))
+    {
+        twc_tfer_load(profile);
+    }
+    struct t_twc_tfer_file *file = twc_tfer_file_new(profile, recipient, filename,
+                                                     friend_number, file_number,
+                                                     st.st_size, TWC_TFER_FILE_TYPE_UPLOADING);
+    if (!file)
+    {
+        weechat_printf(profile->buffer, "%scannot open the file \"%s\"",
+                       weechat_prefix("error"), filename);
+        return WEECHAT_RC_ERROR;
+    }
+    twc_tfer_file_add(profile->tfer, file);
+    twc_tfer_buffer_update(profile->tfer);
+    twc_tfer_update_status(profile->tfer, "waiting for action");
+
+    return WEECHAT_RC_OK;
+}
+
+/**
  * Register Tox-WeeChat commands.
  */
 void
@@ -1298,4 +1437,12 @@ twc_commands_init()
         " || unload %(tox_loaded_profiles)|%*"
         " || reload %(tox_loaded_profiles)|%*",
         twc_cmd_tox, NULL, NULL);
+    weechat_hook_command("send", "send a file to a friend",
+                         "<file>"
+                         " || <number>|<name>|<Tox ID> <file>",
+                         "file: path to the file\n"
+                         "number, name, Tox ID: the friend you are sending the file to\n",
+                         "%(filename)"
+                         " || %(tox_friend_name)|%(tox_friend_tox_id) %(filename)",
+                         twc_cmd_send, NULL, NULL);
 }

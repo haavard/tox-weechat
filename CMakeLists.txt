@@ -34,6 +34,7 @@ add_library(tox MODULE
     src/twc-message-queue.c
     src/twc-profile.c
     src/twc-tox-callbacks.c
+    src/twc-tfer.c
     src/twc-utils.c)
 
 set_target_properties(tox PROPERTIES

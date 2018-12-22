@@ -33,9 +33,14 @@
 #include "twc-message-queue.h"
 #include "twc-profile.h"
 #include "twc-utils.h"
+#include "twc-tfer.h"
 #include "twc.h"
 
 #include "twc-tox-callbacks.h"
+
+#define TWC_TFER_FILE_UPDATE_STATUS(st)                                      \
+    file->status = st;                                                       \
+    twc_tfer_file_update(profile->tfer, file);
 
 int
 twc_do_timer_cb(const void *pointer, void *data, int remaining_calls)
@@ -228,6 +233,22 @@ twc_name_change_callback(Tox *tox, uint32_t friend_number, const uint8_t *name,
 
         weechat_printf(profile->buffer, "%s%s is now known as %s",
                        weechat_prefix("network"), old_name, new_name);
+        if (profile->tfer->buffer)
+        {
+            size_t index;
+            struct t_twc_list_item *item;
+            struct t_twc_tfer_file *file;
+            twc_list_foreach(profile->tfer->files, index, item)
+            {
+                file = item->file;
+                if (file->friend_number == friend_number)
+                {
+                    free(file->nickname);
+                    file->nickname = strdup(new_name);
+                    twc_tfer_file_update(profile->tfer, item->file);
+                }
+            }
+        }
     }
 
     free(old_name);
@@ -562,6 +583,180 @@ twc_group_title_callback(Tox *tox, uint32_t group_number, uint32_t peer_number,
     weechat_printf(chat->buffer, "%s%s has changed the topic to \"%s\"",
                    weechat_prefix("network"), name, topic);
     free(topic);
+}
+
+void
+twc_file_recv_control_callback(Tox *tox, uint32_t friend_number, uint32_t file_number,
+                               TOX_FILE_CONTROL control, void *user_data)
+{
+    struct t_twc_profile *profile = twc_profile_search_tox(tox);
+    struct t_twc_tfer_file *file = twc_tfer_file_get_by_number(profile->tfer, file_number);
+    if (!file)
+    {
+        weechat_printf(profile->tfer->buffer, "%sthere is no file with number %i in queue",
+                       weechat_prefix("error"), file_number);
+        return;
+    }
+    switch (control)
+    {
+    case TOX_FILE_CONTROL_RESUME:
+        TWC_TFER_FILE_UPDATE_STATUS(TWC_TFER_FILE_STATUS_IN_PROGRESS);
+        break;
+    case TOX_FILE_CONTROL_PAUSE:
+        if (file->position !=0) 
+            TWC_TFER_FILE_UPDATE_STATUS(TWC_TFER_FILE_STATUS_PAUSED);
+        break;
+    case TOX_FILE_CONTROL_CANCEL:
+        fclose(file->fp);
+        if (file->type == TWC_TFER_FILE_TYPE_DOWNLOADING && file->size != UINT64_MAX)
+            remove(file->full_path);
+        if (file->position != 0)
+        {
+            TWC_TFER_FILE_UPDATE_STATUS(TWC_TFER_FILE_STATUS_ABORTED);
+        }
+        else
+        {
+            TWC_TFER_FILE_UPDATE_STATUS(TWC_TFER_FILE_STATUS_DECLINED);
+        }
+        break;
+    }
+}
+
+void
+twc_file_chunk_request_callback(Tox *tox, uint32_t friend_number, uint32_t file_number,
+                                uint64_t position, size_t length, void *user_data)
+{
+    struct t_twc_profile *profile = twc_profile_search_tox(tox);
+    struct t_twc_tfer_file *file = twc_tfer_file_get_by_number(profile->tfer, file_number);
+    /* the file is missing */
+    if (!file)
+    {
+        weechat_printf(profile->tfer->buffer, "%sthere is no file with number %i in queue",
+                       weechat_prefix("error"), file_number);
+        return;
+    }    
+    /* 0-length chunk requested that means the file transmission is completed */
+    if (length == 0)
+    {
+        TWC_TFER_FILE_UPDATE_STATUS(TWC_TFER_FILE_STATUS_DONE);
+
+        /* This friend_number will be re-used and re-assigned for another file,
+         * to prevent collisions in twc_tfer_file_get_by_number calls let's
+         * set it to a value that won't be used by toxcore.
+         */
+        file->file_number = UINT32_MAX;
+        fclose(file->fp);
+        return;
+    }
+    uint8_t *data = twc_tfer_file_get_chunk(file, position, length);
+    if (!data)
+    {
+        weechat_printf(profile->buffer, "%serror while reading the file %s",
+                       weechat_prefix("error"), file->filename);
+        return;
+    }
+    enum TOX_ERR_FILE_SEND_CHUNK error;
+    tox_file_send_chunk(profile->tox, friend_number, file_number, position, data, length, &error);
+    if (error)
+        weechat_printf(profile->buffer, "%s%s: chunk sending error: %s",
+                       weechat_prefix("error"), file->filename, twc_tox_err_file_send_chunk(error));
+    else
+    {
+        file->position += length;
+        file->after_last_cache += length;
+        TWC_TFER_FILE_UPDATE_STATUS(TWC_TFER_FILE_STATUS_IN_PROGRESS);
+        if ((twc_tfer_get_time() - file->timestamp) > 1)
+        {
+            file->timestamp = twc_tfer_get_time();
+            file->after_last_cache = 0;
+        }
+    }
+    free(data);
+}
+
+void
+twc_file_recv_callback(Tox *tox, uint32_t friend_number, uint32_t file_number,
+                       uint32_t kind, uint64_t file_size, const uint8_t *filename,
+                       size_t filename_length, void *user_data)
+{
+    struct t_twc_profile *profile = twc_profile_search_tox(tox);
+    if (kind == TOX_FILE_KIND_AVATAR)
+    {
+        TOX_ERR_FILE_CONTROL error;
+        tox_file_control(tox, friend_number, file_number, TOX_FILE_CONTROL_CANCEL, &error);
+        if (error)
+        {
+            weechat_printf(profile->buffer, "%scannot cancel avatar receiving",
+                           weechat_prefix("error"));
+        }
+        return;
+    }
+    char *name = twc_get_name_nt(tox, friend_number);
+    char *fname = twc_null_terminate(filename, filename_length);
+    struct t_twc_tfer_file *file = twc_tfer_file_new(profile, name, fname,
+                                                     friend_number, file_number,
+                                                     file_size, TWC_TFER_FILE_TYPE_DOWNLOADING);
+    free(name);
+    free(fname);
+    if (!file)
+    {
+        weechat_printf(profile->buffer, "%scannot open the file \"%s\" with write permissions",
+                       weechat_prefix("error"), filename);
+        return;
+    }
+    if (!(profile->tfer->buffer))
+    {
+        twc_tfer_load(profile);
+    }
+    twc_tfer_file_add(profile->tfer, file);
+    twc_tfer_file_update(profile->tfer, file);
+    twc_tfer_update_status(profile->tfer, "waiting for action");
+}
+
+void
+twc_file_recv_chunk_callback(Tox *tox, uint32_t friend_number, uint32_t file_number, uint64_t position,
+                                    const uint8_t *data, size_t length, void *user_data)
+{
+    struct t_twc_profile *profile = twc_profile_search_tox(tox);
+    struct t_twc_tfer_file *file = twc_tfer_file_get_by_number(profile->tfer, file_number);
+    /* the file is missing */
+    if (!file)
+    {
+        weechat_printf(profile->tfer->buffer, "%sthere is no file with number %i in queue",
+                       weechat_prefix("error"), file_number);
+        return;
+    }
+    /* 0-length chunk transmitted that means the file transmission is completed */
+    if (length == 0)
+    {
+        TWC_TFER_FILE_UPDATE_STATUS(TWC_TFER_FILE_STATUS_DONE);
+
+        /* This friend_number will be re-used and re-assigned for another file,
+         * to prevent collisions in twc_tfer_file_get_by_number calls let's
+         * set it to a value that won't be used by toxcore.
+         */
+        file->file_number = UINT32_MAX;
+        fclose(file->fp);
+        return;
+    }
+    bool result = twc_tfer_file_write_chunk(file, data, position, length);
+    if (!result)
+    {
+        weechat_printf(profile->buffer, "%serror while writing the file %s",
+                       weechat_prefix("error"), file->filename);
+        return;
+    }
+    else
+    {
+        file->position += length;
+        file->after_last_cache += length;
+        twc_tfer_file_update(profile->tfer, file);
+        if ((twc_tfer_get_time() - file->timestamp) > 1)
+        {
+            file->timestamp = twc_tfer_get_time();
+            file->after_last_cache = 0;
+        }
+    }
 }
 
 #ifndef NDEBUG

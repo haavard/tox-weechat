@@ -71,10 +71,25 @@ twc_group_peer_name_callback(Tox *tox, uint32_t group_number,
                              size_t nick_len,
                              void *data);
 
-
 void
 twc_group_title_callback(Tox *tox, uint32_t group_number, uint32_t peer_number,
                          const uint8_t *title, size_t length, void *data);
+
+void
+twc_file_recv_control_callback(Tox *tox, uint32_t friend_number, uint32_t file_number, TOX_FILE_CONTROL control,
+                                      void *user_data);
+
+void
+twc_file_chunk_request_callback(Tox *tox, uint32_t friend_number, uint32_t file_number, uint64_t position,
+                                       size_t length, void *user_data);
+
+void
+twc_file_recv_callback(Tox *tox, uint32_t friend_number, uint32_t file_number, uint32_t kind, uint64_t file_size,
+                              const uint8_t *filename, size_t filename_length, void *user_data);
+
+void
+twc_file_recv_chunk_callback(Tox *tox, uint32_t friend_number, uint32_t file_number, uint64_t position,
+                                    const uint8_t *data, size_t length, void *user_data);
 
 #ifndef NDEBUG
 void

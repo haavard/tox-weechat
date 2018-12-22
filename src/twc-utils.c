@@ -232,3 +232,82 @@ twc_set_buffer_logging(struct t_gui_buffer *buffer, bool logging)
     return weechat_hook_signal_send(signal, WEECHAT_HOOK_SIGNAL_POINTER,
                                     buffer);
 }
+
+/**
+ * These following twc_tox_err_file_* functions convert enum TOX_ERR_FILE_*
+ * error codes to meaningful messages of type char *.
+ */
+
+char *
+twc_tox_err_file_control(enum TOX_ERR_FILE_CONTROL error)
+{
+    char *messages[] = {
+        "success",
+        "the friend number passed did not designate a valid friend",
+        "this client is currently not connected to the friend",
+        "no file transfer with the given file number was found for the given friend",
+        "a RESUME control was sent, but the file transfer is running normally",
+        "A RESUME control was sent, but the file transfer was paused by the other party",
+        "a PAUSE control was sent, but the file transfer was already paused",
+        "packet queue is full"
+    };
+    return messages[error];
+}
+
+char *
+twc_tox_err_file_get(enum TOX_ERR_FILE_GET error)
+{
+    char *messages[] = {
+        "success",
+        "one of the arguments to the function was NULL when it was not expected",
+        "the friend number passed did not designate a valid friend",
+        "no file transfer with the given number was found for the given friend"
+    };
+    return messages[error];
+}
+
+char *
+twc_tox_err_file_seek(enum TOX_ERR_FILE_SEEK error)
+{
+    char *messages[] = {
+        "success",
+        "the friend number passed did not designate a valid friend",
+        "the client is currently not connected to the friend",
+        "no file transfer with the given file number was found for the given friend",
+        "file was not in a state where it could be seeked",
+        "seek position was invalid",
+        "packet queue is full"
+    };
+    return messages[error];
+}
+
+char *
+twc_tox_err_file_send(enum TOX_ERR_FILE_SEND error)
+{
+    char *messages[] = {
+        "success",
+        "one of the arguments of the function was NULL when it was not expected",
+        "the friend number passed did not designate a valid friend",
+        "this client is currently not connected to the friend",
+        "filename lenth exceeded TOX_MAX_FILENAME_LENGTH bytes",
+        "too many ongoing transfers"
+    };
+    return messages[error];
+}
+
+char *
+twc_tox_err_file_send_chunk(enum TOX_ERR_FILE_SEND_CHUNK error)
+{
+    char *messages[] = {
+        "success",
+        "the length parameter was non-zero, but data was NULL",
+        "the friend number passed did not designate a valid friend",
+        "this client is currently not connected to the friend",
+        "no file transfer with the given file number was found for the given friend",
+        "not called from the request chunk callback",
+        "attempted to send more or less data than requested",
+        "packet queue is full",
+        "position parameter was wrong"
+    };
+    return messages[error];
+}
