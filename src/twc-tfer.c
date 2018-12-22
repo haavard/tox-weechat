@@ -62,6 +62,7 @@ twc_tfer_new()
     struct t_twc_tfer *tfer = malloc(sizeof(struct t_twc_tfer));
     tfer->files = twc_list_new();
     tfer->buffer = NULL;
+    tfer->downloading_path = NULL;
     return tfer;
 }
 
