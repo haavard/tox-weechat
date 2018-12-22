@@ -40,9 +40,19 @@ struct t_config_option *twc_config_friend_request_message;
 struct t_config_option *twc_config_short_id_size;
 
 char *twc_profile_option_names[TWC_PROFILE_NUM_OPTIONS] = {
-    "save_file", "autoload", "autojoin", "autojoin_delay",
-    "max_friend_requests", "proxy_address", "proxy_port", "proxy_type",
-    "udp", "ipv6", "passphrase", "logging", "downloading_path",
+    "save_file",
+    "autoload",
+    "autojoin",
+    "autojoin_delay",
+    "max_friend_requests",
+    "proxy_address",
+    "proxy_port",
+    "proxy_type",
+    "udp",
+    "ipv6",
+    "passphrase",
+    "logging",
+    "downloading_path",
 };
 
 /**
@@ -227,9 +237,10 @@ twc_config_init_option(struct t_twc_profile *profile,
             break;
         case TWC_PROFILE_OPTION_AUTOJOIN_DELAY:
             type = "integer";
-            description = "delay befor do autojoin (in ms) this required to "
-                          "tox from entering incorrect state and stop processing "
-                          "group events";
+            description =
+                "delay befor do autojoin (in ms) this required to "
+                "tox from entering incorrect state and stop processing "
+                "group events";
             min = 0;
             max = INT_MAX;
             default_value = "5000";
@@ -291,8 +302,9 @@ twc_config_init_option(struct t_twc_profile *profile,
             break;
         case TWC_PROFILE_OPTION_DOWNLOADING_PATH:
             type = "string";
-            description = "path to downloaded files (\"%h\" will be replaced by "
-                          "WeeChat home folder and \"%p\" by profile name";
+            description =
+                "path to downloaded files (\"%h\" will be replaced by "
+                "WeeChat home folder and \"%p\" by profile name";
             default_value = "%h/tfer/%p/";
             break;
         default:

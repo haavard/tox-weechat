@@ -257,8 +257,9 @@ twc_tox_new_print_error(struct t_twc_profile *profile,
                 weechat_prefix("error"), options->proxy_host);
             break;
         case TOX_ERR_NEW_LOAD_ENCRYPTED:
-            weechat_printf(profile->buffer, "%scould not load Tox (encrypted "
-                                            "data files are not yet supported)",
+            weechat_printf(profile->buffer,
+                           "%scould not load Tox (encrypted "
+                           "data files are not yet supported)",
                            weechat_prefix("error"));
             break;
         case TOX_ERR_NEW_LOAD_BAD_FORMAT:
@@ -394,7 +395,8 @@ twc_profile_load(struct t_twc_profile *profile)
         {
             weechat_printf(profile->buffer,
                            "%scould not decrypt Tox data file (no passphrase "
-                           "specified)", weechat_prefix("error"));
+                           "specified)",
+                           weechat_prefix("error"));
             return TWC_RC_ERROR;
         }
     }
@@ -453,13 +455,15 @@ twc_profile_load(struct t_twc_profile *profile)
     tox_callback_friend_request(profile->tox, twc_friend_request_callback);
     tox_callback_conference_invite(profile->tox, twc_group_invite_callback);
     tox_callback_conference_message(profile->tox, twc_group_message_callback);
-    tox_callback_conference_peer_list_changed(profile->tox,
-                                              twc_group_peer_list_changed_callback);
+    tox_callback_conference_peer_list_changed(
+        profile->tox, twc_group_peer_list_changed_callback);
     tox_callback_conference_peer_name(profile->tox,
                                       twc_group_peer_name_callback);
     tox_callback_conference_title(profile->tox, twc_group_title_callback);
-    tox_callback_file_recv_control(profile->tox, twc_file_recv_control_callback);
-    tox_callback_file_chunk_request(profile->tox, twc_file_chunk_request_callback);
+    tox_callback_file_recv_control(profile->tox,
+                                   twc_file_recv_control_callback);
+    tox_callback_file_chunk_request(profile->tox,
+                                    twc_file_chunk_request_callback);
     tox_callback_file_recv(profile->tox, twc_file_recv_callback);
     tox_callback_file_recv_chunk(profile->tox, twc_file_recv_chunk_callback);
 
@@ -597,7 +601,7 @@ twc_profile_search_tox(struct Tox *tox)
 {
     size_t profile_index;
     struct t_twc_list_item *profile_item;
-    twc_list_foreach(twc_profiles, profile_index, profile_item)
+    twc_list_foreach (twc_profiles, profile_index, profile_item)
     {
         if (profile_item->profile->tox == tox)
             return profile_item->profile;
@@ -685,7 +689,8 @@ twc_profile_free(struct t_twc_profile *profile)
     /* close tfer's buffer */
     if (profile->tfer->buffer)
     {
-        weechat_buffer_set_pointer(profile->tfer->buffer, "close_callback", NULL);
+        weechat_buffer_set_pointer(profile->tfer->buffer, "close_callback",
+                                   NULL);
         weechat_buffer_close(profile->tfer->buffer);
     }
 

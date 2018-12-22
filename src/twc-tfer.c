@@ -17,43 +17,52 @@
 
 #include <stdbool.h>
 #include <string.h>
-#include <unistd.h>
 #include <time.h>
+#include <unistd.h>
 
 #include <tox/tox.h>
 #include <weechat/weechat-plugin.h>
 
-#include "twc-tfer.h"
-#include "twc-profile.h"
 #include "twc-list.h"
+#include "twc-profile.h"
+#include "twc-tfer.h"
 #include "twc-utils.h"
 #include "twc.h"
 
 #define PROGRESS_BAR_LEN (50)
 
-#define TWC_TFER_UPDATE_STATUS_AND_RETURN(fmt, ...)                                                       {\
-    sprintf(status, fmt, ##__VA_ARGS__);                                                                   \
-    twc_tfer_update_status(profile->tfer, status);                                                         \
-    weechat_string_free_split(argv);                                                                       \
-    free(status);                                                                                          \
-    return WEECHAT_RC_OK;                                                                                  \
-    }
+#define TWC_TFER_UPDATE_STATUS_AND_RETURN(fmt, ...)                            \
+    do                                                                         \
+    {                                                                          \
+        sprintf(status, fmt, ##__VA_ARGS__);                                   \
+        twc_tfer_update_status(profile->tfer, status);                         \
+        weechat_string_free_split(argv);                                       \
+        free(status);                                                          \
+        return WEECHAT_RC_OK;                                                  \
+    } while (0)
 
-#define TWC_TFER_MESSAGE(present, past)                                                                   {\
-    int result = twc_tfer_file_ ## present(profile, n);                                                    \
-    switch (result)                                                                                        \
-    {                                                                                                      \
-    case 1:                                                                                                \
-        TWC_TFER_UPDATE_STATUS_AND_RETURN("request number %ld has been " #past, n);                        \
-    case 0:                                                                                                \
-        TWC_TFER_UPDATE_STATUS_AND_RETURN("request number %ld cannot be " #past " because "                \
-                                          "of tox internal issues", n);                                    \
-    case -1:                                                                                               \
-        TWC_TFER_UPDATE_STATUS_AND_RETURN("request number %ld cannot be " #past, n);                       \
-    }                                                                                                     }\
+#define TWC_TFER_MESSAGE(present, past)                                        \
+    do                                                                         \
+    {                                                                          \
+        int result = twc_tfer_file_##present(profile, n);                      \
+        switch (result)                                                        \
+        {                                                                      \
+            case 1:                                                            \
+                TWC_TFER_UPDATE_STATUS_AND_RETURN(                             \
+                    "request number %ld has been " #past, n);                  \
+            case 0:                                                            \
+                TWC_TFER_UPDATE_STATUS_AND_RETURN(                             \
+                    "request number %ld cannot be " #past " because "          \
+                    "of tox internal issues",                                  \
+                    n);                                                        \
+            case -1:                                                           \
+                TWC_TFER_UPDATE_STATUS_AND_RETURN(                             \
+                    "request number %ld cannot be " #past, n);                 \
+        }                                                                      \
+    } while (0)
 
 /**
- * Create a new "tfer" object that handles a list of transmitting files and 
+ * Create a new "tfer" object that handles a list of transmitting files and
  * a buffer for managing them.
  */
 struct t_twc_tfer *
@@ -76,11 +85,9 @@ twc_tfer_load(struct t_twc_profile *profile)
     struct t_gui_buffer *buffer;
     char *name = malloc(sizeof(profile->name) + 5);
     sprintf(name, "tfer/%s", profile->name);
-    profile->tfer->buffer = buffer = weechat_buffer_new(name,
-                                                        twc_tfer_buffer_input_callback,
-                                                        (void *)profile, NULL, 
-                                                        twc_tfer_buffer_close_callback,
-                                                        (void *)profile, NULL);
+    profile->tfer->buffer = buffer = weechat_buffer_new(
+        name, twc_tfer_buffer_input_callback, (void *)profile, NULL,
+        twc_tfer_buffer_close_callback, (void *)profile, NULL);
     free(name);
     if (!buffer)
         return TWC_RC_ERROR;
@@ -104,9 +111,7 @@ twc_tfer_print_legend(struct t_twc_tfer *tfer)
     char *text[TWC_TFER_LEGEND_LINES] = {
         "status: OK", /* This line is reserved for the status */
         "r: refresh   | a <n>: accept   | d <n>: decline",
-        "p <n>: pause | c <n>: continue | b <n>: abort",
-        "files:"
-    };
+        "p <n>: pause | c <n>: continue | b <n>: abort", "files:"};
     int i;
     for (i = 0; i < TWC_TFER_LEGEND_LINES; i++)
     {
@@ -132,23 +137,26 @@ twc_tfer_expanded_path(struct t_twc_profile *profile, const char *base_path)
 
 /**
  * Set profile-associated path for downloads.
- * If it is impossible to create a directory with the path that 
+ * If it is impossible to create a directory with the path that
  * has been set in tox.profile.<name>.downloading_path then default
  * value will be used.
  */
 void
 twc_tfer_update_downloading_path(struct t_twc_profile *profile)
 {
-    const char *base_path = TWC_PROFILE_OPTION_STRING(profile,
-                                                      TWC_PROFILE_OPTION_DOWNLOADING_PATH);
+    const char *base_path =
+        TWC_PROFILE_OPTION_STRING(profile, TWC_PROFILE_OPTION_DOWNLOADING_PATH);
     char *full_path = twc_tfer_expanded_path(profile, base_path);
     if (!weechat_mkdir_parents(full_path, 0755))
     {
         char *bad_path = full_path;
-        base_path = weechat_config_string(twc_config_profile_default[TWC_PROFILE_OPTION_DOWNLOADING_PATH]);
+        base_path = weechat_config_string(
+            twc_config_profile_default[TWC_PROFILE_OPTION_DOWNLOADING_PATH]);
         full_path = twc_tfer_expanded_path(profile, base_path);
-        weechat_printf(profile->buffer, "cannot create directory \"%s\","
-                       "using default value: \"%s\"", bad_path, full_path);
+        weechat_printf(profile->buffer,
+                       "cannot create directory \"%s\","
+                       "using default value: \"%s\"",
+                       bad_path, full_path);
         free(bad_path);
         weechat_mkdir_parents(full_path, 0755);
     }
@@ -170,7 +178,7 @@ twc_tfer_file_check(const char *filename)
  * Returns a pointer to allocated string and must be freed after use.
  */
 char *
-twc_tfer_file_unique_name(const char* original)
+twc_tfer_file_unique_name(const char *original)
 {
     char *name = malloc(sizeof(char) * (FILENAME_MAX + 1));
     name[FILENAME_MAX] = '\0';
@@ -189,7 +197,7 @@ twc_tfer_file_unique_name(const char* original)
     }
     else
         extension = "";
-    char body[strlen(name)+1];
+    char body[strlen(name) + 1];
     strcpy(body, name);
 
     /* check if there is already a postfix number in the end of the file
@@ -214,8 +222,7 @@ twc_tfer_file_unique_name(const char* original)
     {
         snprintf(name, FILENAME_MAX, "%s(%i)%s", body, i, extension);
         i++;
-    }
-    while (twc_tfer_file_check(name));
+    } while (twc_tfer_file_check(name));
 
     return name;
 }
@@ -244,10 +251,10 @@ twc_tfer_file_name_strip(const char *original, size_t size)
  * Create a new file.
  */
 struct t_twc_tfer_file *
-twc_tfer_file_new(struct t_twc_profile *profile,
-                  const char *nickname, const char *filename,
-                  uint32_t friend_number, uint32_t file_number,
-                  uint64_t size, enum t_twc_tfer_file_type filetype)
+twc_tfer_file_new(struct t_twc_profile *profile, const char *nickname,
+                  const char *filename, uint32_t friend_number,
+                  uint32_t file_number, uint64_t size,
+                  enum t_twc_tfer_file_type filetype)
 {
     struct t_twc_tfer_file *file = malloc(sizeof(struct t_twc_tfer_file));
     file->status = TWC_TFER_FILE_STATUS_REQUEST;
@@ -264,8 +271,8 @@ twc_tfer_file_new(struct t_twc_profile *profile,
     {
         char *full_path = malloc(sizeof(char) * (FILENAME_MAX + 1));
         sprintf(full_path, "%s", profile->tfer->downloading_path);
-        char *final_name = twc_tfer_file_name_strip(filename,
-                                                    FILENAME_MAX + 1 - strlen(full_path));
+        char *final_name = twc_tfer_file_name_strip(
+            filename, FILENAME_MAX + 1 - strlen(full_path));
         if (!final_name)
             return NULL;
 
@@ -286,8 +293,8 @@ twc_tfer_file_new(struct t_twc_profile *profile,
     }
     else
     {
-        file->filename = twc_tfer_file_name_strip(filename,
-                                                  FILENAME_MAX + 1 - strlen(filename));
+        file->filename = twc_tfer_file_name_strip(
+            filename, FILENAME_MAX + 1 - strlen(filename));
         file->full_path = NULL;
         file->fp = fopen(filename, "r");
     }
@@ -295,7 +302,6 @@ twc_tfer_file_new(struct t_twc_profile *profile,
     if (!(file->fp))
         return NULL;
     return file;
-
 }
 
 /**
@@ -322,14 +328,8 @@ twc_tfer_file_get_type_str(struct t_twc_tfer_file *file)
 const char *
 twc_tfer_file_get_status_str(struct t_twc_tfer_file *file)
 {
-    char *statuses[] = {
-        "[request]",
-        "",
-        "[paused]",
-        "[done]",
-        "[declined]",
-        "[aborted]"
-    };
+    char *statuses[] = {"[request]", "",           "[paused]",
+                        "[done]",    "[declined]", "[aborted]"};
     return statuses[file->status];
 }
 
@@ -341,7 +341,7 @@ twc_tfer_cut_size(size_t size)
 {
     float ret = size;
     int i = 0;
-    while((ret>1024) && (i < TWC_MAX_SIZE_SUFFIX))
+    while ((ret > 1024) && (i < TWC_MAX_SIZE_SUFFIX))
     {
         ret /= 1024.0;
         i++;
@@ -358,7 +358,7 @@ twc_tfer_size_suffix(uint64_t size)
     char *suffixes[] = {"", "K", "M", "G", "T"};
     uint64_t ret = size;
     int i = 0;
-    while((ret > 1024) && (i < TWC_MAX_SIZE_SUFFIX))
+    while ((ret > 1024) && (i < TWC_MAX_SIZE_SUFFIX))
     {
         ret /= 1024.0;
         i++;
@@ -374,7 +374,7 @@ twc_tfer_cut_speed(float speed)
 {
     float ret = speed;
     int i = 0;
-    while((ret>1024) && (i < TWC_MAX_SPEED_SUFFIX))
+    while ((ret > 1024) && (i < TWC_MAX_SPEED_SUFFIX))
     {
         ret /= 1024.0;
         i++;
@@ -391,7 +391,7 @@ twc_tfer_speed_suffix(float speed)
     char *suffixes[] = {"bytes/s", "KB/s", "MB/s", "GB/s", "TB/s"};
     uint64_t ret = speed;
     int i = 0;
-    while((ret > 1024) && (i < TWC_MAX_SPEED_SUFFIX))
+    while ((ret > 1024) && (i < TWC_MAX_SPEED_SUFFIX))
     {
         ret /= 1024.0;
         i++;
@@ -407,7 +407,7 @@ twc_tfer_get_time()
 {
     struct timespec tp;
     clock_gettime(CLOCK_REALTIME, &tp);
-    return (double)tp.tv_sec + (double)(tp.tv_nsec/1E9);
+    return (double)tp.tv_sec + (double)(tp.tv_nsec / 1E9);
 }
 
 /**
@@ -441,8 +441,7 @@ twc_tfer_file_update(struct t_twc_tfer *tfer, struct t_twc_tfer_file *file)
     {
         remainder = remainder / 10;
         indent++;
-    }
-    while (remainder > 0);
+    } while (remainder > 0);
     indent += 5; /* length of ") => " */
     char placeholder[indent + 1];
     memset(placeholder, ' ', indent);
@@ -450,21 +449,16 @@ twc_tfer_file_update(struct t_twc_tfer *tfer, struct t_twc_tfer_file *file)
     const char *status = twc_tfer_file_get_status_str(file);
     if (file->size == UINT64_MAX)
     {
-        weechat_printf_y(tfer->buffer, line, "%i) %s %s: %s [STREAM]",
-                         index, type, file->nickname, file->filename);
+        weechat_printf_y(tfer->buffer, line, "%i) %s %s: %s [STREAM]", index,
+                         type, file->nickname, file->filename);
     }
     else
     {
         float display_size = twc_tfer_cut_size(file->size);
         const char *size_suffix = twc_tfer_size_suffix(file->size);
-        weechat_printf_y(tfer->buffer, line, "%i) %s %s: %s %i (%.2f%s)",
-                         index,
-                         type,
-                         file->nickname,
-                         file->filename,
-                         file->size,
-                         display_size,
-                         size_suffix);
+        weechat_printf_y(tfer->buffer, line, "%i) %s %s: %s %i (%.2f%s)", index,
+                         type, file->nickname, file->filename, file->size,
+                         display_size, size_suffix);
     }
     if (file->status == TWC_TFER_FILE_STATUS_IN_PROGRESS)
     {
@@ -473,14 +467,14 @@ twc_tfer_file_update(struct t_twc_tfer *tfer, struct t_twc_tfer_file *file)
         const char *speed_suffix = twc_tfer_speed_suffix(speed);
         if (file->size == UINT64_MAX)
         {
-            weechat_printf_y(tfer->buffer, line + 1, "%s%.2f%s",
-                             placeholder, display_speed, speed_suffix);
+            weechat_printf_y(tfer->buffer, line + 1, "%s%.2f%s", placeholder,
+                             display_speed, speed_suffix);
             return;
         }
-        double ratio = (double)(file->position)/(double)(file->size);
+        double ratio = (double)(file->position) / (double)(file->size);
         int percents = (int)(ratio * 100);
 
-        char progress_bar[PROGRESS_BAR_LEN+1];
+        char progress_bar[PROGRESS_BAR_LEN + 1];
         memset(progress_bar, ' ', PROGRESS_BAR_LEN);
         int i;
         for (i = 0; i < PROGRESS_BAR_LEN * ratio; i++)
@@ -493,31 +487,28 @@ twc_tfer_file_update(struct t_twc_tfer *tfer, struct t_twc_tfer_file *file)
         const char *pos_suffix = twc_tfer_size_suffix(file->position);
 
         weechat_printf_y(tfer->buffer, line + 1, "%s%i%% [%s] %.2f%s %.2f%s",
-                         placeholder,
-                         percents,
-                         progress_bar,
-                         display_pos,
-                         pos_suffix,
-                         display_speed,
-                         speed_suffix);
+                         placeholder, percents, progress_bar, display_pos,
+                         pos_suffix, display_speed, speed_suffix);
     }
     else
-        weechat_printf_y(tfer->buffer, line + 1, "%s%s",
-                         placeholder,status);
+        weechat_printf_y(tfer->buffer, line + 1, "%s%s", placeholder, status);
 }
 
 /**
- * Allocate and return "uint8_t data[length]" chunk of data starting from "position".
+ * Allocate and return "uint8_t data[length]" chunk of data starting from
+ * "position".
  */
 uint8_t *
-twc_tfer_file_get_chunk(struct t_twc_tfer_file *file, uint64_t position, size_t length)
+twc_tfer_file_get_chunk(struct t_twc_tfer_file *file, uint64_t position,
+                        size_t length)
 {
     fseek(file->fp, position, SEEK_SET);
     uint8_t *data = malloc(sizeof(uint8_t) * length);
     size_t read = fread(data, sizeof(uint8_t), length, file->fp);
     while ((read < length) && !feof(file->fp))
     {
-        read += fread(data + read * sizeof(uint8_t), sizeof(uint8_t), length - read, file->fp);
+        read += fread(data + read * sizeof(uint8_t), sizeof(uint8_t),
+                      length - read, file->fp);
     }
     if (read != length)
         return NULL;
@@ -528,13 +519,15 @@ twc_tfer_file_get_chunk(struct t_twc_tfer_file *file, uint64_t position, size_t 
  * Write a chunk to the file.
  */
 bool
-twc_tfer_file_write_chunk(struct t_twc_tfer_file *file, const  uint8_t *data, uint64_t position, size_t length)
+twc_tfer_file_write_chunk(struct t_twc_tfer_file *file, const uint8_t *data,
+                          uint64_t position, size_t length)
 {
     fseek(file->fp, position, SEEK_SET);
     size_t wrote = fwrite(data, sizeof(uint8_t), length, file->fp);
     while (wrote < length)
     {
-        wrote += fwrite(data + wrote * sizeof(uint8_t), sizeof(uint8_t), length - wrote, file->fp);
+        wrote += fwrite(data + wrote * sizeof(uint8_t), sizeof(uint8_t),
+                        length - wrote, file->fp);
     }
 
     if (wrote != length)
@@ -550,7 +543,7 @@ twc_tfer_file_get_by_number(struct t_twc_tfer *tfer, uint32_t file_number)
 {
     size_t index;
     struct t_twc_list_item *item;
-    twc_list_foreach(tfer->files, index, item)
+    twc_list_foreach (tfer->files, index, item)
     {
         if (item->file->file_number == file_number)
             return item->file;
@@ -566,7 +559,7 @@ twc_tfer_file_get_index(struct t_twc_tfer *tfer, struct t_twc_tfer_file *file)
 {
     size_t index;
     struct t_twc_list_item *item;
-    twc_list_foreach(tfer->files, index, item)
+    twc_list_foreach (tfer->files, index, item)
     {
         if (item->file == file)
             return index;
@@ -593,7 +586,7 @@ twc_tfer_buffer_update(struct t_twc_tfer *tfer)
 {
     size_t index;
     struct t_twc_list_item *item;
-    twc_list_foreach(tfer->files, index, item)
+    twc_list_foreach (tfer->files, index, item)
     {
         twc_tfer_file_update(tfer, item->file);
     }
@@ -608,11 +601,11 @@ twc_tfer_buffer_refresh(struct t_twc_tfer *tfer)
 {
     size_t index;
     struct t_twc_list_item *item;
-    twc_list_foreach(tfer->files, index, item)
+    twc_list_foreach (tfer->files, index, item)
     {
         enum t_twc_tfer_file_status status = item->file->status;
         if (status == TWC_TFER_FILE_STATUS_DECLINED ||
-            status == TWC_TFER_FILE_STATUS_ABORTED  ||
+            status == TWC_TFER_FILE_STATUS_ABORTED ||
             status == TWC_TFER_FILE_STATUS_DONE)
         {
             struct t_twc_tfer_file *file = twc_list_remove(item);
@@ -626,9 +619,9 @@ twc_tfer_buffer_refresh(struct t_twc_tfer *tfer)
 
 /**
  * Send TOX_FILE_CONTROL command to a client.
- * "сheck" is a file status that a file should be in before sending a control command.
- * "send" is a control comand you are going to send.
- * "set" is a file status that will be set after successful sending a control command.
+ * "сheck" is a file status that a file should be in before sending a control
+ * command. "send" is a control comand you are going to send. "set" is a file
+ * status that will be set after successful sending a control command.
  */
 int
 twc_tfer_file_send_control(struct t_twc_profile *profile, size_t index,
@@ -649,8 +642,10 @@ twc_tfer_file_send_control(struct t_twc_profile *profile, size_t index,
                      &control_error);
     if (control_error)
     {
-        weechat_printf(profile->buffer, "%scannot send control command for \"%s\" file: %s",
-                       weechat_prefix("error"), file->filename, twc_tox_err_file_control(control_error));
+        weechat_printf(profile->buffer,
+                       "%scannot send control command for \"%s\" file: %s",
+                       weechat_prefix("error"), file->filename,
+                       twc_tox_err_file_control(control_error));
         return 0;
     }
     else
@@ -658,7 +653,8 @@ twc_tfer_file_send_control(struct t_twc_profile *profile, size_t index,
         if (send == TOX_FILE_CONTROL_CANCEL)
         {
             fclose(file->fp);
-            if (file->type == TWC_TFER_FILE_TYPE_DOWNLOADING && file->size != UINT64_MAX)
+            if (file->type == TWC_TFER_FILE_TYPE_DOWNLOADING &&
+                file->size != UINT64_MAX)
                 remove(file->full_path);
         }
         file->status = set;
@@ -666,8 +662,6 @@ twc_tfer_file_send_control(struct t_twc_profile *profile, size_t index,
         return 1;
     }
 }
-
-
 
 /**
  * Accept a file with number <index> in the list.
@@ -677,10 +671,9 @@ twc_tfer_file_send_control(struct t_twc_profile *profile, size_t index,
 int
 twc_tfer_file_accept(struct t_twc_profile *profile, size_t index)
 {
-    return twc_tfer_file_send_control(profile, index,
-                                      TWC_TFER_FILE_STATUS_REQUEST,
-                                      TOX_FILE_CONTROL_RESUME,
-                                      TWC_TFER_FILE_STATUS_IN_PROGRESS);
+    return twc_tfer_file_send_control(
+        profile, index, TWC_TFER_FILE_STATUS_REQUEST, TOX_FILE_CONTROL_RESUME,
+        TWC_TFER_FILE_STATUS_IN_PROGRESS);
 }
 
 /**
@@ -691,10 +684,9 @@ twc_tfer_file_accept(struct t_twc_profile *profile, size_t index)
 int
 twc_tfer_file_decline(struct t_twc_profile *profile, size_t index)
 {
-    return twc_tfer_file_send_control(profile, index,
-                                      TWC_TFER_FILE_STATUS_REQUEST,
-                                      TOX_FILE_CONTROL_CANCEL,
-                                      TWC_TFER_FILE_STATUS_DECLINED);
+    return twc_tfer_file_send_control(
+        profile, index, TWC_TFER_FILE_STATUS_REQUEST, TOX_FILE_CONTROL_CANCEL,
+        TWC_TFER_FILE_STATUS_DECLINED);
 }
 
 /**
@@ -705,10 +697,9 @@ twc_tfer_file_decline(struct t_twc_profile *profile, size_t index)
 int
 twc_tfer_file_pause(struct t_twc_profile *profile, size_t index)
 {
-     return twc_tfer_file_send_control(profile, index,
-                                      TWC_TFER_FILE_STATUS_IN_PROGRESS,
-                                      TOX_FILE_CONTROL_PAUSE,
-                                      TWC_TFER_FILE_STATUS_PAUSED);
+    return twc_tfer_file_send_control(
+        profile, index, TWC_TFER_FILE_STATUS_IN_PROGRESS,
+        TOX_FILE_CONTROL_PAUSE, TWC_TFER_FILE_STATUS_PAUSED);
 }
 
 /**
@@ -719,10 +710,9 @@ twc_tfer_file_pause(struct t_twc_profile *profile, size_t index)
 int
 twc_tfer_file_continue(struct t_twc_profile *profile, size_t index)
 {
-    return twc_tfer_file_send_control(profile, index,
-                                      TWC_TFER_FILE_STATUS_PAUSED,
-                                      TOX_FILE_CONTROL_RESUME,
-                                      TWC_TFER_FILE_STATUS_IN_PROGRESS);
+    return twc_tfer_file_send_control(
+        profile, index, TWC_TFER_FILE_STATUS_PAUSED, TOX_FILE_CONTROL_RESUME,
+        TWC_TFER_FILE_STATUS_IN_PROGRESS);
 }
 
 /**
@@ -733,10 +723,9 @@ twc_tfer_file_continue(struct t_twc_profile *profile, size_t index)
 int
 twc_tfer_file_abort(struct t_twc_profile *profile, size_t index)
 {
-    return twc_tfer_file_send_control(profile, index,
-                                      TWC_TFER_FILE_STATUS_IN_PROGRESS,
-                                      TOX_FILE_CONTROL_CANCEL,
-                                      TWC_TFER_FILE_STATUS_ABORTED);
+    return twc_tfer_file_send_control(
+        profile, index, TWC_TFER_FILE_STATUS_IN_PROGRESS,
+        TOX_FILE_CONTROL_CANCEL, TWC_TFER_FILE_STATUS_ABORTED);
 }
 
 /**
@@ -751,9 +740,13 @@ twc_tfer_buffer_input_callback(const void *pointer, void *data,
     profile = (struct t_twc_profile *)pointer;
     int argc;
     char **argv = weechat_string_split_shell(input_data, &argc);
-    char *status = malloc(sizeof(char) * weechat_window_get_integer(weechat_current_window(), "win_width") + 1);
+    char *status =
+        malloc(sizeof(char) * weechat_window_get_integer(
+                                  weechat_current_window(), "win_width") +
+               1);
 
-    /* refresh file list, i.e delete files that have been marked as "denied", "aborted" and "done" */
+    /* refresh file list, i.e delete files that have been marked as "denied",
+     * "aborted" and "done" */
     if (weechat_strcasecmp(argv[0], "r") == 0)
     {
         if (argc == 1)
@@ -763,7 +756,8 @@ twc_tfer_buffer_input_callback(const void *pointer, void *data,
         }
         else
         {
-            TWC_TFER_UPDATE_STATUS_AND_RETURN("this command doesn't accept any arguments");
+            TWC_TFER_UPDATE_STATUS_AND_RETURN(
+                "this command doesn't accept any arguments");
         }
     }
     if (strstr("adpcbADPCB", argv[0]) && argc < 2)
@@ -771,14 +765,16 @@ twc_tfer_buffer_input_callback(const void *pointer, void *data,
     if (argc == 2)
     {
         size_t n = (size_t)strtol(argv[1], NULL, 0);
-        if ((n == 0 && strcmp(argv[1], "0") != 0) || n > (profile->tfer->files->count - 1))
+        if ((n == 0 && strcmp(argv[1], "0") != 0) ||
+            n > (profile->tfer->files->count - 1))
         {
-            TWC_TFER_UPDATE_STATUS_AND_RETURN("<n> must be existing number of file");
+            TWC_TFER_UPDATE_STATUS_AND_RETURN(
+                "<n> must be existing number of file");
         }
         /* accept */
         if (weechat_strcasecmp(argv[0], "a") == 0)
         {
-           TWC_TFER_MESSAGE(accept, accepted);
+            TWC_TFER_MESSAGE(accept, accepted);
         }
         /* decline */
         if (weechat_strcasecmp(argv[0], "d") == 0)

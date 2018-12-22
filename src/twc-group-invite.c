@@ -58,7 +58,8 @@ twc_group_chat_invite_add(struct t_twc_profile *profile, int32_t friend_number,
     invite->data_size = size;
 
     if (TWC_PROFILE_OPTION_BOOLEAN(profile, TWC_PROFILE_OPTION_AUTOJOIN))
-        invite->autojoin_delay = TWC_PROFILE_OPTION_INTEGER(profile, TWC_PROFILE_OPTION_AUTOJOIN_DELAY);
+        invite->autojoin_delay = TWC_PROFILE_OPTION_INTEGER(
+            profile, TWC_PROFILE_OPTION_AUTOJOIN_DELAY);
     else
         invite->autojoin_delay = 0;
 

@@ -19,21 +19,21 @@
 
 #include <stdio.h>
 #include <string.h>
-#include <unistd.h>
 #include <sys/stat.h>
+#include <unistd.h>
 #include <wordexp.h>
 
 #include <tox/tox.h>
 #include <weechat/weechat-plugin.h>
 
 #include "twc-bootstrap.h"
-#include "twc-tfer.h"
 #include "twc-chat.h"
 #include "twc-config.h"
 #include "twc-friend-request.h"
 #include "twc-group-invite.h"
 #include "twc-list.h"
 #include "twc-profile.h"
+#include "twc-tfer.h"
 #include "twc-utils.h"
 #include "twc.h"
 
@@ -52,8 +52,9 @@ enum TWC_FRIEND_MATCH
 #define TWC_CHECK_PROFILE(profile)                                             \
     if (!profile)                                                              \
     {                                                                          \
-        weechat_printf(NULL, "%s%s: command \"%s\" must be executed on a Tox " \
-                             "buffer",                                         \
+        weechat_printf(NULL,                                                   \
+                       "%s%s: command \"%s\" must be executed on a Tox "       \
+                       "buffer",                                               \
                        weechat_prefix("error"), weechat_plugin->name,          \
                        argv[0]);                                               \
         return WEECHAT_RC_OK;                                                  \
@@ -66,10 +67,11 @@ enum TWC_FRIEND_MATCH
 #define TWC_CHECK_CHAT(chat)                                                   \
     if (!chat)                                                                 \
     {                                                                          \
-        weechat_printf(                                                        \
-            NULL, "%s%s: command \"%s\" must be executed in a chat "           \
-                  "buffer",                                                    \
-            weechat_prefix("error"), weechat_plugin->name, argv[0]);           \
+        weechat_printf(NULL,                                                   \
+                       "%s%s: command \"%s\" must be executed in a chat "      \
+                       "buffer",                                               \
+                       weechat_prefix("error"), weechat_plugin->name,          \
+                       argv[0]);                                               \
         return WEECHAT_RC_OK;                                                  \
     }
 
@@ -80,10 +82,11 @@ enum TWC_FRIEND_MATCH
 #define TWC_CHECK_GROUP_CHAT(chat)                                             \
     if (!chat || chat->group_number < 0)                                       \
     {                                                                          \
-        weechat_printf(                                                        \
-            NULL, "%s%s: command \"%s\" must be executed in a group "          \
-                  "chat buffer ",                                              \
-            weechat_prefix("error"), weechat_plugin->name, argv[0]);           \
+        weechat_printf(NULL,                                                   \
+                       "%s%s: command \"%s\" must be executed in a group "     \
+                       "chat buffer ",                                         \
+                       weechat_prefix("error"), weechat_plugin->name,          \
+                       argv[0]);                                               \
         return WEECHAT_RC_OK;                                                  \
     }
 
@@ -135,7 +138,7 @@ enum TWC_FRIEND_MATCH
  * Make sure a file exists.
  */
 #define TWC_CHECK_FILE_EXISTS(filename)                                        \
-    if(access(filename, F_OK) == -1 )                                          \
+    if (access(filename, F_OK) == -1)                                          \
     {                                                                          \
         weechat_printf(NULL, "%sFile \"%s\" does not exist",                   \
                        weechat_prefix("error"), filename);                     \
@@ -143,8 +146,10 @@ enum TWC_FRIEND_MATCH
     }
 
 #define TWC_RETURN_WITH_FILE_ERROR(filename, type)                             \
-    weechat_printf(NULL, "%s\"%s\" must be a regular file or pipe, "           \
-                   "not a %s", weechat_prefix("error"), filename, type);       \
+    weechat_printf(NULL,                                                       \
+                   "%s\"%s\" must be a regular file or pipe, "                 \
+                   "not a %s",                                                 \
+                   weechat_prefix("error"), filename, type);                   \
     return WEECHAT_RC_ERROR;
 
 /**
@@ -503,8 +508,8 @@ twc_cmd_friend(const void *pointer, void *data, struct t_gui_buffer *buffer,
     /* /friend requests */
     else if (argc == 2 && weechat_strcasecmp(argv[1], "requests") == 0)
     {
-        weechat_printf(profile->buffer, "%sPending friend requests:",
-                       weechat_prefix("network"));
+        weechat_printf(profile->buffer,
+                       "%sPending friend requests:", weechat_prefix("network"));
 
         size_t index;
         struct t_twc_list_item *item;
@@ -514,8 +519,9 @@ twc_cmd_friend(const void *pointer, void *data, struct t_gui_buffer *buffer,
             twc_bin2hex(item->friend_request->tox_id, TOX_PUBLIC_KEY_SIZE,
                         hex_address);
 
-            weechat_printf(profile->buffer, "%s[%d] Address: %s\n"
-                                            "[%d] Message: %s",
+            weechat_printf(profile->buffer,
+                           "%s[%d] Address: %s\n"
+                           "[%d] Message: %s",
                            weechat_prefix("network"), index, hex_address, index,
                            item->friend_request->message);
         }
@@ -1142,8 +1148,9 @@ twc_cmd_tox(const void *pointer, void *data, struct t_gui_buffer *buffer,
         }
         else
         {
-            weechat_printf(NULL, "%s%s: You must confirm deletion with either "
-                                 "\"-keepdata\" or \"-yes\" (see /help tox)",
+            weechat_printf(NULL,
+                           "%s%s: You must confirm deletion with either "
+                           "\"-keepdata\" or \"-yes\" (see /help tox)",
                            weechat_prefix("error"), weechat_plugin->name);
             return WEECHAT_RC_OK;
         }
@@ -1200,7 +1207,7 @@ twc_cmd_tox(const void *pointer, void *data, struct t_gui_buffer *buffer,
  */
 int
 twc_cmd_send(const void *pointer, void *data, struct t_gui_buffer *buffer,
-            int argc, char **argv, char **argv_eol)
+             int argc, char **argv, char **argv_eol)
 {
     if (argc == 1)
         return WEECHAT_RC_ERROR;
@@ -1217,14 +1224,17 @@ twc_cmd_send(const void *pointer, void *data, struct t_gui_buffer *buffer,
     {
         if (profile->buffer == buffer || profile->tfer->buffer == buffer)
         {
-            weechat_printf(profile->buffer, "%s%s", weechat_prefix("error"), "you must specify a friend");
+            weechat_printf(profile->buffer, "%s%s", weechat_prefix("error"),
+                           "you must specify a friend");
             return WEECHAT_RC_ERROR;
         }
-        snprintf(recipient, TOX_MAX_NAME_LENGTH, "%s", weechat_buffer_get_string(buffer, "name"));
+        snprintf(recipient, TOX_MAX_NAME_LENGTH, "%s",
+                 weechat_buffer_get_string(buffer, "name"));
         struct t_twc_chat *chat = twc_chat_search_buffer(buffer);
         if (chat->group_number != -1)
         {
-            weechat_printf(profile->buffer, "%s%s", weechat_prefix("error"), "the file transmission is "
+            weechat_printf(profile->buffer, "%s%s", weechat_prefix("error"),
+                           "the file transmission is "
                            "allowed only between friends");
             return WEECHAT_RC_ERROR;
         }
@@ -1238,11 +1248,12 @@ twc_cmd_send(const void *pointer, void *data, struct t_gui_buffer *buffer,
     /* /send <number>|<name>|<Tox ID> <file> */
     if (argc >= 3)
     {
-        /* do a shell split in case a friend has spaces in his name 
+        /* do a shell split in case a friend has spaces in his name
          * and join the name */
         int shell_argc;
-        char **shell_argv = weechat_string_split_shell(argv_eol[1], &shell_argc);
-        for (int i = 0; i < shell_argc -1; i++)
+        char **shell_argv =
+            weechat_string_split_shell(argv_eol[1], &shell_argc);
+        for (int i = 0; i < shell_argc - 1; i++)
         {
             strcat(recipient, shell_argv[i]);
             if (i < shell_argc - 2)
@@ -1258,7 +1269,7 @@ twc_cmd_send(const void *pointer, void *data, struct t_gui_buffer *buffer,
     TWC_CHECK_FILE_EXISTS(filename);
 
     uint32_t friend_number = twc_match_friend(profile, recipient);
-    TWC_CHECK_FRIEND_NUMBER(profile, (signed) friend_number, recipient);
+    TWC_CHECK_FRIEND_NUMBER(profile, (signed)friend_number, recipient);
 
     struct stat st;
     stat(filename, &st);
@@ -1277,30 +1288,34 @@ twc_cmd_send(const void *pointer, void *data, struct t_gui_buffer *buffer,
         case S_IFLNK:
             break;
         default:
-            weechat_printf(NULL, "%sunknown file type", weechat_prefix("error"));
+            weechat_printf(NULL, "%sunknown file type",
+                           weechat_prefix("error"));
             return WEECHAT_RC_ERROR;
     }
 
-    char *stripped_name = twc_tfer_file_name_strip(filename, FILENAME_MAX + 1 - strlen(filename));
+    char *stripped_name =
+        twc_tfer_file_name_strip(filename, FILENAME_MAX + 1 - strlen(filename));
 
     TOX_ERR_FILE_SEND error;
-    uint32_t file_number = tox_file_send(profile->tox, friend_number, TOX_FILE_KIND_DATA,
-                                         S_ISFIFO(st.st_mode) ? UINT64_MAX : (size_t)st.st_size,
-                                         NULL, (uint8_t *)stripped_name, strlen(filename), &error);
+    uint32_t file_number =
+        tox_file_send(profile->tox, friend_number, TOX_FILE_KIND_DATA,
+                      S_ISFIFO(st.st_mode) ? UINT64_MAX : (size_t)st.st_size,
+                      NULL, (uint8_t *)stripped_name, strlen(filename), &error);
     free(stripped_name);
     if (error != TOX_ERR_FILE_SEND_OK)
     {
         weechat_printf(profile->buffer, "%ssending \"%s\" has been failed: %s",
-                       weechat_prefix("error"), filename, twc_tox_err_file_send(error));
+                       weechat_prefix("error"), filename,
+                       twc_tox_err_file_send(error));
         return WEECHAT_RC_ERROR;
     }
     if (!(profile->tfer->buffer))
     {
         twc_tfer_load(profile);
     }
-    struct t_twc_tfer_file *file = twc_tfer_file_new(profile, recipient, filename,
-                                                     friend_number, file_number,
-                                                     st.st_size, TWC_TFER_FILE_TYPE_UPLOADING);
+    struct t_twc_tfer_file *file = twc_tfer_file_new(
+        profile, recipient, filename, friend_number, file_number, st.st_size,
+        TWC_TFER_FILE_TYPE_UPLOADING);
     if (!file)
     {
         weechat_printf(profile->buffer, "%scannot open the file \"%s\"",
@@ -1347,10 +1362,11 @@ twc_commands_init()
                          " || decline",
                          twc_cmd_friend, NULL, NULL);
 
-    weechat_hook_command("group", "manage group chats", "create"
-                                                        " || invites"
-                                                        " || join <number>"
-                                                        " || decline <number>",
+    weechat_hook_command("group", "manage group chats",
+                         "create"
+                         " || invites"
+                         " || join <number>"
+                         " || decline <number>",
                          " create: create a new group chat\n"
                          "invites: list group chat invites\n"
                          "   join: join a group chat by its invite ID\n"
@@ -1416,12 +1432,13 @@ twc_commands_init()
                          NULL, NULL);
 
     weechat_hook_command(
-        "tox", "manage Tox profiles", "list"
-                                      " || create <name>"
-                                      " || delete <name> -yes|-keepdata"
-                                      " || load [<name>...]"
-                                      " || unload [<name>...]"
-                                      " || reload [<name>...]",
+        "tox", "manage Tox profiles",
+        "list"
+        " || create <name>"
+        " || delete <name> -yes|-keepdata"
+        " || load [<name>...]"
+        " || unload [<name>...]"
+        " || reload [<name>...]",
         "  list: list all Tox profile\n"
         "create: create a new Tox profile\n"
         "delete: delete a Tox profile; requires either -yes "
@@ -1437,12 +1454,13 @@ twc_commands_init()
         " || unload %(tox_loaded_profiles)|%*"
         " || reload %(tox_loaded_profiles)|%*",
         twc_cmd_tox, NULL, NULL);
-    weechat_hook_command("send", "send a file to a friend",
-                         "<file>"
-                         " || <number>|<name>|<Tox ID> <file>",
-                         "file: path to the file\n"
-                         "number, name, Tox ID: the friend you are sending the file to\n",
-                         "%(filename)"
-                         " || %(tox_friend_name)|%(tox_friend_tox_id) %(filename)",
-                         twc_cmd_send, NULL, NULL);
+    weechat_hook_command(
+        "send", "send a file to a friend",
+        "<file>"
+        " || <number>|<name>|<Tox ID> <file>",
+        "file: path to the file\n"
+        "number, name, Tox ID: the friend you are sending the file to\n",
+        "%(filename)"
+        " || %(tox_friend_name)|%(tox_friend_tox_id) %(filename)",
+        twc_cmd_send, NULL, NULL);
 }

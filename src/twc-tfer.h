@@ -1,4 +1,4 @@
-/* 
+/*
  * This file is part of Tox-WeeChat.
  *
  * Tox-WeeChat is free software: you can redistribute it and/or modify
@@ -47,14 +47,14 @@ enum t_twc_tfer_file_status
 enum t_twc_tfer_file_type
 {
     TWC_TFER_FILE_TYPE_DOWNLOADING,
-    TWC_TFER_FILE_TYPE_UPLOADING,    
+    TWC_TFER_FILE_TYPE_UPLOADING,
 };
 
 struct t_twc_tfer_file
 {
     enum t_twc_tfer_file_status status;
     enum t_twc_tfer_file_type type;
-    uint64_t position;  /* already transmitted (in bytes) */
+    uint64_t position; /* already transmitted (in bytes) */
     uint64_t size;
     uint32_t friend_number;
     uint32_t file_number;
@@ -103,19 +103,21 @@ char *
 twc_tfer_file_name_strip(const char *original, size_t size);
 
 struct t_twc_tfer_file *
-twc_tfer_file_new(struct t_twc_profile *profile,
-                  const char *nickname, const char *filename,
-                  uint32_t friend_number, uint32_t file_number,
-                  uint64_t size, enum t_twc_tfer_file_type filetype);
+twc_tfer_file_new(struct t_twc_profile *profile, const char *nickname,
+                  const char *filename, uint32_t friend_number,
+                  uint32_t file_number, uint64_t size,
+                  enum t_twc_tfer_file_type filetype);
 
 void
 twc_tfer_file_add(struct t_twc_tfer *tfer, struct t_twc_tfer_file *file);
 
 uint8_t *
-twc_tfer_file_get_chunk(struct t_twc_tfer_file *file, uint64_t position, size_t length);
+twc_tfer_file_get_chunk(struct t_twc_tfer_file *file, uint64_t position,
+                        size_t length);
 
 bool
-twc_tfer_file_write_chunk(struct t_twc_tfer_file *file, const  uint8_t *data, uint64_t position, size_t length);
+twc_tfer_file_write_chunk(struct t_twc_tfer_file *file, const uint8_t *data,
+                          uint64_t position, size_t length);
 
 struct t_twc_tfer_file *
 twc_tfer_file_get_by_number(struct t_twc_tfer *tfer, uint32_t file_number);

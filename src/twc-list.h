@@ -20,8 +20,8 @@
 #ifndef TOX_WEECHAT_LIST_H
 #define TOX_WEECHAT_LIST_H
 
-#include <stdlib.h>
 #include "twc-tfer.h"
+#include <stdlib.h>
 
 struct t_twc_list
 {

@@ -32,13 +32,15 @@
 #include "twc-group-invite.h"
 #include "twc-message-queue.h"
 #include "twc-profile.h"
-#include "twc-utils.h"
 #include "twc-tfer.h"
+#include "twc-utils.h"
 #include "twc.h"
 
 #include "twc-tox-callbacks.h"
 
-#define TWC_TFER_FILE_UPDATE_STATUS(st) do {                                   \
+#define TWC_TFER_FILE_UPDATE_STATUS(st)                                        \
+    do                                                                         \
+    {                                                                          \
         file->status = st;                                                     \
         twc_tfer_file_update(profile->tfer, file);                             \
     } while (0)
@@ -57,8 +59,7 @@ twc_do_timer_cb(const void *pointer, void *data, int remaining_calls)
     interval = tox_iteration_interval(profile->tox);
     tox_iterate(profile->tox, profile);
     struct t_hook *hook =
-        weechat_hook_timer(interval, 0, 1,
-                           twc_do_timer_cb, profile, NULL);
+        weechat_hook_timer(interval, 0, 1, twc_do_timer_cb, profile, NULL);
     profile->tox_do_timer = hook;
 
     /* check connection status */
@@ -70,24 +71,26 @@ twc_do_timer_cb(const void *pointer, void *data, int remaining_calls)
     if (TWC_PROFILE_OPTION_BOOLEAN(profile, TWC_PROFILE_OPTION_AUTOJOIN))
     {
         struct t_twc_group_chat_invite *invite;
-        for(i = 0; (invite = twc_group_chat_invite_with_index(profile, i)); i++)
-            if(invite->autojoin_delay <= 0)
+        for (i = 0; (invite = twc_group_chat_invite_with_index(profile, i));
+             i++)
+            if (invite->autojoin_delay <= 0)
             {
-                struct t_twc_chat *friend_chat =
-                    twc_chat_search_friend(profile, invite->friend_number, false);
-                char *friend_name = twc_get_name_nt(profile->tox, invite->friend_number);
+                struct t_twc_chat *friend_chat = twc_chat_search_friend(
+                    profile, invite->friend_number, false);
+                char *friend_name =
+                    twc_get_name_nt(profile->tox, invite->friend_number);
                 char *type_str;
                 switch (invite->group_chat_type)
                 {
-                case TOX_CONFERENCE_TYPE_TEXT:
-                    type_str = "a text-only group chat";
-                    break;
-                case TOX_CONFERENCE_TYPE_AV:
-                    type_str = "an audio/vikdeo group chat";
-                    break;
-                default:
-                    type_str = "a group chat";
-                    break;
+                    case TOX_CONFERENCE_TYPE_TEXT:
+                        type_str = "a text-only group chat";
+                        break;
+                    case TOX_CONFERENCE_TYPE_AV:
+                        type_str = "an audio/vikdeo group chat";
+                        break;
+                    default:
+                        type_str = "a group chat";
+                        break;
                 }
 
                 rc = twc_group_chat_invite_join(invite);
@@ -99,17 +102,19 @@ twc_do_timer_cb(const void *pointer, void *data, int remaining_calls)
                     if (friend_chat)
                     {
                         weechat_printf_date_tags(
-                                friend_chat->buffer, 0, tags,
-                                "%sWe joined the %s%s%s's invite to %s.",
-                                weechat_prefix("network"), weechat_color("chat_nick_other"),
-                                friend_name, weechat_color("reset"), type_str);
+                            friend_chat->buffer, 0, tags,
+                            "%sWe joined the %s%s%s's invite to %s.",
+                            weechat_prefix("network"),
+                            weechat_color("chat_nick_other"), friend_name,
+                            weechat_color("reset"), type_str);
                         tags = "";
                     }
                     weechat_printf_date_tags(
-                            profile->buffer, 0, tags,
-                            "%sWe joined the %s%s%s's invite to %s.",
-                            weechat_prefix("network"), weechat_color("chat_nick_other"),
-                            friend_name, weechat_color("reset"), type_str);
+                        profile->buffer, 0, tags,
+                        "%sWe joined the %s%s%s's invite to %s.",
+                        weechat_prefix("network"),
+                        weechat_color("chat_nick_other"), friend_name,
+                        weechat_color("reset"), type_str);
                 }
                 else
                 {
@@ -117,19 +122,21 @@ twc_do_timer_cb(const void *pointer, void *data, int remaining_calls)
                     if (friend_chat)
                     {
                         weechat_printf_date_tags(
-                                friend_chat->buffer, 0, tags,
-                                "%s%s%s%s invites you to join %s, but we failed to "
-                                "process the invite. Please try again.",
-                                weechat_prefix("network"), weechat_color("chat_nick_other"),
-                                friend_name, weechat_color("reset"));
+                            friend_chat->buffer, 0, tags,
+                            "%s%s%s%s invites you to join %s, but we failed to "
+                            "process the invite. Please try again.",
+                            weechat_prefix("network"),
+                            weechat_color("chat_nick_other"), friend_name,
+                            weechat_color("reset"));
                         tags = "";
                     }
                     weechat_printf_date_tags(
-                            profile->buffer, 0, tags,
-                            "%s%s%s%s invites you to join %s, but we failed to "
-                            "process the invite. Please try again.",
-                            weechat_prefix("network"), weechat_color("chat_nick_other"),
-                            friend_name, weechat_color("reset"));
+                        profile->buffer, 0, tags,
+                        "%s%s%s%s invites you to join %s, but we failed to "
+                        "process the invite. Please try again.",
+                        weechat_prefix("network"),
+                        weechat_color("chat_nick_other"), friend_name,
+                        weechat_color("reset"));
                 }
             }
             else
@@ -239,7 +246,7 @@ twc_name_change_callback(Tox *tox, uint32_t friend_number, const uint8_t *name,
             size_t index;
             struct t_twc_list_item *item;
             struct t_twc_tfer_file *file;
-            twc_list_foreach(profile->tfer->files, index, item)
+            twc_list_foreach (profile->tfer->files, index, item)
             {
                 file = item->file;
                 if (file->friend_number == friend_number)
@@ -361,12 +368,12 @@ twc_group_invite_callback(Tox *tox, uint32_t friend_number,
                 friend_name, weechat_color("reset"), type_str, rc);
             tags = "";
         }
-        weechat_printf_date_tags(
-            profile->buffer, 0, tags,
-            "%s%s%s%s invites you to join %s. Type "
-            "\"/group join %d\" to accept.",
-            weechat_prefix("network"), weechat_color("chat_nick_other"),
-            friend_name, weechat_color("reset"), type_str, rc);
+        weechat_printf_date_tags(profile->buffer, 0, tags,
+                                 "%s%s%s%s invites you to join %s. Type "
+                                 "\"/group join %d\" to accept.",
+                                 weechat_prefix("network"),
+                                 weechat_color("chat_nick_other"), friend_name,
+                                 weechat_color("reset"), type_str, rc);
     }
     else
     {
@@ -505,10 +512,8 @@ twc_group_peer_list_changed_callback(Tox *tox, uint32_t group_number,
 
 void
 twc_group_peer_name_callback(Tox *tox, uint32_t group_number,
-                                       uint32_t peer_number,
-                                       const uint8_t *pname,
-                                       size_t pname_len,
-                                       void *data)
+                             uint32_t peer_number, const uint8_t *pname,
+                             size_t pname_len, void *data)
 {
     struct t_twc_profile *profile = data;
     struct t_twc_chat *chat =
@@ -549,25 +554,25 @@ twc_group_peer_name_callback(Tox *tox, uint32_t group_number,
     prev_name = weechat_list_string(n);
     name = twc_null_terminate(pname, pname_len);
 
-    nick = weechat_nicklist_search_nick(chat->buffer,
-                                        chat->nicklist_group, prev_name);
+    nick = weechat_nicklist_search_nick(chat->buffer, chat->nicklist_group,
+                                        prev_name);
 
     weechat_nicklist_remove_nick(chat->buffer, nick);
 
     err = TOX_ERR_CONFERENCE_PEER_QUERY_OK;
-    rc = tox_conference_peer_number_is_ours(tox, group_number, peer_number, &err);
+    rc = tox_conference_peer_number_is_ours(tox, group_number, peer_number,
+                                            &err);
     if ((err == TOX_ERR_CONFERENCE_PEER_QUERY_OK) && (!rc))
         weechat_printf(chat->buffer, "%s%s is now known as %s",
                        weechat_prefix("network"), prev_name, name);
 
     weechat_list_set(n, name);
 
-    weechat_nicklist_add_nick(chat->buffer, chat->nicklist_group, name,
-                              NULL, NULL, NULL, 1);
+    weechat_nicklist_add_nick(chat->buffer, chat->nicklist_group, name, NULL,
+                              NULL, NULL, 1);
 
     free(name);
 }
-
 
 void
 twc_group_title_callback(Tox *tox, uint32_t group_number, uint32_t peer_number,
@@ -587,55 +592,62 @@ twc_group_title_callback(Tox *tox, uint32_t group_number, uint32_t peer_number,
 }
 
 void
-twc_file_recv_control_callback(Tox *tox, uint32_t friend_number, uint32_t file_number,
-                               TOX_FILE_CONTROL control, void *user_data)
+twc_file_recv_control_callback(Tox *tox, uint32_t friend_number,
+                               uint32_t file_number, TOX_FILE_CONTROL control,
+                               void *user_data)
 {
     struct t_twc_profile *profile = twc_profile_search_tox(tox);
-    struct t_twc_tfer_file *file = twc_tfer_file_get_by_number(profile->tfer, file_number);
+    struct t_twc_tfer_file *file =
+        twc_tfer_file_get_by_number(profile->tfer, file_number);
     if (!file)
     {
-        weechat_printf(profile->tfer->buffer, "%sthere is no file with number %i in queue",
+        weechat_printf(profile->tfer->buffer,
+                       "%sthere is no file with number %i in queue",
                        weechat_prefix("error"), file_number);
         return;
     }
     switch (control)
     {
-    case TOX_FILE_CONTROL_RESUME:
-        TWC_TFER_FILE_UPDATE_STATUS(TWC_TFER_FILE_STATUS_IN_PROGRESS);
-        break;
-    case TOX_FILE_CONTROL_PAUSE:
-        if (file->position !=0) 
-            TWC_TFER_FILE_UPDATE_STATUS(TWC_TFER_FILE_STATUS_PAUSED);
-        break;
-    case TOX_FILE_CONTROL_CANCEL:
-        fclose(file->fp);
-        if (file->type == TWC_TFER_FILE_TYPE_DOWNLOADING && file->size != UINT64_MAX)
-            remove(file->full_path);
-        if (file->position != 0)
-        {
-            TWC_TFER_FILE_UPDATE_STATUS(TWC_TFER_FILE_STATUS_ABORTED);
-        }
-        else
-        {
-            TWC_TFER_FILE_UPDATE_STATUS(TWC_TFER_FILE_STATUS_DECLINED);
-        }
-        break;
+        case TOX_FILE_CONTROL_RESUME:
+            TWC_TFER_FILE_UPDATE_STATUS(TWC_TFER_FILE_STATUS_IN_PROGRESS);
+            break;
+        case TOX_FILE_CONTROL_PAUSE:
+            if (file->position != 0)
+                TWC_TFER_FILE_UPDATE_STATUS(TWC_TFER_FILE_STATUS_PAUSED);
+            break;
+        case TOX_FILE_CONTROL_CANCEL:
+            fclose(file->fp);
+            if (file->type == TWC_TFER_FILE_TYPE_DOWNLOADING &&
+                file->size != UINT64_MAX)
+                remove(file->full_path);
+            if (file->position != 0)
+            {
+                TWC_TFER_FILE_UPDATE_STATUS(TWC_TFER_FILE_STATUS_ABORTED);
+            }
+            else
+            {
+                TWC_TFER_FILE_UPDATE_STATUS(TWC_TFER_FILE_STATUS_DECLINED);
+            }
+            break;
     }
 }
 
 void
-twc_file_chunk_request_callback(Tox *tox, uint32_t friend_number, uint32_t file_number,
-                                uint64_t position, size_t length, void *user_data)
+twc_file_chunk_request_callback(Tox *tox, uint32_t friend_number,
+                                uint32_t file_number, uint64_t position,
+                                size_t length, void *user_data)
 {
     struct t_twc_profile *profile = twc_profile_search_tox(tox);
-    struct t_twc_tfer_file *file = twc_tfer_file_get_by_number(profile->tfer, file_number);
+    struct t_twc_tfer_file *file =
+        twc_tfer_file_get_by_number(profile->tfer, file_number);
     /* the file is missing */
     if (!file)
     {
-        weechat_printf(profile->tfer->buffer, "%sthere is no file with number %i in queue",
+        weechat_printf(profile->tfer->buffer,
+                       "%sthere is no file with number %i in queue",
                        weechat_prefix("error"), file_number);
         return;
-    }    
+    }
     /* 0-length chunk requested that means the file transmission is completed */
     if (length == 0)
     {
@@ -657,10 +669,12 @@ twc_file_chunk_request_callback(Tox *tox, uint32_t friend_number, uint32_t file_
         return;
     }
     enum TOX_ERR_FILE_SEND_CHUNK error;
-    tox_file_send_chunk(profile->tox, friend_number, file_number, position, data, length, &error);
+    tox_file_send_chunk(profile->tox, friend_number, file_number, position,
+                        data, length, &error);
     if (error)
         weechat_printf(profile->buffer, "%s%s: chunk sending error: %s",
-                       weechat_prefix("error"), file->filename, twc_tox_err_file_send_chunk(error));
+                       weechat_prefix("error"), file->filename,
+                       twc_tox_err_file_send_chunk(error));
     else
     {
         file->position += length;
@@ -677,14 +691,16 @@ twc_file_chunk_request_callback(Tox *tox, uint32_t friend_number, uint32_t file_
 
 void
 twc_file_recv_callback(Tox *tox, uint32_t friend_number, uint32_t file_number,
-                       uint32_t kind, uint64_t file_size, const uint8_t *filename,
-                       size_t filename_length, void *user_data)
+                       uint32_t kind, uint64_t file_size,
+                       const uint8_t *filename, size_t filename_length,
+                       void *user_data)
 {
     struct t_twc_profile *profile = twc_profile_search_tox(tox);
     if (kind == TOX_FILE_KIND_AVATAR)
     {
         TOX_ERR_FILE_CONTROL error;
-        tox_file_control(tox, friend_number, file_number, TOX_FILE_CONTROL_CANCEL, &error);
+        tox_file_control(tox, friend_number, file_number,
+                         TOX_FILE_CONTROL_CANCEL, &error);
         if (error)
         {
             weechat_printf(profile->buffer, "%scannot cancel avatar receiving",
@@ -694,14 +710,15 @@ twc_file_recv_callback(Tox *tox, uint32_t friend_number, uint32_t file_number,
     }
     char *name = twc_get_name_nt(tox, friend_number);
     char *fname = twc_null_terminate(filename, filename_length);
-    struct t_twc_tfer_file *file = twc_tfer_file_new(profile, name, fname,
-                                                     friend_number, file_number,
-                                                     file_size, TWC_TFER_FILE_TYPE_DOWNLOADING);
+    struct t_twc_tfer_file *file =
+        twc_tfer_file_new(profile, name, fname, friend_number, file_number,
+                          file_size, TWC_TFER_FILE_TYPE_DOWNLOADING);
     free(name);
     free(fname);
     if (!file)
     {
-        weechat_printf(profile->buffer, "%scannot open the file \"%s\" with write permissions",
+        weechat_printf(profile->buffer,
+                       "%scannot open the file \"%s\" with write permissions",
                        weechat_prefix("error"), filename);
         return;
     }
@@ -715,19 +732,24 @@ twc_file_recv_callback(Tox *tox, uint32_t friend_number, uint32_t file_number,
 }
 
 void
-twc_file_recv_chunk_callback(Tox *tox, uint32_t friend_number, uint32_t file_number, uint64_t position,
-                                    const uint8_t *data, size_t length, void *user_data)
+twc_file_recv_chunk_callback(Tox *tox, uint32_t friend_number,
+                             uint32_t file_number, uint64_t position,
+                             const uint8_t *data, size_t length,
+                             void *user_data)
 {
     struct t_twc_profile *profile = twc_profile_search_tox(tox);
-    struct t_twc_tfer_file *file = twc_tfer_file_get_by_number(profile->tfer, file_number);
+    struct t_twc_tfer_file *file =
+        twc_tfer_file_get_by_number(profile->tfer, file_number);
     /* the file is missing */
     if (!file)
     {
-        weechat_printf(profile->tfer->buffer, "%sthere is no file with number %i in queue",
+        weechat_printf(profile->tfer->buffer,
+                       "%sthere is no file with number %i in queue",
                        weechat_prefix("error"), file_number);
         return;
     }
-    /* 0-length chunk transmitted that means the file transmission is completed */
+    /* 0-length chunk transmitted that means the file transmission is completed
+     */
     if (length == 0)
     {
         TWC_TFER_FILE_UPDATE_STATUS(TWC_TFER_FILE_STATUS_DONE);
