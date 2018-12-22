@@ -38,9 +38,10 @@
 
 #include "twc-tox-callbacks.h"
 
-#define TWC_TFER_FILE_UPDATE_STATUS(st)                                      \
-    file->status = st;                                                       \
-    twc_tfer_file_update(profile->tfer, file);
+#define TWC_TFER_FILE_UPDATE_STATUS(st) do {                                   \
+        file->status = st;                                                     \
+        twc_tfer_file_update(profile->tfer, file);                             \
+    } while (0)
 
 int
 twc_do_timer_cb(const void *pointer, void *data, int remaining_calls)
