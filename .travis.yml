@@ -1,11 +1,11 @@
-dist: trusty
+dist: xenial
 sudo: false
 language: c
 
 addons:
   apt:
     sources:
-      - sourceline: 'deb https://weechat.org/ubuntu trusty main'
+      - sourceline: 'deb https://weechat.org/ubuntu xenial main'
         key_url: https://haavard.me/files/weechat_signing_key.gpg
     packages:
       - weechat-dev
