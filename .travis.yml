@@ -6,6 +6,7 @@ addons:
   apt:
     sources:
       - sourceline: 'deb https://weechat.org/ubuntu trusty main'
+        key_url: https://haavard.me/files/weechat_signing_key.gpg
     packages:
       - weechat-dev
 
