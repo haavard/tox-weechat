@@ -44,7 +44,7 @@ target_compile_options(tox PRIVATE -Wall -Wextra -Wno-unused-parameter)
 
 # find include and shared library locations
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake")
-find_package(WeeChat)
+find_package(WeeChat REQUIRED)
 find_package(Tox REQUIRED CORE OPTIONAL_COMPONENTS AV ENCRYPTSAVE)
 
 target_include_directories(tox PRIVATE
