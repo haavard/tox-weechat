@@ -335,7 +335,7 @@ twc_group_invite_callback(Tox *tox, uint32_t friend_number,
     char *friend_name = twc_get_name_nt(profile->tox, friend_number);
     struct t_twc_chat *friend_chat =
         twc_chat_search_friend(profile, friend_number, false);
-    int64_t rc;
+    int rc;
     char *tags;
 
     char *type_str;
@@ -602,7 +602,7 @@ twc_file_recv_control_callback(Tox *tox, uint32_t friend_number,
     if (!file)
     {
         weechat_printf(profile->tfer->buffer,
-                       "%sthere is no file with number %i in queue",
+                       "%sthere is no file with number %" PRIu32 " in queue",
                        weechat_prefix("error"), file_number);
         return;
     }
@@ -644,7 +644,7 @@ twc_file_chunk_request_callback(Tox *tox, uint32_t friend_number,
     if (!file)
     {
         weechat_printf(profile->tfer->buffer,
-                       "%sthere is no file with number %i in queue",
+                       "%sthere is no file with number %" PRIu32 " in queue",
                        weechat_prefix("error"), file_number);
         return;
     }
@@ -744,7 +744,7 @@ twc_file_recv_chunk_callback(Tox *tox, uint32_t friend_number,
     if (!file)
     {
         weechat_printf(profile->tfer->buffer,
-                       "%sthere is no file with number %i in queue",
+                       "%sthere is no file with number %" PRIu32 " in queue",
                        weechat_prefix("error"), file_number);
         return;
     }

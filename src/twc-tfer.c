@@ -49,15 +49,15 @@
         {                                                                      \
             case 1:                                                            \
                 TWC_TFER_UPDATE_STATUS_AND_RETURN(                             \
-                    "request number %ld has been " #past, n);                  \
+                    "request number %zu has been " #past, n);                  \
             case 0:                                                            \
                 TWC_TFER_UPDATE_STATUS_AND_RETURN(                             \
-                    "request number %ld cannot be " #past " because "          \
+                    "request number %zu cannot be " #past " because "          \
                     "of tox internal issues",                                  \
                     n);                                                        \
             case -1:                                                           \
                 TWC_TFER_UPDATE_STATUS_AND_RETURN(                             \
-                    "request number %ld cannot be " #past, n);                 \
+                    "request number %zu cannot be " #past, n);                 \
         }                                                                      \
     } while (0)
 
@@ -220,7 +220,7 @@ twc_tfer_file_unique_name(const char *original)
     i = number;
     do
     {
-        snprintf(name, FILENAME_MAX, "%s(%i)%s", body, i, extension);
+        snprintf(name, FILENAME_MAX, "%s(%d)%s", body, i, extension);
         i++;
     } while (twc_tfer_file_check(name));
 
@@ -449,14 +449,14 @@ twc_tfer_file_update(struct t_twc_tfer *tfer, struct t_twc_tfer_file *file)
     const char *status = twc_tfer_file_get_status_str(file);
     if (file->size == UINT64_MAX)
     {
-        weechat_printf_y(tfer->buffer, line, "%i) %s %s: %s [STREAM]", index,
+        weechat_printf_y(tfer->buffer, line, "%zu) %s %s: %s [STREAM]", index,
                          type, file->nickname, file->filename);
     }
     else
     {
         float display_size = twc_tfer_cut_size(file->size);
         const char *size_suffix = twc_tfer_size_suffix(file->size);
-        weechat_printf_y(tfer->buffer, line, "%i) %s %s: %s %i (%.2f%s)", index,
+        weechat_printf_y(tfer->buffer, line, "%zu) %s %s: %s %zu (%.2f%s)", index,
                          type, file->nickname, file->filename, file->size,
                          display_size, size_suffix);
     }
@@ -486,7 +486,7 @@ twc_tfer_file_update(struct t_twc_tfer *tfer, struct t_twc_tfer_file *file)
         float display_pos = twc_tfer_cut_size(file->position);
         const char *pos_suffix = twc_tfer_size_suffix(file->position);
 
-        weechat_printf_y(tfer->buffer, line + 1, "%s%i%% [%s] %.2f%s %.2f%s",
+        weechat_printf_y(tfer->buffer, line + 1, "%s%d%% [%s] %.2f%s %.2f%s",
                          placeholder, percents, progress_bar, display_pos,
                          pos_suffix, display_speed, speed_suffix);
     }

@@ -17,6 +17,7 @@
  * along with Tox-WeeChat.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <inttypes.h>
 #include <pwd.h>
 #include <stdio.h>
 #include <string.h>
@@ -247,7 +248,8 @@ twc_tox_new_print_error(struct t_twc_profile *profile,
             break;
         case TOX_ERR_NEW_PROXY_BAD_PORT:
             weechat_printf(profile->buffer,
-                           "%scould not load Tox (invalid proxy port: \"%d\")",
+                           "%scould not load Tox (invalid proxy port: \"%"
+                           PRIu16 "\")",
                            weechat_prefix("error"), options->proxy_port);
             break;
         case TOX_ERR_NEW_PROXY_NOT_FOUND:
@@ -316,7 +318,7 @@ twc_profile_load(struct t_twc_profile *profile)
     /* print a proxy message */
     if (options.proxy_type != TOX_PROXY_TYPE_NONE)
     {
-        weechat_printf(profile->buffer, "%susing %s proxy %s:%d",
+        weechat_printf(profile->buffer, "%susing %s proxy %s:%" PRIu16,
                        weechat_prefix("network"),
                        options.proxy_type == TOX_PROXY_TYPE_HTTP
                            ? "HTTP"

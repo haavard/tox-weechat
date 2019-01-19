@@ -17,6 +17,7 @@
  * along with Tox-WeeChat.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <inttypes.h>
 #include <stdio.h>
 #include <string.h>
 
@@ -126,7 +127,7 @@ struct t_twc_chat *
 twc_chat_new_group(struct t_twc_profile *profile, int32_t group_number)
 {
     char buffer_name[32];
-    sprintf(buffer_name, "group_chat_%d", group_number);
+    sprintf(buffer_name, "group_chat_%" PRId32, group_number);
 
     struct t_twc_chat *chat = twc_chat_new(profile, buffer_name);
     if (chat)
@@ -171,7 +172,7 @@ twc_chat_refresh(const struct t_twc_chat *chat)
                 tox_conference_get_title(chat->profile->tox, chat->group_number,
                                          (uint8_t *)group_name, &err);
         if (!rc)
-            sprintf(group_name, "Group Chat %d", chat->group_number);
+            sprintf(group_name, "Group Chat %" PRId32, chat->group_number);
 
         name = title = strdup((char *)group_name);
     }

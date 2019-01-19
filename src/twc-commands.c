@@ -17,6 +17,7 @@
  * along with Tox-WeeChat.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <inttypes.h>
 #include <stdio.h>
 #include <string.h>
 #include <sys/stat.h>
@@ -275,7 +276,7 @@ twc_cmd_friend(const void *pointer, void *data, struct t_gui_buffer *buffer,
                                                   NULL) != TOX_CONNECTION_NONE)
                     ? "chat_nick"
                     : "chat_nick_offline";
-            weechat_printf(profile->buffer, "%s[%d] %s%s [%s]%s %s",
+            weechat_printf(profile->buffer, "%s[%" PRIu32 "] %s%s [%s]%s %s",
                            weechat_prefix("network"), friend_number,
                            weechat_color(online_color), name, hex_address,
                            weechat_color("reset"), status);
@@ -455,7 +456,7 @@ twc_cmd_friend(const void *pointer, void *data, struct t_gui_buffer *buffer,
                 }
             }
 
-            weechat_printf(profile->buffer, "%s%s %d friend requests.",
+            weechat_printf(profile->buffer, "%s%s %zu friend requests.",
                            weechat_prefix("network"),
                            accept ? "Accepted" : "Declined", count);
 
@@ -520,8 +521,8 @@ twc_cmd_friend(const void *pointer, void *data, struct t_gui_buffer *buffer,
                         hex_address);
 
             weechat_printf(profile->buffer,
-                           "%s[%d] Address: %s\n"
-                           "[%d] Message: %s",
+                           "%s[%zu] Address: %s\n"
+                           "[%zu] Message: %s",
                            weechat_prefix("network"), index, hex_address, index,
                            item->friend_request->message);
         }
@@ -608,7 +609,7 @@ twc_cmd_group(const void *pointer, void *data, struct t_gui_buffer *buffer,
         {
             char *friend_name = twc_get_name_nt(
                 profile->tox, item->group_chat_invite->friend_number);
-            weechat_printf(profile->buffer, "%s[%d] From: %s",
+            weechat_printf(profile->buffer, "%s[%zu] From: %s",
                            weechat_prefix("network"), index, friend_name);
             free(friend_name);
         }
