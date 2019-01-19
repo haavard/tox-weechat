@@ -16,9 +16,10 @@ Standard][3].
  - File transfer
 
 ## Installation
-Tox-WeeChat is tested with [WeeChat][2] 2.3 and [TokTok c-toxcore][5] 0.2.8.
-It also requires CMake 2.8.12 or newer to be built. Installation is fairly
-simple; after getting the source code, compile and install with CMake:
+Tox-WeeChat requires [WeeChat][2] (tested with version 2.3) and [TokTok
+c-toxcore][5] (tested with version 0.2.8). CMake 2.8.12 or newer is also
+required to build. Installation is fairly simple; after getting the source
+code, compile and install using CMake:
 
     $ mkdir build && cd build
     $ cmake -DPLUGIN_PATH=~/.weechat/plugins ..
@@ -26,6 +27,10 @@ simple; after getting the source code, compile and install with CMake:
 
 This installs the plugin binary `tox.so` to the recommended location
 `~/.weechat/plugins`. The default location is `/usr/local/lib/weechat/plugins`.
+
+If WeeChat or toxcore are installed in a non-standard location, you can try
+specifying `CMAKE_PREFIX_PATH` to find them; see [.travis.yml](.travis.yml) for
+an example.
 
 ## Usage
  - If the plugin does not load automatically, load it with `/plugin load tox`.
