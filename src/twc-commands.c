@@ -1331,6 +1331,58 @@ twc_cmd_send(const void *pointer, void *data, struct t_gui_buffer *buffer,
 }
 
 /**
+ * Custom completion for nicknames in groups.
+ */
+int
+twc_input_complete(const void *pointer, void *data, struct t_gui_buffer *buffer,
+                   const char *command)
+{
+    struct t_twc_chat *chat = twc_chat_search_buffer(buffer);
+    if (chat && chat->group_number >= 0)
+    {
+        const char *input = weechat_buffer_get_string(buffer, "input");
+        if (!strcmp(input, ""))
+            return WEECHAT_RC_OK;
+        size_t last_search_len =
+            chat->last_search ? strlen(chat->last_search) : 0;
+        int cmp = strncmp(chat->last_search, input, last_search_len);
+        if (cmp || !last_search_len)
+        {
+            free(chat->last_search);
+            chat->last_search = strdup(input);
+            free(chat->prev_comp);
+            chat->prev_comp = NULL;
+            twc_starts_with(chat->nicks, chat->last_search, chat->completion);
+        }
+
+        const char *comp =
+            twc_get_next_completion(chat->completion, chat->prev_comp);
+        if (!comp)
+            return WEECHAT_RC_OK;
+
+        weechat_buffer_set(buffer, "completion_freeze", "1");
+
+        char *terminator = ": "; /* Probably put it in a config */
+        char temp[strlen(comp) + strlen(terminator) + 1];
+        sprintf(temp, "%s%s", comp, terminator);
+        weechat_buffer_set(buffer, "input", temp);
+
+        int input_pos = weechat_buffer_get_integer(buffer, "input_length");
+        int input_pos_str_size = snprintf(NULL, 0, "%d", input_pos);
+        char input_pos_str[input_pos_str_size + 1];
+        snprintf(input_pos_str, input_pos_str_size + 1, "%d", input_pos);
+        weechat_buffer_set(buffer, "input_pos", input_pos_str);
+
+        weechat_buffer_set(buffer, "completion_freeze", "0");
+
+        free(chat->prev_comp);
+        chat->prev_comp = strdup(comp);
+        return WEECHAT_RC_OK_EAT;
+    }
+    return WEECHAT_RC_OK;
+}
+
+/**
  * Register Tox-WeeChat commands.
  */
 void
@@ -1420,6 +1472,9 @@ twc_commands_init()
                          twc_cmd_part, NULL, NULL);
 
     weechat_hook_command_run("/save", twc_cmd_save, NULL, NULL);
+
+    weechat_hook_command_run("/input complete_next", twc_input_complete, NULL,
+                             NULL);
 
     weechat_hook_command("status", "change your Tox status", "online|busy|away",
                          "", NULL, twc_cmd_status, NULL, NULL);

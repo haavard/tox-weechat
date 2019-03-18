@@ -38,6 +38,7 @@ struct t_config_section *twc_config_section_profile_default = NULL;
 
 struct t_config_option *twc_config_friend_request_message;
 struct t_config_option *twc_config_short_id_size;
+struct t_config_option *twc_config_show_id;
 
 char *twc_profile_option_names[TWC_PROFILE_NUM_OPTIONS] = {
     "save_file",
@@ -374,6 +375,11 @@ twc_config_init()
         NULL, 2, TOX_PUBLIC_KEY_SIZE * 2, "8", NULL, 0,
         twc_config_check_value_callback, NULL, NULL, NULL, NULL, NULL, NULL,
         NULL, NULL);
+    twc_config_show_id = weechat_config_new_option(
+        twc_config_file, twc_config_section_look, "show_id", "boolean",
+        "show short Tox IDs in message logs and presence logs of group chats",
+        NULL, 0, 0, "on", NULL, 0, twc_config_check_value_callback, NULL, NULL,
+        NULL, NULL, NULL, NULL, NULL, NULL);
 }
 
 /**

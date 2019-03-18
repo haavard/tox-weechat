@@ -57,6 +57,10 @@ twc_chat_new(struct t_twc_profile *profile, const char *name)
     chat->profile = profile;
     chat->friend_number = chat->group_number = -1;
     chat->nicks = NULL;
+    chat->ids = NULL;
+    chat->completion = NULL;
+    chat->last_search = NULL;
+    chat->prev_comp = NULL;
 
     size_t full_name_size = strlen(profile->name) + 1 + strlen(name) + 1;
     char *full_name = malloc(full_name_size);
@@ -137,6 +141,8 @@ twc_chat_new_group(struct t_twc_profile *profile, int32_t group_number)
         chat->nicklist_group =
             weechat_nicklist_add_group(chat->buffer, NULL, NULL, NULL, true);
         chat->nicks = weechat_list_new();
+        chat->ids = weechat_list_new();
+        chat->completion = weechat_list_new();
 
         weechat_buffer_set(chat->buffer, "nicklist", "1");
     }
@@ -395,6 +401,18 @@ twc_chat_free(struct t_twc_chat *chat)
         weechat_list_remove_all(chat->nicks);
         weechat_list_free(chat->nicks);
     }
+    if (chat->ids)
+    {
+        weechat_list_remove_all(chat->ids);
+        weechat_list_free(chat->ids);
+    }
+    if (chat->completion)
+    {
+        weechat_list_remove_all(chat->completion);
+        weechat_list_free(chat->completion);
+    }
+    free(chat->last_search);
+    free(chat->prev_comp);
     free(chat);
 }
 

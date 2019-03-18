@@ -39,6 +39,10 @@ struct t_twc_chat
 
     struct t_gui_nick_group *nicklist_group;
     struct t_weelist *nicks;
+    struct t_weelist *ids;
+    struct t_weelist *completion;
+    char *last_search;
+    char *prev_comp;
 };
 
 struct t_twc_chat *

@@ -178,7 +178,106 @@ twc_get_friend_id_short(Tox *tox, int32_t friend_number)
 }
 
 /**
- * Reverse the bytes of a 32-bit integer.
+ * Return a group peer's Tox ID in short form. Return value must be freed.
+ */
+char *
+twc_get_peer_id_short(Tox *tox, uint32_t conference_number,
+                      uint32_t peer_number)
+{
+    uint8_t peer_id[TOX_PUBLIC_KEY_SIZE];
+    TOX_ERR_CONFERENCE_PEER_QUERY err;
+    size_t short_id_length = weechat_config_integer(twc_config_short_id_size);
+    short_id_length =
+        short_id_length > 4 ? short_id_length : 4; /* Let's use a sane value */
+    char *hex_address = malloc(short_id_length + 1);
+
+    tox_conference_peer_get_public_key(tox, conference_number, peer_number,
+                                       peer_id, &err);
+    if (err != TOX_ERR_CONFERENCE_PEER_QUERY_OK)
+        memset(peer_id, 0, TOX_PUBLIC_KEY_SIZE);
+
+    twc_bin2hex(peer_id, short_id_length / 2, hex_address);
+    return hex_address;
+}
+
+/**
+ * Prefix a nickname with Tox ID in short form. Return value must be freed.
+ */
+char *
+twc_get_peer_name_prefixed(const char *id, const char *name)
+{
+    if (!name)
+        name = "Tox User";
+    size_t full_length = strlen(id) + strlen(name) + 4;
+    char *full_name = malloc(full_length);
+    snprintf(full_name, full_length, "[%s] %s", id, name);
+    return full_name;
+}
+
+/**
+ * Return amount of times a certain nickname repeats in a t_weelist list.
+ */
+size_t
+twc_get_peer_name_count(struct t_weelist *list, const char *name)
+{
+    size_t count = 0;
+    struct t_weelist_item *item = weechat_list_get(list, 0);
+    for (item = weechat_list_get(list, 0); item; item = weechat_list_next(item))
+    {
+        if (!strcmp(weechat_list_string(item), name))
+            count++;
+    }
+    return count;
+}
+
+/**
+ * Return t_weelist* to a list of strings which start with a certain string,
+ * NULL otherwise if there's no such strings. Must be properly freed after
+ * usage.
+ */
+struct t_weelist *
+twc_starts_with(struct t_weelist *list, const char *search,
+                struct t_weelist *result)
+{
+    size_t length = strlen(search);
+    weechat_list_remove_all(result);
+    if (!search || !length)
+        return result;
+    struct t_weelist_item *item = weechat_list_get(list, 0);
+    while (item)
+    {
+        const char *string = weechat_list_string(item);
+        if (strlen(string) >= length && !strncmp(search, string, length))
+            weechat_list_add(result, string, WEECHAT_LIST_POS_SORT, NULL);
+        item = weechat_list_next(item);
+    }
+    return result;
+}
+
+/**
+ * Return next completion string regarding of a previous one.
+ */
+
+const char *
+twc_get_next_completion(struct t_weelist *completion_list,
+                        const char *prev_comp)
+{
+    if (!weechat_list_size(completion_list))
+        return NULL;
+    const char *comp =
+        weechat_list_string(weechat_list_get(completion_list, 0));
+    if (prev_comp)
+    {
+        struct t_weelist_item *item =
+            weechat_list_search(completion_list, prev_comp);
+        if (item && (item = weechat_list_next(item)))
+            comp = weechat_list_string(item);
+    }
+    return comp;
+}
+
+/**
+ * reverse the bytes of a 32-bit integer.
  */
 uint32_t
 twc_uint32_reverse_bytes(uint32_t num)
