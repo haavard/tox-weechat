@@ -277,6 +277,23 @@ twc_get_next_completion(struct t_weelist *completion_list,
 }
 
 /**
+ * Checks if an ID is ignored.
+ */
+bool
+twc_is_id_ignored(struct t_twc_profile *profile, const char *short_id)
+{
+    struct t_weelist_item *ignore_item;
+    for (ignore_item = weechat_list_get(profile->ignores, 0); ignore_item;
+         ignore_item = weechat_list_next(ignore_item))
+    {
+        if (!weechat_strncasecmp(short_id, weechat_list_string(ignore_item),
+                                 strlen(weechat_list_string(ignore_item))))
+            return true;
+    }
+    return false;
+}
+
+/**
  * reverse the bytes of a 32-bit integer.
  */
 uint32_t

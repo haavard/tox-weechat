@@ -56,6 +56,15 @@ twc_chat_search_group(struct t_twc_profile *profile, int32_t group_number,
 struct t_twc_chat *
 twc_chat_search_buffer(struct t_gui_buffer *target_buffer);
 
+void
+twc_chat_update_prefix(struct t_twc_chat *chat, const char *id,
+                       const char *prefix, const char *prefix_color);
+
+void
+twc_chat_update_prefix_by_nick(struct t_gui_buffer *buffer,
+                               struct t_gui_nick *nick, const char *prefix,
+                               const char *prefix_color);
+
 enum t_twc_rc
 twc_chat_set_logging(struct t_twc_chat const *const chat, bool logging);
 

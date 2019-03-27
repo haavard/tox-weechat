@@ -1381,6 +1381,102 @@ twc_input_complete(const void *pointer, void *data, struct t_gui_buffer *buffer,
     }
     return WEECHAT_RC_OK;
 }
+/**
+ * Update a certain nick's prefix in all opened group chats
+ */
+void
+twc_name_prefix_in_groupchats(struct t_twc_profile *profile, const char *id,
+                              const char *prefix, const char *prefix_color)
+{
+    struct t_twc_list_item *item;
+    struct t_twc_chat *chat;
+    size_t index;
+    twc_list_foreach (profile->chats, index, item)
+    {
+        chat = (struct t_twc_chat *)(item->chat);
+        if ((chat->group_number) >= 0)
+        {
+            twc_chat_update_prefix(chat, id, prefix, prefix_color);
+        }
+    }
+}
+
+/**
+ *  Command /ignore callback.
+ */
+int
+twc_cmd_ignore(const void *pointer, void *data, struct t_gui_buffer *buffer,
+               int argc, char **argv, char **argv_eol)
+{
+    struct t_twc_profile *profile = twc_profile_search_buffer(buffer);
+    TWC_CHECK_PROFILE(profile);
+    TWC_CHECK_PROFILE_LOADED(profile);
+
+    /* list ignores */
+    if ((argc == 1) ||
+        ((argc == 2) && (weechat_strcasecmp(argv[1], "list") == 0)))
+    {
+        if (!weechat_list_size(profile->ignores))
+        {
+            weechat_printf(profile->buffer, "ignore list is empty");
+            return WEECHAT_RC_OK;
+        }
+        weechat_printf(profile->buffer, "ignore list:");
+        size_t i = 0;
+        struct t_weelist_item *item;
+        for (item = weechat_list_get(profile->ignores, 0); item;
+             item = weechat_list_next(item))
+        {
+            weechat_printf(profile->buffer, "  [%d] %s", i,
+                           weechat_list_string(item));
+            i++;
+        }
+        return WEECHAT_RC_OK;
+    }
+    /* add ignore */
+
+    const char *id = argv_eol[2];
+    struct t_weelist_item *item;
+    item = weechat_list_casesearch(profile->ignores, id);
+
+    if (weechat_strcasecmp(argv[1], "add") == 0)
+    {
+        WEECHAT_COMMAND_MIN_ARGS(3, "add");
+        if (!item)
+        {
+            weechat_list_add(profile->ignores, id, WEECHAT_LIST_POS_END, NULL);
+            weechat_printf(profile->buffer,
+                           "%sID '%s' has been added to the ignore list",
+                           weechat_prefix("action"), id);
+            twc_name_prefix_in_groupchats(profile, id, "-", "yellow");
+        }
+        else
+            weechat_printf(profile->buffer,
+                           "%sID '%s' is already in the ignore list",
+                           weechat_prefix("error"), id);
+        return WEECHAT_RC_OK;
+    }
+
+    /* delete ignore */
+    if (weechat_strcasecmp(argv[1], "del") == 0)
+    {
+        WEECHAT_COMMAND_MIN_ARGS(3, "del");
+        if (item)
+        {
+            weechat_list_remove(profile->ignores, item);
+            weechat_printf(profile->buffer,
+                           "%sID '%s' has been deleted from the ignore list",
+                           weechat_prefix("action"), id);
+            twc_name_prefix_in_groupchats(profile, id, " ", "default");
+        }
+        else
+            weechat_printf(profile->buffer,
+                           "%sthere's no ID '%s' in the ignore list",
+                           weechat_prefix("error"), id);
+        return WEECHAT_RC_OK;
+    }
+    return WEECHAT_RC_ERROR;
+}
 
 /**
  * Register Tox-WeeChat commands.
@@ -1519,4 +1615,16 @@ twc_commands_init()
         "%(filename)"
         " || %(tox_friend_name)|%(tox_friend_tox_id) %(filename)",
         twc_cmd_send, NULL, NULL);
+    weechat_hook_command("ignore",
+                         "ommit messages from people with certain Tox IDs",
+                         "list"
+                         " || add <ID part>"
+                         " || del <ID part>",
+                         "list: show the list of ignores\n"
+                         "add: add an ID to the list\n"
+                         "del: delete an ID from the list\n",
+                         "list"
+                         " || add %*"
+                         " || del %*",
+                         twc_cmd_ignore, NULL, NULL);
 }

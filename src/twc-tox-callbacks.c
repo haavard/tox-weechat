@@ -408,13 +408,18 @@ twc_handle_group_message(Tox *tox, int32_t group_number, int32_t peer_number,
     bool rc;
     struct t_twc_profile *profile = data;
 
+    char *short_id =
+        twc_get_peer_id_short(profile->tox, group_number, peer_number);
+    if (twc_is_id_ignored(profile, short_id))
+    {
+        free(short_id);
+        return;
+    }
     struct t_twc_chat *chat =
         twc_chat_search_group(profile, group_number, true);
 
     char *myname = twc_get_self_name_nt(profile->tox);
     char *name = twc_get_peer_name_nt(profile->tox, group_number, peer_number);
-    char *short_id =
-        twc_get_peer_id_short(profile->tox, group_number, peer_number);
     char *full_name = twc_get_peer_name_prefixed(short_id, name);
     char *tags = "notify_message";
     char *message_nt = twc_null_terminate(message, length);
@@ -526,6 +531,12 @@ twc_group_peer_list_changed_callback(Tox *tox, uint32_t group_number,
             char *full_name = twc_get_peer_name_prefixed(short_id, name);
             weechat_nicklist_add_nick(chat->buffer, chat->nicklist_group,
                                       full_name, NULL, NULL, NULL, 1);
+            nick = weechat_nicklist_search_nick(
+                chat->buffer, chat->nicklist_group, full_name);
+            bool ignored = twc_is_id_ignored(profile, short_id);
+            twc_chat_update_prefix_by_nick(chat->buffer, nick,
+                                           ignored ? "-" : " ",
+                                           ignored ? "yellow" : "default");
             weechat_printf(
                 chat->buffer, "%s%s just joined the group chat",
                 weechat_prefix("join"),
@@ -602,12 +613,6 @@ twc_group_peer_name_callback(Tox *tox, uint32_t group_number,
     nick = weechat_nicklist_search_nick(chat->buffer, chat->nicklist_group,
                                         prev_full_name);
     weechat_nicklist_remove_nick(chat->buffer, nick);
-    if (!twc_get_peer_name_count(chat->nicks, prev_name))
-    {
-        nick = weechat_nicklist_search_nick(chat->buffer, chat->nicklist_group,
-                                            prev_name);
-        weechat_nicklist_remove_nick(chat->buffer, nick);
-    }
 
     err = TOX_ERR_CONFERENCE_PEER_QUERY_OK;
     rc = tox_conference_peer_number_is_ours(tox, group_number, peer_number,
@@ -620,9 +625,11 @@ twc_group_peer_name_callback(Tox *tox, uint32_t group_number,
     weechat_list_set(n, name);
     weechat_nicklist_add_nick(chat->buffer, chat->nicklist_group, full_name,
                               NULL, NULL, NULL, 1);
-    weechat_nicklist_add_nick(chat->buffer, chat->nicklist_group, name, NULL,
-                              NULL, NULL, 0);
-
+    bool ignored = twc_is_id_ignored(profile, short_id);
+    nick = weechat_nicklist_search_nick(chat->buffer, chat->nicklist_group, full_name);
+    twc_chat_update_prefix_by_nick(chat->buffer, nick,
+                                   ignored ? "-" : " ",
+                                   ignored ? "yellow" : "default");
     free(prev_full_name);
     free(full_name);
     free(name);

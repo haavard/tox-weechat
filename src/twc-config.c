@@ -35,6 +35,7 @@ struct t_config_file *twc_config_file = NULL;
 struct t_config_section *twc_config_section_look = NULL;
 struct t_config_section *twc_config_section_profile = NULL;
 struct t_config_section *twc_config_section_profile_default = NULL;
+struct t_config_section *twc_config_section_ignore = NULL;
 
 struct t_config_option *twc_config_friend_request_message;
 struct t_config_option *twc_config_short_id_size;
@@ -207,6 +208,80 @@ twc_config_profile_change_callback(const void *pointer, void *data,
     }
 }
 
+/*
+ * Reads ignore option from configuration file.
+ *
+ * Returns:
+ *   1: OK
+ *   0: error
+ */
+int
+twc_config_ignore_read_callback(const void *pointer, void *data,
+                                struct t_config_file *config_file,
+                                struct t_config_section *section,
+                                const char *option_name, const char *value)
+{
+    /* make C compiler happy */
+    (void)pointer;
+    (void)data;
+    (void)config_file;
+    (void)section;
+    if (option_name)
+    {
+        char *profile_name = strrchr(option_name, '.');
+        if (profile_name)
+        {
+            profile_name = strndup(option_name,
+                                   (profile_name - option_name) / sizeof(char));
+            struct t_twc_profile *profile =
+                twc_profile_search_name(profile_name);
+            if (profile)
+            {
+                weechat_list_add(profile->ignores, value, WEECHAT_LIST_POS_END,
+                                 NULL);
+            }
+            free(profile_name);
+        }
+    }
+    return 1;
+}
+
+/*
+ * Writes ignore section in tox configuration file.
+ */
+int
+twc_config_ignore_write_callback(const void *pointer, void *data,
+                                 struct t_config_file *config_file,
+                                 const char *section_name)
+{
+    /* make C compiler happy */
+    (void)pointer;
+    (void)data;
+
+    if (!weechat_config_write_line(config_file, section_name, NULL))
+        return WEECHAT_CONFIG_WRITE_ERROR;
+
+    struct t_twc_list_item *item;
+    size_t index;
+    twc_list_foreach (twc_profiles, index, item)
+    {
+        size_t option_name_len =
+            strlen(item->profile->name) + strlen(".ignore") + 1;
+        char option_name[option_name_len];
+        snprintf(option_name, option_name_len - 1, "%s.ignore",
+                 item->profile->name);
+        struct t_weelist_item *ignore_item;
+        for (ignore_item = weechat_list_get(item->profile->ignores, 0);
+             ignore_item; ignore_item = weechat_list_next(ignore_item))
+        {
+            if (!weechat_config_write_line(config_file, option_name,
+                                           weechat_list_string(ignore_item)))
+                return WEECHAT_CONFIG_WRITE_ERROR;
+        }
+    }
+    return WEECHAT_CONFIG_WRITE_OK;
+}
+
 /**
  * Create a new option for a profile. Returns NULL if an error occurs.
  */
@@ -350,6 +425,12 @@ twc_config_init()
     twc_config_section_profile_default = weechat_config_new_section(
         twc_config_file, "profile_default", 0, 0, NULL, NULL, NULL, NULL, NULL,
         NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL);
+
+    twc_config_section_ignore = weechat_config_new_section(
+        twc_config_file, "ignore", 0, 0, twc_config_ignore_read_callback, NULL,
+        NULL, twc_config_ignore_write_callback, NULL, NULL,
+        twc_config_ignore_write_callback, NULL, NULL, NULL, NULL, NULL, NULL,
+        NULL, NULL);
 
     for (int i = 0; i < TWC_PROFILE_NUM_OPTIONS; ++i)
     {

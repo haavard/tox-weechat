@@ -21,9 +21,10 @@
 #define TOX_WEECHAT_UTILS_H
 
 #include <stdlib.h>
-
 #include <tox/tox.h>
 #include <weechat/weechat-plugin.h>
+
+#include "twc-profile.h"
 
 void
 twc_hex2bin(const char *hex, size_t size, uint8_t *out);
@@ -73,6 +74,8 @@ twc_starts_with(struct t_weelist *list, const char *search,
 const char *
 twc_get_next_completion(struct t_weelist *completion_list,
                         const char *prev_comp);
+bool
+twc_is_id_ignored(struct t_twc_profile *profile, const char *short_id);
 
 uint32_t
 twc_uint32_reverse_bytes(uint32_t num);
