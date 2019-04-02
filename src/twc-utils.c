@@ -277,9 +277,10 @@ twc_get_next_completion(struct t_weelist *completion_list,
 }
 
 /**
- * Checks if an ID is ignored.
+ * Checks if an ID is ignored. Returns the item from the ignore list if so, NULL
+ * otherwise.
  */
-bool
+struct t_weelist_item *
 twc_is_id_ignored(struct t_twc_profile *profile, const char *short_id)
 {
     struct t_weelist_item *ignore_item;
@@ -287,10 +288,10 @@ twc_is_id_ignored(struct t_twc_profile *profile, const char *short_id)
          ignore_item = weechat_list_next(ignore_item))
     {
         if (!weechat_strncasecmp(short_id, weechat_list_string(ignore_item),
-                                 strlen(weechat_list_string(ignore_item))))
-            return true;
+                                 strlen(short_id)))
+            return ignore_item;
     }
-    return false;
+    return NULL;
 }
 
 /**

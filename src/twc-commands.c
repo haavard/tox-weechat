@@ -1437,7 +1437,7 @@ twc_cmd_ignore(const void *pointer, void *data, struct t_gui_buffer *buffer,
 
     const char *id = argv_eol[2];
     struct t_weelist_item *item;
-    item = weechat_list_casesearch(profile->ignores, id);
+    item = twc_is_id_ignored(profile, id);
 
     if (weechat_strcasecmp(argv[1], "add") == 0)
     {

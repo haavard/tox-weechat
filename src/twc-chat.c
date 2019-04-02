@@ -24,6 +24,7 @@
 #include <tox/tox.h>
 #include <weechat/weechat-plugin.h>
 
+#include "twc-config.h"
 #include "twc-list.h"
 #include "twc-message-queue.h"
 #include "twc-profile.h"
@@ -297,10 +298,13 @@ twc_chat_update_prefix(struct t_twc_chat *chat, const char *id,
         {
             const char *name_field = weechat_nicklist_nick_get_string(
                 chat->buffer, ptr_nick, "name");
-            if (!weechat_strncasecmp(id, name_field + sizeof(char), strlen(id)))
+            size_t short_id_length =
+                weechat_config_integer(twc_config_short_id_size);
+            if (!weechat_strncasecmp(id, name_field + sizeof(char),
+                                     short_id_length))
             {
-                weechat_nicklist_nick_set(chat->buffer, ptr_nick,
-                                          "prefix", prefix);
+                weechat_nicklist_nick_set(chat->buffer, ptr_nick, "prefix",
+                                          prefix);
                 weechat_nicklist_nick_set(chat->buffer, ptr_nick,
                                           "prefix_color", prefix_color);
                 weechat_nicklist_nick_set(chat->buffer, ptr_nick, "color",

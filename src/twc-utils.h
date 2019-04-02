@@ -74,7 +74,8 @@ twc_starts_with(struct t_weelist *list, const char *search,
 const char *
 twc_get_next_completion(struct t_weelist *completion_list,
                         const char *prev_comp);
-bool
+
+struct t_weelist_item *
 twc_is_id_ignored(struct t_twc_profile *profile, const char *short_id);
 
 uint32_t
