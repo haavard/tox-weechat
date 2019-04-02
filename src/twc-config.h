@@ -24,6 +24,7 @@ struct t_twc_profile;
 
 extern struct t_config_option *twc_config_friend_request_message;
 extern struct t_config_option *twc_config_short_id_size;
+extern struct t_config_option *twc_config_show_id;
 
 enum t_twc_proxy
 {

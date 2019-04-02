@@ -28,6 +28,7 @@
 #endif /* TOXAV_ENABLED */
 
 #include "twc-chat.h"
+#include "twc-config.h"
 #include "twc-friend-request.h"
 #include "twc-group-invite.h"
 #include "twc-message-queue.h"
@@ -407,11 +408,19 @@ twc_handle_group_message(Tox *tox, int32_t group_number, int32_t peer_number,
     bool rc;
     struct t_twc_profile *profile = data;
 
+    char *short_id =
+        twc_get_peer_id_short(profile->tox, group_number, peer_number);
+    if (twc_is_id_ignored(profile, short_id))
+    {
+        free(short_id);
+        return;
+    }
     struct t_twc_chat *chat =
         twc_chat_search_group(profile, group_number, true);
 
     char *myname = twc_get_self_name_nt(profile->tox);
     char *name = twc_get_peer_name_nt(profile->tox, group_number, peer_number);
+    char *full_name = twc_get_peer_name_prefixed(short_id, name);
     char *tags = "notify_message";
     char *message_nt = twc_null_terminate(message, length);
 
@@ -425,10 +434,14 @@ twc_handle_group_message(Tox *tox, int32_t group_number, int32_t peer_number,
 
     if (weechat_string_has_highlight(message_nt, myname))
         tags = "notify_highlight";
-    twc_chat_print_message(chat, tags, nick_color, name, message_nt,
-                           message_type);
+    twc_chat_print_message(
+        chat, tags, nick_color,
+        weechat_config_boolean(twc_config_show_id) ? full_name : name,
+        message_nt, message_type);
 
     free(name);
+    free(short_id);
+    free(full_name);
     free(myname);
     free(message_nt);
 }
@@ -456,58 +469,95 @@ twc_group_peer_list_changed_callback(Tox *tox, uint32_t group_number,
 
     struct t_weelist *new_nicks;
     struct t_weelist_item *n;
+    struct t_weelist *new_ids;
+    struct t_weelist_item *id;
 
     npeers = tox_conference_peer_count(profile->tox, group_number, &err);
 
     if (err == TOX_ERR_CONFERENCE_PEER_QUERY_OK)
     {
         new_nicks = weechat_list_new();
+        new_ids = weechat_list_new();
         for (i = 0; i < npeers; i++)
         {
             char *name = twc_get_peer_name_nt(profile->tox, group_number, i);
+            char *id = twc_get_peer_id_short(profile->tox, group_number, i);
             weechat_list_add(new_nicks, name, WEECHAT_LIST_POS_END, NULL);
+            weechat_list_add(new_ids, id, WEECHAT_LIST_POS_END, NULL);
             free(name);
+            free(id);
         }
     }
     else
         return;
 
+    bool changed = false;
+
     /* searching for exits */
     n = weechat_list_get(chat->nicks, 0);
+    id = weechat_list_get(chat->ids, 0);
 
-    while (n)
+    while (id && n)
     {
+        const char *short_id = weechat_list_string(id);
         const char *name = weechat_list_string(n);
-        if (!weechat_list_search(new_nicks, name))
+        if (!weechat_list_search(new_ids, short_id))
         {
-            weechat_printf(chat->buffer, "%s%s just left the group chat",
-                           weechat_prefix("quit"), name);
-            nick = weechat_nicklist_search_nick(chat->buffer,
-                                                chat->nicklist_group, name);
+            char *full_name = twc_get_peer_name_prefixed(short_id, name);
+            nick = weechat_nicklist_search_nick(
+                chat->buffer, chat->nicklist_group, full_name);
             weechat_nicklist_remove_nick(chat->buffer, nick);
+            weechat_printf(
+                chat->buffer, "%s%s just left the group chat",
+                weechat_prefix("quit"),
+                weechat_config_boolean(twc_config_show_id) ? full_name : name);
+            changed = true;
+            free(full_name);
         }
         n = weechat_list_next(n);
+        id = weechat_list_next(id);
     }
 
     /* searching for joins */
     n = weechat_list_get(new_nicks, 0);
+    id = weechat_list_get(new_ids, 0);
 
-    while (n)
+    while (id && n)
     {
+        const char *short_id = weechat_list_string(id);
         const char *name = weechat_list_string(n);
-        if (!weechat_list_search(chat->nicks, name))
+        if (!weechat_list_search(chat->ids, short_id))
         {
-            weechat_printf(chat->buffer, "%s%s just joined the group chat",
-                           weechat_prefix("join"), name);
-            weechat_nicklist_add_nick(chat->buffer, chat->nicklist_group, name,
-                                      NULL, NULL, NULL, 1);
+            char *full_name = twc_get_peer_name_prefixed(short_id, name);
+            weechat_nicklist_add_nick(chat->buffer, chat->nicklist_group,
+                                      full_name, NULL, NULL, NULL, 1);
+            nick = weechat_nicklist_search_nick(
+                chat->buffer, chat->nicklist_group, full_name);
+            struct t_weelist_item *ignored =
+                twc_is_id_ignored(profile, short_id);
+            twc_chat_update_prefix_by_nick(chat->buffer, nick,
+                                           ignored ? "-" : " ",
+                                           ignored ? "yellow" : "default");
+            weechat_printf(
+                chat->buffer, "%s%s just joined the group chat",
+                weechat_prefix("join"),
+                weechat_config_boolean(twc_config_show_id) ? full_name : name);
+            changed = true;
+            free(full_name);
         }
         n = weechat_list_next(n);
+        id = weechat_list_next(id);
     }
 
-    weechat_list_remove_all(chat->nicks);
-    weechat_list_free(chat->nicks);
-    chat->nicks = new_nicks;
+    if (changed)
+    {
+        weechat_list_remove_all(chat->nicks);
+        weechat_list_free(chat->nicks);
+        weechat_list_remove_all(chat->ids);
+        weechat_list_free(chat->ids);
+        chat->nicks = new_nicks;
+        chat->ids = new_ids;
+    }
 }
 
 void
@@ -523,10 +573,13 @@ twc_group_peer_name_callback(Tox *tox, uint32_t group_number,
     struct t_gui_nick *nick = NULL;
     const char *prev_name;
     char *name;
+    const char *short_id;
+    char *prev_full_name;
+    char *full_name;
     bool rc;
     TOX_ERR_CONFERENCE_PEER_QUERY err = TOX_ERR_CONFERENCE_PEER_QUERY_OK;
 
-    struct t_weelist_item *n;
+    struct t_weelist_item *n, *id;
 
     npeers = tox_conference_peer_count(profile->tox, group_number, &err);
 
@@ -550,27 +603,36 @@ twc_group_peer_name_callback(Tox *tox, uint32_t group_number,
         twc_group_peer_list_changed_callback(tox, group_number, data);
         return;
     }
-
+    id = weechat_list_get(chat->ids, peer_number);
+    short_id = weechat_list_string(id);
     prev_name = weechat_list_string(n);
+    prev_full_name = twc_get_peer_name_prefixed(short_id, prev_name);
+
     name = twc_null_terminate(pname, pname_len);
+    full_name = twc_get_peer_name_prefixed(short_id, name);
 
     nick = weechat_nicklist_search_nick(chat->buffer, chat->nicklist_group,
-                                        prev_name);
-
+                                        prev_full_name);
     weechat_nicklist_remove_nick(chat->buffer, nick);
 
     err = TOX_ERR_CONFERENCE_PEER_QUERY_OK;
     rc = tox_conference_peer_number_is_ours(tox, group_number, peer_number,
                                             &err);
+    bool show_id = weechat_config_boolean(twc_config_show_id);
     if ((err == TOX_ERR_CONFERENCE_PEER_QUERY_OK) && (!rc))
-        weechat_printf(chat->buffer, "%s%s is now known as %s",
-                       weechat_prefix("network"), prev_name, name);
-
+        weechat_printf(
+            chat->buffer, "%s%s is now known as %s", weechat_prefix("network"),
+            show_id ? prev_full_name : prev_name, show_id ? full_name : name);
     weechat_list_set(n, name);
-
-    weechat_nicklist_add_nick(chat->buffer, chat->nicklist_group, name, NULL,
-                              NULL, NULL, 1);
-
+    weechat_nicklist_add_nick(chat->buffer, chat->nicklist_group, full_name,
+                              NULL, NULL, NULL, 1);
+    struct t_weelist_item *ignored = twc_is_id_ignored(profile, short_id);
+    nick = weechat_nicklist_search_nick(chat->buffer, chat->nicklist_group,
+                                        full_name);
+    twc_chat_update_prefix_by_nick(chat->buffer, nick, ignored ? "-" : " ",
+                                   ignored ? "yellow" : "default");
+    free(prev_full_name);
+    free(full_name);
     free(name);
 }
 

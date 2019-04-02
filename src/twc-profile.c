@@ -166,6 +166,7 @@ twc_profile_new(const char *name)
     profile->tox_online = false;
 
     profile->chats = twc_list_new();
+    profile->ignores = weechat_list_new();
     profile->friend_requests = twc_list_new();
     profile->group_chat_invites = twc_list_new();
     profile->message_queues = weechat_hashtable_new(
@@ -247,10 +248,10 @@ twc_tox_new_print_error(struct t_twc_profile *profile,
                            weechat_prefix("error"), options->proxy_host);
             break;
         case TOX_ERR_NEW_PROXY_BAD_PORT:
-            weechat_printf(profile->buffer,
-                           "%scould not load Tox (invalid proxy port: \"%"
-                           PRIu16 "\")",
-                           weechat_prefix("error"), options->proxy_port);
+            weechat_printf(
+                profile->buffer,
+                "%scould not load Tox (invalid proxy port: \"%" PRIu16 "\")",
+                weechat_prefix("error"), options->proxy_port);
             break;
         case TOX_ERR_NEW_PROXY_NOT_FOUND:
             weechat_printf(
@@ -698,6 +699,8 @@ twc_profile_free(struct t_twc_profile *profile)
 
     /* free things */
     twc_chat_free_list(profile->chats);
+    weechat_list_remove_all(profile->ignores);
+    weechat_list_free(profile->ignores);
     twc_friend_request_free_list(profile->friend_requests);
     twc_group_chat_invite_free_list(profile->group_chat_invites);
     twc_tfer_free(profile->tfer);

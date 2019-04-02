@@ -24,6 +24,7 @@
 #include <tox/tox.h>
 #include <weechat/weechat-plugin.h>
 
+#include "twc-config.h"
 #include "twc-list.h"
 #include "twc-message-queue.h"
 #include "twc-profile.h"
@@ -57,6 +58,10 @@ twc_chat_new(struct t_twc_profile *profile, const char *name)
     chat->profile = profile;
     chat->friend_number = chat->group_number = -1;
     chat->nicks = NULL;
+    chat->ids = NULL;
+    chat->completion = NULL;
+    chat->last_search = NULL;
+    chat->prev_comp = NULL;
 
     size_t full_name_size = strlen(profile->name) + 1 + strlen(name) + 1;
     char *full_name = malloc(full_name_size);
@@ -137,6 +142,8 @@ twc_chat_new_group(struct t_twc_profile *profile, int32_t group_number)
         chat->nicklist_group =
             weechat_nicklist_add_group(chat->buffer, NULL, NULL, NULL, true);
         chat->nicks = weechat_list_new();
+        chat->ids = weechat_list_new();
+        chat->completion = weechat_list_new();
 
         weechat_buffer_set(chat->buffer, "nicklist", "1");
     }
@@ -275,6 +282,54 @@ twc_chat_search_buffer(struct t_gui_buffer *buffer)
 }
 
 /**
+ * Set a prefix to a nickname in the nicklist of a chat.
+ */
+void
+twc_chat_update_prefix(struct t_twc_chat *chat, const char *id,
+                       const char *prefix, const char *prefix_color)
+{
+    struct t_gui_nick_group *ptr_group = NULL;
+    struct t_gui_nick *ptr_nick = NULL;
+
+    weechat_nicklist_get_next_item(chat->buffer, &ptr_group, &ptr_nick);
+    while (ptr_group || ptr_nick)
+    {
+        if (ptr_nick)
+        {
+            const char *name_field = weechat_nicklist_nick_get_string(
+                chat->buffer, ptr_nick, "name");
+            size_t short_id_length =
+                weechat_config_integer(twc_config_short_id_size);
+            if (!weechat_strncasecmp(id, name_field + sizeof(char),
+                                     short_id_length))
+            {
+                weechat_nicklist_nick_set(chat->buffer, ptr_nick, "prefix",
+                                          prefix);
+                weechat_nicklist_nick_set(chat->buffer, ptr_nick,
+                                          "prefix_color", prefix_color);
+                weechat_nicklist_nick_set(chat->buffer, ptr_nick, "color",
+                                          "default");
+                return;
+            }
+        }
+        weechat_nicklist_get_next_item(chat->buffer, &ptr_group, &ptr_nick);
+    }
+}
+
+/**
+ * Update prefix for a certain nickname structure pointer.
+ */
+void
+twc_chat_update_prefix_by_nick(struct t_gui_buffer *buffer,
+                               struct t_gui_nick *nick, const char *prefix,
+                               const char *prefix_color)
+{
+    weechat_nicklist_nick_set(buffer, nick, "prefix", prefix);
+    weechat_nicklist_nick_set(buffer, nick, "prefix_color", prefix_color);
+    weechat_nicklist_nick_set(buffer, nick, "color", "default");
+}
+
+/**
  * Print a chat message to a chat's buffer.
  */
 void
@@ -395,6 +450,18 @@ twc_chat_free(struct t_twc_chat *chat)
         weechat_list_remove_all(chat->nicks);
         weechat_list_free(chat->nicks);
     }
+    if (chat->ids)
+    {
+        weechat_list_remove_all(chat->ids);
+        weechat_list_free(chat->ids);
+    }
+    if (chat->completion)
+    {
+        weechat_list_remove_all(chat->completion);
+        weechat_list_free(chat->completion);
+    }
+    free(chat->last_search);
+    free(chat->prev_comp);
     free(chat);
 }
 

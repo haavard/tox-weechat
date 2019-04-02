@@ -21,9 +21,10 @@
 #define TOX_WEECHAT_UTILS_H
 
 #include <stdlib.h>
-
 #include <tox/tox.h>
 #include <weechat/weechat-plugin.h>
+
+#include "twc-profile.h"
 
 void
 twc_hex2bin(const char *hex, size_t size, uint8_t *out);
@@ -48,6 +49,34 @@ twc_get_self_name_nt(Tox *tox);
 
 char *
 twc_get_friend_id_short(Tox *tox, int32_t friend_number);
+
+char *
+twc_get_peer_id_short(Tox *tox, uint32_t conference_number,
+                      uint32_t peer_number);
+
+char *
+twc_get_peer_name_prefixed(const char *id, const char *name);
+
+char *
+twc_get_peer_name_prefixed_and_aligned(const char *id, const char *name,
+                                       size_t max);
+
+size_t
+twc_get_max_string_length(struct t_weelist *list);
+
+size_t
+twc_get_peer_name_count(struct t_weelist *list, const char *name);
+
+struct t_weelist *
+twc_starts_with(struct t_weelist *list, const char *search,
+                struct t_weelist *result);
+
+const char *
+twc_get_next_completion(struct t_weelist *completion_list,
+                        const char *prev_comp);
+
+struct t_weelist_item *
+twc_is_id_ignored(struct t_twc_profile *profile, const char *short_id);
 
 uint32_t
 twc_uint32_reverse_bytes(uint32_t num);
